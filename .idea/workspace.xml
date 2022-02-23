@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f4d5a760-382f-45d4-b359-98c52279548d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/lib/Postit.svelte" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/routes/wip/index.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/header/Header.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/header/Header.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/__layout.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/__layout.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/index.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/index.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/svelte.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/svelte.config.js" afterDir="false" />
-    </list>
+    <list default="true" id="f4d5a760-382f-45d4-b359-98c52279548d" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -62,6 +54,7 @@
       <workItem from="1645630078586" duration="297000" />
       <workItem from="1645630385447" duration="20000" />
       <workItem from="1645631039183" duration="2522000" />
+      <workItem from="1645637225735" duration="7000" />
     </task>
     <servers />
   </component>
