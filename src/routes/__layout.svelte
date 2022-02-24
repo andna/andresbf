@@ -3,7 +3,10 @@
 	import '../app.css';
 </script>
 
-<Header />
+<div style="opacity: 0.1">
+
+	<Header />
+</div>
 
 <main>
 	<slot />
