@@ -5,6 +5,7 @@
     export let currentPostType = 0;
     export let currentColor = 0;
     export let svgSize = 360;
+    export let postId
 
     let svgColors = [
         [// post0
@@ -75,18 +76,15 @@
         return `rgb( ${color.r}, ${color.g}, ${color.b})`
     }
 
-    function resetCurrentDetailColors(){
-        currentDetailColors = []
-
-        svgColors[currentPostType][currentColor].forEach((detail, i) => {
-            currentDetailColors.push([])
-            detail.forEach((gradientColor, j) => {
-                currentDetailColors[i].push(returnColor(currentPostType, currentColor, i, j))
-            })
+    let currentDetailColors = []
+    console.log(currentColor)
+    svgColors[currentPostType][currentColor].forEach((detail, i) => {
+        currentDetailColors.push([])
+        detail.forEach((gradientColor, j) => {
+            currentDetailColors[i].push(returnColor(currentPostType, currentColor, i, j))
         })
-    }
-    let currentDetailColors
-    resetCurrentDetailColors()
+    })
+
 
     let animationLength = 500;
     let isFading = false;
@@ -107,6 +105,7 @@
             setTimeout(function(){
                 isFading = false;
                 currentColor = getNextColor();
+                console.log(currentPostType, currentDetailColors);
             },animationLength);
         }
     }
@@ -134,33 +133,32 @@
     }
 
 </script>
-
 <svg on:click={startFadeColor} width={svgSize} height={svgSize} viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
 {#if currentPostType === 0}
-    <g clip-path="url(#clip0_205_686)">
-        <mask id="mask0_205_686" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="354" height="359">
-            <path d="M353 0H0V358.469C81.329 358.469 152.772 361.77 242.5 341C296.5 328.5 347.083 307.5 353 266.046C355.111 251.255 353 201.929 353 0Z" fill="url(#paint0_linear_205_686)"/>
+    <g clip-path="url(#clip0_{postId})">
+        <mask id="mask0_{postId}" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="354" height="359">
+            <path d="M353 0H0V358.469C81.329 358.469 152.772 361.77 242.5 341C296.5 328.5 347.083 307.5 353 266.046C355.111 251.255 353 201.929 353 0Z" fill="url(#paint0_linear_{postId})"/>
         </mask>
-        <g mask="url(#mask0_205_686)">
-            <rect width="382.131" height="376.23" fill="url(#paint1_linear_205_686)"/>
-            <path d="M295.5 261C249 332 187.5 350 140.5 360C242.754 370.113 357.787 323.587 357.787 274.426C318.689 301.721 295.5 261 295.5 261Z" fill="url(#paint2_linear_205_686)"/>
+        <g mask="url(#mask0_{postId})">
+            <rect width="382.131" height="376.23" fill="url(#paint1_linear_{postId})"/>
+            <path d="M295.5 261C249 332 187.5 350 140.5 360C242.754 370.113 357.787 323.587 357.787 274.426C318.689 301.721 295.5 261 295.5 261Z" fill="url(#paint2_linear_{postId})"/>
         </g>
     </g>
     <defs>
-        <linearGradient id="paint0_linear_205_686" x1="173.389" y1="1.01548e-07" x2="173.389" y2="363.555" gradientUnits="userSpaceOnUse">
+        <linearGradient id="paint0_linear_{postId}" x1="173.389" y1="1.01548e-07" x2="173.389" y2="363.555" gradientUnits="userSpaceOnUse">
             <stop stop-color="#96E6B1"/>
             <stop offset="1" stop-color="#63DD94"/>
         </linearGradient>
-        <linearGradient id="paint1_linear_205_686" x1="191.066" y1="0" x2="191.066" y2="376.23" gradientUnits="userSpaceOnUse">
+        <linearGradient id="paint1_linear_{postId}" x1="191.066" y1="0" x2="191.066" y2="376.23" gradientUnits="userSpaceOnUse">
             <stop offset="0.0001" stop-color={currentDetailColors[0][0]}/>
             <stop offset="1" stop-color={currentDetailColors[0][1]}/>
         </linearGradient>
-        <linearGradient id="paint2_linear_205_686" x1="298.778" y1="261" x2="223.786" y2="363.426" gradientUnits="userSpaceOnUse">
+        <linearGradient id="paint2_linear_{postId}" x1="298.778" y1="261" x2="223.786" y2="363.426" gradientUnits="userSpaceOnUse">
             <stop stop-color={currentDetailColors[1][0]}/>
             <stop offset="1" stop-color={currentDetailColors[1][1]}/>
         </linearGradient>
 
-        <clipPath id="clip0_205_686">
+        <clipPath id="clip0_{postId}">
             <rect width="360" height="360" fill="white"/>
         </clipPath>
     </defs>

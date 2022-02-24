@@ -84,7 +84,7 @@
                     id: 'more',
                     text: 'Andrés Bastidas Fierro',
                     icon: 'mail',
-                    colour: 2,
+                    colour: 3,
                     postType: 2,
                 }]
             ]
@@ -103,22 +103,22 @@
                     id: 'vrar',
                     text: 'Andrés Bastidas Fierro',
                     icon: 'mail',
-                    colour: 2,
                     postType: 2,
+                    colour: 2,
                 }],
                 [{
                     id: 'uxui',
                     text: 'Andrés Bastidas Fierro',
                     icon: 'mail',
-                    colour: 2,
                     postType: 2,
+                    colour: 0,
                 }],
                 [{
                     id: 'product',
                     text: 'Andrés Bastidas Fierro',
                     icon: 'mail',
-                    colour: 2,
                     postType: 2,
+                    colour: 3,
                 }]
             ]
         },
@@ -137,9 +137,7 @@
     ];
 
 </script>
-<!--
-<iframe id="d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
--->
+
 
 <div style="position:fixed;">{insideWindow}</div>
 <div id="wrapper"
@@ -149,11 +147,16 @@
      on:mousemove={handleMouseMove}
      on:mousedown={handleMouseDown}
      on:mouseup={handleMouseUp}>
+
+    <iframe id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
+
+
     The mouse position is {pos.top} x {pos.left}
     {isDragging}
 
 
     <div  style="display: flex;">
+
         {#each postItsData as postItData}
             <div  style="display: flex;">
 
@@ -161,8 +164,9 @@
                 <div style="display: flex;">
                     {#each postItData.postItGroups as postItGroup}
                         <div style="display: flex; flex-direction: column;">
-                            {#each postItGroup as postIt, i (postIt.id)}
-                                <Postit currentColor={postIt.colour}
+                            {#each postItGroup as postIt (postIt.id)}
+                                <Postit postId={postIt.id}
+                                        currentColor={postIt.colour}
                                         currentPostType={postIt.postType}
                                         svgSize={postIt.customSize} />
                             {/each}
@@ -179,5 +183,11 @@
     #wrapper{
         width: 5000px;
         height: 5000px;
+    }
+    #ar-iframe{
+        width: 333px;
+        height: 333px;
+        margin-bottom: -100px;
+        filter: drop-shadow(20px 28px 6px rgba(0,0,0,.3));
     }
 </style>
