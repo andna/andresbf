@@ -93,6 +93,7 @@
 
 
     function startFadeColor() {
+        console.log('aaa')
         if(!isFading){
             isFading = true;
             currentDetailColors.forEach((detail, detailIndex) => {
@@ -136,7 +137,7 @@
     let containerSize = `height: ${svgSize}px; width: ${svgSize}px;`
 
 </script>
-<div class="container-postit"  style={containerSize}>
+<div class="container-postit"  on:click={startFadeColor} style={containerSize}>
     <div class="container-postit-content">
         <h1>
             {postId}
@@ -145,7 +146,7 @@
 
     <div class="container-postit-svg">
 
-        <svg on:click={startFadeColor} width={svgSize} height={svgSize} viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width={svgSize} height={svgSize} viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
             {#if currentPostType === 0}
                 <g clip-path="url(#clip0_{postId})">
                     <mask id="mask0_{postId}" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="354" height="359">

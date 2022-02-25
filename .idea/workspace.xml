@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f4d5a760-382f-45d4-b359-98c52279548d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/routes/wip/abfLogo.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/Postit.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/Postit.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/routes/wip/index.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/wip/index.svelte" afterDir="false" />
@@ -36,7 +37,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/routes/wip" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
@@ -64,6 +65,7 @@
       <workItem from="1645663755798" duration="7070000" />
       <workItem from="1645711849766" duration="650000" />
       <workItem from="1645728204227" duration="7096000" />
+      <workItem from="1645790977860" duration="3409000" />
     </task>
     <servers />
   </component>
