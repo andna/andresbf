@@ -42,6 +42,7 @@
     }
 
     let postItSmallSize = 200
+    let postItMediumSize = 250
 
     let postItsData = [
         {
@@ -124,7 +125,78 @@
         },
         {
             id: "education",
-            postItGroups: []
+            postItGroups: [
+                [
+                    {
+                    id: 'master',
+                    text: 'Andrés Bastidas Fierro',
+                    icon: 'mail',
+                    postType: 1,
+                    colour: 1,
+                    customSize: postItMediumSize,
+                    },
+                    {
+                    id: 'university',
+                    text: 'Andrés Bastidas Fierro',
+                    icon: 'mail',
+                    postType: 2,
+                    colour: 3,
+                    customSize: postItMediumSize,
+                    }
+                ],
+                [
+
+                   {
+                        id: 'halliburton',
+                        text: 'Andrés Bastidas Fierro',
+                        icon: 'mail',
+                        postType: 2,
+                        colour: 0,
+                        customSize: postItSmallSize,
+                    },{
+                        id: 'atiko7',
+                        text: 'Andrés Bastidas Fierro',
+                        icon: 'mail',
+                        postType: 1,
+                        colour: 3,
+                        customSize: postItSmallSize,
+                    },
+                ],
+                [
+                    {
+                        id: 'quiena',
+                        text: 'Andrés Bastidas Fierro',
+                        icon: 'mail',
+                        postType: 2,
+                        colour: 2,
+                        customSize: postItMediumSize,
+                    },
+                    {
+                        id: 'productmanager',
+                        text: 'Andrés Bastidas Fierro',
+                        icon: 'mail',
+                        postType: 2,
+                        colour: 1,
+                        customSize: postItSmallSize,
+                    },
+                    {
+                        id: 'uxuileader',
+                        text: 'Andrés Bastidas Fierro',
+                        icon: 'mail',
+                        postType: 1,
+                        colour: 1,
+                        customSize: postItSmallSize,
+                    },
+                    {
+                        id: 'frontenddev',
+                        text: 'Andrés Bastidas Fierro',
+                        icon: 'mail',
+                        postType: 1,
+                        colour: 1,
+                        customSize: postItSmallSize,
+                    },
+                ]
+            ]
         },
         {
             id: "experience",
@@ -155,13 +227,13 @@
     {isDragging}
 
 
-    <div  style="display: flex;">
+    <div class="postits-wrapper">
 
         {#each postItsData as postItData}
             <div  style="display: flex;">
 
-                {postItData.id}
-                <div style="display: flex;">
+                <h1><b>{postItData.id}</b></h1>
+                <div  class="postits-group">
                     {#each postItData.postItGroups as postItGroup}
                         <div style="display: flex; flex-direction: column;">
                             {#each postItGroup as postIt (postIt.id)}
@@ -180,14 +252,22 @@
 </div>
 
 <style>
+    .postits-wrapper{
+        flex-flow: row wrap;
+        display: flex;
+    }
+    .postits-group{
+        display:flex;
+        padding: 50px;
+    }
     #wrapper{
-        width: 5000px;
-        height: 5000px;
+        width: 3000px;
+        height: 1800px;
     }
     #ar-iframe{
         width: 333px;
         height: 333px;
-        margin-bottom: -100px;
+        margin-bottom: -200px;
         filter: drop-shadow(20px 28px 6px rgba(0,0,0,.3));
     }
 </style>
