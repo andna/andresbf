@@ -15,12 +15,14 @@
     }
 
     let currentDetailColors = []
-    svgColors[currentPostType][currentColor].forEach((detail, i) => {
-        currentDetailColors.push([])
-        detail.forEach((gradientColor, j) => {
-            currentDetailColors[i].push(returnColor(currentPostType, currentColor, i, j))
+    if(svgColors[currentPostType]){
+        svgColors[currentPostType][currentColor].forEach((detail, i) => {
+            currentDetailColors.push([])
+            detail.forEach((gradientColor, j) => {
+                currentDetailColors[i].push(returnColor(currentPostType, currentColor, i, j))
+            })
         })
-    })
+    }
 
 
     let animationLength = 500;
@@ -74,7 +76,7 @@
 
 
 </script>
-<div class="container-postit"  on:click={startFadeColor} style={containerSize}>
+<div class="container-postit container-postit-{currentPostType}"  on:click={startFadeColor} style={containerSize}>
     <div class="container-postit-content">
         <div class="postit-title">
             {postData.id}
@@ -83,6 +85,10 @@
 
         </div>
     </div>
+
+    {#if currentPostType === 4}
+        <iframe title={postData.id} class="video-iframe" width={svgSize - 92} height={svgSize - 92} src="//www.youtube.com/embed/1onw8rSfDsg?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+    {/if}
 
     <div class="container-postit-svg">
 
@@ -158,7 +164,7 @@
                         <rect width="360" height="360" fill="white"/>
                     </clipPath>
                 </defs>
-            {:else}
+            {:else  if currentPostType === 3}
                 <g clip-path="url(#clip0_{postData.id})">
                     <mask id="mask0_{postData.id}" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-5" y="0" width="365" height="358">
                         <path d="M360 0L4.14704 3.00407e-05C4.14704 3.00407e-05 -10.7391 358 -1.86802 358C7.00302 358 89.4506 353 200.598 350C282.21 347.797 360 350 360 350L360 0Z" fill="url(#paint0_linear_{postData.id})"/>
@@ -181,6 +187,15 @@
                         <rect width="360" height="360" fill="white"/>
                     </clipPath>
                 </defs>
+            {:else}
+                <rect width="300" height="340.244" fill="white"/>
+                <rect x="18.293" y="14.6338" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
+                <defs>
+                    <linearGradient id="paint0_linear_216_2404" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#736F6B"/>
+                        <stop offset="1" stop-color="#5F5243"/>
+                    </linearGradient>
+                </defs>
             {/if}
 
         </svg>
@@ -197,6 +212,15 @@
         left: 0;
         top: 0;
         z-index: -1;
+    }
+    .video-iframe{
+        position: absolute;
+        left: 18px;
+        top: 14px;
+    }
+    .container-postit-4 .container-postit-content{
+        position: absolute;
+        bottom: 34px;
     }
 </style>
 

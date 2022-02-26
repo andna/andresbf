@@ -87,17 +87,12 @@
 
         <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
 
-
-        The mouse position is {pos.top} x {pos.left}
-        {isDragging}
-
-
         <div class="postits-wrapper">
 
             {#each postItsData as postItData}
-                <div  style="display: flex;">
+                <div class="group-container">
 
-                    <h1><b>{postItData.id}</b></h1>
+                    <div class="group-title">{postItData.id}</div>
                     <div  class="postits-group">
                         {#each postItData.postItGroups as postItGroup}
                             <div style="display: flex; flex-direction: column;">
@@ -169,9 +164,10 @@
         padding: 50px;
     }
     #wrapper{
-        width: 3000px;
+        width: 3600px;
         height: 1800px;
         user-select: none;
+        padding: 30vh 30vw;
     }
     #ar-iframe{
         width: 333px;
@@ -179,10 +175,22 @@
         margin-bottom: -200px;
         filter: drop-shadow(20px 28px 6px rgba(0,0,0,.3));
         z-index: 2;
-        position: relative;
+        position: absolute;
     }
     .body{
         font-family: Poppins;
         color: #6C808E;
+    }
+    .group-container{
+        position: relative;
+        margin: 0 8em;
+    }
+    .group-title{
+        position: absolute;
+        font-size: 80px;
+        font-weight: 800;
+        top: -0.35em;
+        z-index: -1;
+
     }
 </style>
