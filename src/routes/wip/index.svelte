@@ -114,8 +114,10 @@
                     <div  class="postits-group">
                         {#each postItData.postItGroups as postItGroup}
                             <div class="postits-group-column">
-                                {#each postItGroup as postIt (postIt.id)}
-                                    <Postit postData={postIt} />
+                                {#each postItGroup as postIt, j (postIt.id)}
+                                    <div class="postit-individual {postIt.href ? 'is-link' : ''}" style="z-index: {postItGroup.length - j}">
+                                        <Postit postData={postIt} />
+                                    </div>
                                 {/each}
                             </div>
                         {/each}
@@ -216,5 +218,9 @@
     }
     .container-padding-bottom{
         padding-bottom: 15em;
+    }
+
+    .postit-individual.is-link:hover {
+        z-index: 10 !important;
     }
 </style>
