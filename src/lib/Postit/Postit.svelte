@@ -1,8 +1,15 @@
 <script>
-    export let currentPostType = 0
-    export let currentColor = 0
-    export let svgSize = 360
     export let postData
+    let currentPostType = postData.postType || 0
+    let currentColor = postData.colour || 0
+
+    let sizes = [
+        { id: 'big', svg: 360 },
+        { id: 'medium', svg: 250 },
+        { id: 'small', svg: 200 },
+    ]
+
+    let svgSize = sizes[postData.size] ? sizes[postData.size].svg : 360
 
     import { svgColorsDB } from './svg-colors-db.js';
 
@@ -74,16 +81,23 @@
 
 
 
+    let fontSizes = [
+
+    ];
 
 </script>
-<div class="container-postit container-postit-{currentPostType}"  on:click={startFadeColor} style={containerSize}>
-    <div class="container-postit-content">
-        <div class="postit-title">
-            {postData.id}
-        </div>
-        <div class="postit-description">
-
-        </div>
+<div class="container-postit  postit-{postData.id} container-postit-{currentPostType}"  on:click={startFadeColor} style={containerSize}>
+    <div class="container-postit-content postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
+        {#if postData.text}
+            <div class="postit-text">
+                {@html postData.text}
+            </div>
+        {/if}
+        {#if postData.subtext}
+            <div class="postit-subtext">
+                {@html postData.subtext}
+            </div>
+        {/if}
     </div>
 
     {#if currentPostType === 4}
@@ -122,25 +136,7 @@
                     </clipPath>
                 </defs>
             {:else if currentPostType === 1}
-                <mask id="mask0_{postData.id}" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="5" y="0" width="350" height="352">
-                    <path d="M351.875 0H5.13902C5.13902 0 9.63916 306.764 5.13902 329.682C0.638887 352.6 106.139 352.764 212.639 349.764C290.838 347.561 354.139 329.264 354.139 329.264C354.139 329.264 340.639 295.764 351.875 0Z" fill="url(#paint0_linear_{postData.id})"/>
-                </mask>
-                <g mask="url(#mask0_{postData.id})">
-                    <rect x="3.13916" y="-5.23621" width="382.131" height="376.23" fill="url(#paint1_linear_{postData.id})"/>
-                </g>
-                <defs>
-                    <linearGradient id="paint0_linear_{postData.id}" x1="187.138" y1="-5.23622" x2="187.138" y2="358.682" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#96E6B1"/>
-                        <stop offset="1" stop-color="#63DD94"/>
-                    </linearGradient>
-                    <linearGradient id="paint1_linear_{postData.id}" x1="194.139" y1="22.7638" x2="194.139" y2="363.764" gradientUnits="userSpaceOnUse">
-                        <stop stop-color={currentDetailColors[0][0]}/>
-                        <stop offset="0.190625" stop-color={currentDetailColors[0][1]}/>
-                        <stop offset="0.64375" stop-color={currentDetailColors[0][2]}/>
-                        <stop offset="1" stop-color={currentDetailColors[0][3]}/>
-                    </linearGradient>
-                </defs>
-            {:else if currentPostType === 2}
+
                 <g clip-path="url(#clip0_{postData.id})">
                     <mask id="mask0_{postData.id}" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="358" height="360">
                         <path d="M358 0.215286L1.49998 0.21529C1.49998 0.21529 -4.67198 314.047 10.8466 340.157C26.3652 366.267 358 359.1 358 359.1L358 0.215286Z" fill="url(#paint0_linear_{postData.id})"/>
@@ -163,6 +159,25 @@
                     <clipPath id="clip0_{postData.id}">
                         <rect width="360" height="360" fill="white"/>
                     </clipPath>
+                </defs>
+            {:else if currentPostType === 2}
+                <mask id="mask0_{postData.id}" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="5" y="0" width="350" height="352">
+                    <path d="M351.875 0H5.13902C5.13902 0 9.63916 306.764 5.13902 329.682C0.638887 352.6 106.139 352.764 212.639 349.764C290.838 347.561 354.139 329.264 354.139 329.264C354.139 329.264 340.639 295.764 351.875 0Z" fill="url(#paint0_linear_{postData.id})"/>
+                </mask>
+                <g mask="url(#mask0_{postData.id})">
+                    <rect x="3.13916" y="-5.23621" width="382.131" height="376.23" fill="url(#paint1_linear_{postData.id})"/>
+                </g>
+                <defs>
+                    <linearGradient id="paint0_linear_{postData.id}" x1="187.138" y1="-5.23622" x2="187.138" y2="358.682" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#96E6B1"/>
+                        <stop offset="1" stop-color="#63DD94"/>
+                    </linearGradient>
+                    <linearGradient id="paint1_linear_{postData.id}" x1="194.139" y1="22.7638" x2="194.139" y2="363.764" gradientUnits="userSpaceOnUse">
+                        <stop stop-color={currentDetailColors[0][0]}/>
+                        <stop offset="0.190625" stop-color={currentDetailColors[0][1]}/>
+                        <stop offset="0.64375" stop-color={currentDetailColors[0][2]}/>
+                        <stop offset="1" stop-color={currentDetailColors[0][3]}/>
+                    </linearGradient>
                 </defs>
             {:else  if currentPostType === 3}
                 <g clip-path="url(#clip0_{postData.id})">
@@ -218,10 +233,57 @@
         left: 18px;
         top: 14px;
     }
+    .container-postit-content{
+        white-space: break-spaces;
+        word-break: break-all;
+        cursor: pointer;
+        padding: 1em;
+    }
+
+    .container-postit-content.is-link:hover{
+        filter:brightness(110%);
+        text-decoration: underline;
+    }
+    .postit-text{
+        font-weight: 800;
+    }
     .container-postit-4 .container-postit-content{
         position: absolute;
         bottom: 34px;
+        left: 0;
     }
+
+    .postit-size-big{
+        line-height: 116%;
+        font-size: 2em;
+    }
+
+    .postit-size-big .postit-subtext{
+        font-size: 0.7em;
+        line-height: 142%;
+
+    }
+
+    .postit-size-medium{
+        font-size: 1.2em;
+        line-height: 116%;
+
+    }
+    .postit-size-small{
+        line-height: 116%;
+        font-size: 1em;
+
+    }
+
+    .postit-mail,
+    .postit-linkedin,
+    .postit-instagram,
+    .postit-youtube,
+    .postit-behance,
+    .postit-last{
+        text-align: center;
+    }
+
 </style>
 
 

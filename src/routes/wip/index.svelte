@@ -3,15 +3,33 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;800&display=swap" rel="stylesheet">
 </svelte:head>
+
 <script>
     import Postit from '$lib/Postit/Postit.svelte';
-    import { postItsDB } from './postits-db.js';
+    import { postItsDB } from './postits-db.ts';
     import logo from './abfLogo.svg';
+
+
 
     let pos = { top: 0, left: 0, x: 0, y: 0 }
 
     let insideWindow
     let isDragging
+
+    let isPressingSpaceBar
+
+    function onKeyDown(e){
+        if (e.keyCode === 32 && e.target === document.body) {
+            e.preventDefault();
+            isPressingSpaceBar = true;
+        }
+    }
+    function onKeyUp(e){
+        if (e.keyCode === 32 && e.target === document.body) {
+            e.preventDefault();
+            isPressingSpaceBar = false;
+        }
+    }
 
     function handleMouseDown(event) {
         isDragging = true
@@ -52,9 +70,8 @@
     let postItsData = postItsDB;
 
 </script>
-<svelte:window on:scroll={onScrollEvent}/>
-<div class="body">
-
+<svelte:window on:scroll={onScrollEvent} on:keyup={onKeyUp} on:keydown={onKeyDown}/>
+<div class="body" class:spacebar={isPressingSpaceBar}>
     <div class="logo">
         <img src={logo} alt="ABF" />
         <br>
@@ -85,22 +102,20 @@
          on:mousedown={handleMouseDown}
          on:mouseup={handleMouseUp}>
 
+        <!--
         <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
-
+-->
         <div class="postits-wrapper">
 
-            {#each postItsData as postItData}
-                <div class="group-container">
+            {#each postItsData as postItData, i}
+                <div class="group-container" class:container-padding-bottom={i === 0}>
 
                     <div class="group-title">{postItData.id}</div>
                     <div  class="postits-group">
                         {#each postItData.postItGroups as postItGroup}
-                            <div style="display: flex; flex-direction: column;">
+                            <div class="postits-group-column">
                                 {#each postItGroup as postIt (postIt.id)}
-                                    <Postit postData={postIt}
-                                            currentColor={postIt.colour}
-                                            currentPostType={postIt.postType}
-                                            svgSize={postIt.customSize} />
+                                    <Postit postData={postIt} />
                                 {/each}
                             </div>
                         {/each}
@@ -161,7 +176,6 @@
     }
     .postits-group{
         display:flex;
-        padding: 50px;
     }
     #wrapper{
         width: 3600px;
@@ -183,14 +197,24 @@
     }
     .group-container{
         position: relative;
-        margin: 0 8em;
+        padding-right: 22em;
+    }
+    .postits-group-column{
+        display: flex; flex-direction: column;
     }
     .group-title{
         position: absolute;
         font-size: 80px;
         font-weight: 800;
-        top: -0.35em;
+        top: -2em;
         z-index: -1;
+        letter-spacing: -4px;
 
+    }
+    .body.spacebar{
+        cursor: grab;
+    }
+    .container-padding-bottom{
+        padding-bottom: 15em;
     }
 </style>

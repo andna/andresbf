@@ -1,5 +1,22 @@
-﻿export let postItSmallSize = 200
-export let postItMediumSize = 250
+﻿enum c {
+    red,
+    green,
+    blue,
+    yellow
+}
+enum t {
+    bentR,
+    bentL,
+    stickU,
+    stickD,
+    polaroid
+}
+
+enum s {
+    big,
+    medium,
+    small,
+}
 
 export let postItsDB = [
         {
@@ -8,42 +25,45 @@ export let postItsDB = [
                 [
                     {
                         id: 'mail',
-                        text: 'andbastidasfierro@gmail.com',
                         icon: 'mail',
-                        colour: 2,
-                        postType: 2,
-                        customSize: postItSmallSize,
+                        text: 'andbastidasfierro@gmail.com',
+                        colour: c.blue,
+                        postType: t.bentL,
+                        size: s.small,
                     },
                     {
                         id: 'linkedin',
-                        text: 'andbastidasfierro@gmail.com',
                         icon: 'mail',
-                        colour: 2,
-                        postType: 1,
-                        customSize: postItSmallSize,
+                        text: 'linkedin.com/in/\nandbastidasfierro',
+                        colour: c.blue,
+                        postType: t.stickU,
+                        size: s.small,
                     },
                     {
                         id: 'instagram',
-                        text: 'andbastidasfierro@gmail.com',
                         icon: 'mail',
-                        colour: 2,
-                        postType: 0,
-                        customSize: postItSmallSize,
+                        text: '@andbastf',
+                        colour: c.blue,
+                        postType: t.bentR,
+                        size: s.small,
                     }
                 ],
                 [{
                     id: 'me',
-                    text: '',
+                    text: 'Andrés\nBastidas Fierro',
+                    subtext: 'Software Engineer\n' +
+                        'Algorithmic Designer\n' +
+                        'XR Evangelist',
                     icon: 'mail',
-                    postType: 0,
-                    colour: 1,
+                    postType: t.bentR,
+                    colour: c.green,
                 }],
                 [{
                     id: 'more',
                     text: '',
                     icon: 'mail',
-                    colour: 3,
-                    postType: 2,
+                    colour: c.yellow,
+                    postType: t.bentL,
                 }]
             ]
         },
@@ -52,31 +72,31 @@ export let postItsDB = [
             postItGroups: [
                 [{
                     id: 'frontend',
-                    text: '',
+                    text: 'Frontend\nFrameworks',
                     icon: 'mail',
-                    postType: 0,
-                    colour: 1,
+                    postType: t.bentL,
+                    colour: c.green,
                 }],
                 [{
                     id: 'vrar',
-                    text: '',
+                    text: 'VR/AR\nDevelopment',
                     icon: 'mail',
-                    postType: 2,
-                    colour: 2,
+                    postType: t.bentR,
+                    colour: c.blue,
                 }],
                 [{
                     id: 'uxui',
-                    text: '',
+                    text: 'UX/UI\nDesign',
                     icon: 'mail',
-                    postType: 2,
-                    colour: 0,
+                    postType: t.stickD,
+                    colour: c.red,
                 }],
                 [{
                     id: 'product',
-                    text: '',
+                    text: 'Product\nManagement',
                     icon: 'mail',
-                    postType: 2,
-                    colour: 3,
+                    postType: t.stickU,
+                    colour: c.yellow,
                 }]
             ]
         },
@@ -86,19 +106,19 @@ export let postItsDB = [
                 [
                     {
                     id: 'master',
-                    text: '',
+                    text: 'Master in Interactive\nDesign',
                     icon: 'mail',
-                    postType: 1,
-                    colour: 1,
-                    customSize: postItMediumSize,
+                    postType: t.stickU,
+                    colour: c.green,
+                    size: s.medium,
                     },
                     {
                     id: 'university',
-                    text: '',
+                    text: 'System & Computer Engineering',
                     icon: 'mail',
-                    postType: 2,
-                    colour: 3,
-                    customSize: postItMediumSize,
+                    postType: t.bentL,
+                    colour: c.yellow,
+                    size: s.medium,
                     }
                 ],
 
@@ -111,52 +131,52 @@ export let postItsDB = [
 
                     {
                         id: 'halliburton',
-                        text: '',
+                        text: 'Content Manager',
                         icon: 'mail',
-                        postType: 2,
-                        colour: 0,
-                        customSize: postItSmallSize,
+                        postType: t.bentL,
+                        colour: c.red,
+                        size: s.small,
                     },{
                     id: 'atiko7',
-                    text: '',
+                    text: 'Branding\nWordpress Dev',
                     icon: 'mail',
-                    postType: 1,
-                    colour: 3,
-                    customSize: postItSmallSize,
+                    postType: t.stickU,
+                    colour: c.yellow,
+                    size: s.small,
                 },
                 ],
                 [
                     {
                         id: 'quiena',
-                        text: '',
+                        text: 'Qienna Wealth\nManagement Inc.',
                         icon: 'mail',
-                        postType: 2,
-                        colour: 2,
-                        customSize: postItMediumSize,
+                        postType: t.bentL,
+                        colour: c.blue,
+                        size: s.medium,
                     },
                     {
                         id: 'productmanager',
-                        text: '',
+                        text: 'Product\nManager',
                         icon: 'mail',
-                        postType: 2,
-                        colour: 1,
-                        customSize: postItSmallSize,
+                        postType: t.stickU,
+                        colour: c.green,
+                        size: s.small,
                     },
                     {
                         id: 'uxuileader',
-                        text: '',
+                        text: 'UX/UI\nLeader',
                         icon: 'mail',
-                        postType: 1,
-                        colour: 1,
-                        customSize: postItSmallSize,
+                        postType: t.bentR,
+                        colour: c.red,
+                        size: s.small,
                     },
                     {
                         id: 'frontenddev',
-                        text: '',
+                        text: 'Frontend\nDev',
                         icon: 'mail',
-                        postType: 1,
-                        colour: 1,
-                        customSize: postItSmallSize,
+                        postType: t.stickD,
+                        colour: c.green,
+                        size: s.small,
                     },
                 ],
                 [
@@ -168,7 +188,7 @@ export let postItsDB = [
                     {
                         id: 'quiena2',
                         text: '',
-                        postType: 4,
+                        postType: t.polaroid,
                     }
                 ],
             ]
@@ -181,66 +201,68 @@ export let postItsDB = [
                     {
                         id: 'lavaSurf',
                         text: '',
-                        postType: 4,
+                        postType: t.polaroid,
                     },
+                ],
+                [
+
                     {
                         id: 'vrDinning',
                         text: '',
-                        postType: 4,
-                    }
-                ],
-                [
+                        postType: t.polaroid,
+                    },
                     {
                         id: 'Space O2 VR',
                         text: '',
-                        postType: 4,
+                        postType: t.polaroid,
                     },
+                ],
+                [
+
                     {
                         id: 'moderaGame',
                         text: '',
-                        postType: 4,
-                    }
-                ],
-                [
+                        postType: t.polaroid,
+                    },
                     {
                         id: 'Smatchups',
                         text: '',
-                        postType: 4,
+                        postType: t.polaroid,
                     },
                 ],
                 [
                     {
                         id: 'andmore',
                         text: '',
-                        postType: 4,
+                        postType: t.polaroid,
                     },
 
                     {
                         id: 'youtube',
-                        text: '',
+                        text: 'youtube.com/user/andzofficial',
                         icon: 'mail',
-                        postType: 2,
-                        colour: 0,
-                        customSize: postItSmallSize,
+                        postType: t.bentR,
+                        colour: c.red,
+                        size: s.small,
                     },
 
                     {
                         id: 'behance',
-                        text: '',
+                        text: 'be.net/andna',
                         icon: 'mail',
-                        postType: 2,
-                        colour: 1,
-                        customSize: postItSmallSize,
+                        postType: t.stickD,
+                        colour: c.green,
+                        size: s.small,
                     },
                     {
                         id: 'last',
                         text: '',
                         icon: 'mail',
-                        postType: 2,
-                        colour: 2,
-                        customSize: postItSmallSize,
+                        postType: t.bentL,
+                        colour: c.blue,
+                        size: s.small,
                     },
                 ],
             ]
         }
-    ]
+    ];
