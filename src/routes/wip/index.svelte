@@ -5,6 +5,7 @@
 </svelte:head>
 
 <script>
+    import { onMount } from 'svelte'
     import Postit from '$lib/Postit/Postit.svelte';
     import { postItsDB } from './postits-db.ts';
     import logo from './abfLogo.svg';
@@ -69,19 +70,46 @@
 
     let postItsData = postItsDB;
 
+
+    let scrollPositions = [
+        { id: 'about', x: 100, y: 130 },
+        { id: 'skills', x: 1640, y: 100 },
+        { id: 'eduxperience', x: 400, y: 1000 },
+        { id: 'portfolio', x: 2120, y: 1070 },
+    ]
+
+    let currentScrollpos = 0
+
+    function scrollTo(pos){
+        console.log(pos)
+        window.scrollTo( scrollPositions[pos].x, scrollPositions[pos].y)
+    }
+
+    function changeScrollPos(pos){
+        if(pos > scrollPositions.length - 1){
+            pos = 0
+        }
+        if(pos < 0){
+            pos = scrollPositions.length - 1
+        }
+        currentScrollpos = pos
+        scrollTo(pos)
+    }
 </script>
-<svelte:window on:scroll={onScrollEvent} on:keyup={onKeyUp} on:keydown={onKeyDown}/>
+<svelte:window on:scroll={onScrollEvent}
+               on:keyup={onKeyUp}
+               on:keydown={onKeyDown}/>
 <div class="body" class:spacebar={isPressingSpaceBar}>
     <div class="logo">
         <img src={logo} alt="ABF" />
         <br>
-        <small><small>x: {auxX} <br> y: {auxY}</small></small>
+        <small style="opacity: 0.1"><small>x: {auxX} <br> y: {auxY}</small></small>
     </div>
 
     <div class="menu-wrapper">
-        <div class="menu-button menu-button-back"> b </div>
+        <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1)}> b </div>
         <div class="menu-button menu-button-navigation">
-            <div>o</div>
+            <div >o</div>
             <div>
                 <div>experience</div>
                 <div>Space O2 VR</div>
@@ -92,7 +120,7 @@
                 </p>
             </div>
         </div>
-        <div class="menu-button menu-button-back"> f </div>
+        <div class="menu-button menu-button-back"  on:click={() => changeScrollPos(currentScrollpos + 1)}> f </div>
     </div>
     <div id="wrapper"
          on:mouseenter={() => blur()}
@@ -102,12 +130,11 @@
          on:mousedown={handleMouseDown}
          on:mouseup={handleMouseUp}>
 
-        <!--
-        <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
--->
-        <div class="postits-wrapper">
 
-            {#each postItsData as postItData, i}
+       <div class="postits-wrapper">
+           <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
+
+           {#each postItsData as postItData, i}
                 <div class="group-container" class:container-padding-bottom={i === 0}>
 
                     <div class="group-title">{postItData.id}</div>
@@ -134,9 +161,10 @@
         position: fixed;
         left: 2vh;
         top: 2.5vh;
-        width: 10vh;
+        width: 13vh;
         z-index: 100;
     }
+    .logo img{ width: 100%; }
     .menu-wrapper{
         position: fixed;
         width: 360px;
@@ -170,6 +198,7 @@
         box-shadow: 3px 5px 5px rgba(0, 0, 0, 0.15), -2px -2px 5px rgba(255, 255, 255, 0.45);
         height: 60px;
         cursor: pointer;
+        user-select: none;
 
     }
     .menu-button:last-child{
@@ -181,6 +210,7 @@
     .postits-wrapper{
         flex-flow: row wrap;
         display: flex;
+        position: relative;
     }
     .postits-group{
         display:flex;
@@ -189,7 +219,7 @@
         width: 3600px;
         height: 1800px;
         user-select: none;
-        padding: 30vh 30vw;
+        padding: 42vh 12vw 12vh 35vw;
     }
     #ar-iframe{
         width: 333px;
@@ -198,6 +228,8 @@
         filter: drop-shadow(20px 28px 6px rgba(0,0,0,.3));
         z-index: 2;
         position: absolute;
+        top: 220px;
+        left: 658px;
     }
     .body{
         font-family: Poppins;

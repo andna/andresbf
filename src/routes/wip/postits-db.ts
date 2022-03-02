@@ -64,6 +64,7 @@ export let postItsDB = [
                 [{
                     id: 'more',
                     text: '',
+                    subtext: 'I live in Buenos Aires... VR... etc etc',
 
                     colour: c.yellow,
                     postType: t.bentL,
