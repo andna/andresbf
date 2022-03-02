@@ -25,7 +25,7 @@ export let postItsDB = [
                 [
                     {
                         id: 'mail',
-                        icon: 'mail',
+                        icon: true,
                         text: 'andbastidasfierro@gmail.com',
                         href: 'mailto:andbastidasfierro@gmail.com',
                         colour: c.blue,
@@ -34,7 +34,7 @@ export let postItsDB = [
                     },
                     {
                         id: 'linkedin',
-                        icon: 'mail',
+                        icon: true,
                         text: 'linkedin.com/in/\nandbastidasfierro',
                         href: 'https://www.linkedin.com/in/andbastidasfierro/',
                         colour: c.blue,
@@ -43,7 +43,7 @@ export let postItsDB = [
                     },
                     {
                         id: 'instagram',
-                        icon: 'mail',
+                        icon: true,
                         text: '@andbastf',
                         href: 'https://www.instagram.com/andbastf/',
                         colour: c.blue,
@@ -57,14 +57,14 @@ export let postItsDB = [
                     subtext: 'Software Engineer\n' +
                         'Algorithmic Designer\n' +
                         'XR Evangelist',
-                    icon: 'mail',
+
                     postType: t.bentR,
                     colour: c.green,
                 }],
                 [{
                     id: 'more',
                     text: '',
-                    icon: 'mail',
+
                     colour: c.yellow,
                     postType: t.bentL,
                 }]
@@ -76,28 +76,28 @@ export let postItsDB = [
                 [{
                     id: 'frontend',
                     text: 'Frontend\nFrameworks',
-                    icon: 'mail',
+
                     postType: t.bentL,
                     colour: c.green,
                 }],
                 [{
                     id: 'vrar',
                     text: 'VR/AR\nDevelopment',
-                    icon: 'mail',
+
                     postType: t.bentR,
                     colour: c.blue,
                 }],
                 [{
                     id: 'uxui',
                     text: 'UX/UI\nDesign',
-                    icon: 'mail',
+
                     postType: t.stickD,
                     colour: c.red,
                 }],
                 [{
                     id: 'product',
                     text: 'Product\nManagement',
-                    icon: 'mail',
+
                     postType: t.stickU,
                     colour: c.yellow,
                 }]
@@ -112,7 +112,7 @@ export let postItsDB = [
                     text: 'Master in Interactive\nDesign',
                     href: 'http://maedi.com.ar/',
                     subtext: 'mar 2020 » on thesis',
-                    icon: 'mail',
+
                     postType: t.stickU,
                     colour: c.green,
                     size: s.medium,
@@ -122,7 +122,7 @@ export let postItsDB = [
                     text: 'System & Computer Engineering',
                     href: 'https://www.puce.edu.ec/ingenieria-en-sistemas-de-informacion/',
                     subtext: 'ago 2010 » dec 2016',
-                    icon: 'mail',
+
                     postType: t.bentL,
                     colour: c.yellow,
                     size: s.medium,
@@ -140,7 +140,7 @@ export let postItsDB = [
                         id: 'halliburton',
                         text: 'Content Manager',
                         subtext: 'jun 2014 » jan 2015',
-                        icon: 'mail',
+
                         postType: t.bentL,
                         colour: c.red,
                         size: s.small,
@@ -148,7 +148,7 @@ export let postItsDB = [
                         id: 'atiko7',
                         text: 'Branding\nWordpress Dev',
                         subtext: 'sep 2013 » mar 2014',
-                        icon: 'mail',
+
                         postType: t.stickU,
                         colour: c.yellow,
                         size: s.small,
@@ -160,7 +160,7 @@ export let postItsDB = [
                         text: 'Qienna Wealth\nManagement Inc.',
                         href: 'https://www.quiena.com/',
                         subtext: 'Co-founder',
-                        icon: 'mail',
+
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.medium,
@@ -169,7 +169,7 @@ export let postItsDB = [
                         id: 'productmanager',
                         text: 'Product\nManager',
                         subtext: 'jun 2021 » today',
-                        icon: 'mail',
+
                         postType: t.stickU,
                         colour: c.green,
                         size: s.small,
@@ -178,7 +178,7 @@ export let postItsDB = [
                         id: 'uxuileader',
                         text: 'UX/UI\nLeader',
                         subtext: 'nov 2020 » jun 2021',
-                        icon: 'mail',
+
                         postType: t.bentR,
                         colour: c.red,
                         size: s.small,
@@ -187,7 +187,7 @@ export let postItsDB = [
                         id: 'frontenddev',
                         text: 'Frontend\nDev',
                         subtext: 'jan 2016 » nov 2020',
-                        icon: 'mail',
+
                         postType: t.stickD,
                         colour: c.green,
                         size: s.small,
@@ -253,9 +253,10 @@ export let postItsDB = [
 
                     {
                         id: 'youtube',
+                        icon: true,
                         text: 'youtube.com/user/andzofficial',
                         href: 'https://www.youtube.com/user/andzofficial/videos',
-                        icon: 'mail',
+
                         postType: t.bentR,
                         colour: c.red,
                         size: s.small,
@@ -263,9 +264,10 @@ export let postItsDB = [
 
                     {
                         id: 'behance',
+                        icon: true,
                         text: 'be.net/andbastf',
                         href: 'https://www.behance.net/andbastf',
-                        icon: 'mail',
+
                         postType: t.stickD,
                         colour: c.green,
                         size: s.small,
@@ -273,7 +275,7 @@ export let postItsDB = [
                     {
                         id: 'last',
                         text: '',
-                        icon: 'mail',
+
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.small,

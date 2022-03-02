@@ -147,6 +147,12 @@
         justify-content: center;
         z-index: 10;
         bottom: 3%;
+        transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
+    }
+    @media all and (min-width: 1360px) {
+        .menu-wrapper {
+            bottom: 90%;
+        }
     }
     .menu-button{
         background: #ffffff;

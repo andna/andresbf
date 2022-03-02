@@ -1,5 +1,8 @@
 <script>
     export let postData
+
+    import Icon from '$lib/icon/icon.svelte';
+
     let currentPostType = postData.postType || 0
     let currentColor = postData.colour || 0
 
@@ -79,17 +82,25 @@
 
 
 
-    let fontSizes = [
-
+    let textColors = [
+        "#9B6475",
+        "#2C8378",
+        "#487AA5",
+        "#AA8B5C"
     ];
 
 </script>
-<div class="container-postit
-    container-postit-color-{currentColor}
+<div   on:click={startFadeColor}  class="container-postit
     postit-{postData.id}
     container-postit-{currentPostType}
     {postData.href ? 'is-link' : ''}" style={containerSize}>
-    <a href={postData.href} target="_blank">
+    <a href={postData.href} target="_blank" style="color: {textColors[currentColor]}">
+
+        {#if postData.icon}
+            <div class="postit-icon">
+                <Icon id={postData.id} color={textColors[currentColor]}/>
+            </div>
+        {/if}
         <div class="container-postit-content  postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
             {#if postData.text}
                 <div class="postit-text">
