@@ -90,25 +90,36 @@
     ];
 
 </script>
-<div   on:click={startFadeColor}  class="container-postit
+<div on:click={startFadeColor}  class="container-postit
     postit-{postData.id}
     container-postit-{currentPostType}
     {postData.href ? 'is-link' : ''}" style={containerSize}>
     <a href={postData.href} target="_blank" style="color: {textColors[currentColor]}">
-
-        {#if postData.icon}
-            <div class="postit-icon">
-                <Icon id={postData.id} color={textColors[currentColor]}/>
-            </div>
-        {/if}
         <div class="container-postit-content  postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
+
+            {#if postData.icon}
+                <div class="postit-icon postit-small-icon">
+                    <Icon id={postData.id} color={textColors[currentColor]}/>
+                </div>
+            {/if}
+
             {#if postData.text}
                 <div class="postit-text">
                         {@html postData.text}</div>{/if}{#if postData.subtext}
-            <div class="postit-subtext">
-                {@html postData.subtext}
-            </div>
-        {/if}
+                <div class="postit-subtext">
+                    {@html postData.subtext}
+                </div>
+            {/if}
+
+            {#if postData.bigIcons}
+                <div class="postit-icon-big-container">
+                    {#each postData.bigIcons as bigIcon}
+                        <div class="postit-icon postit-big-icon">
+                            <Icon id={bigIcon}/>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
         </div>
 
         {#if currentPostType === 4}
@@ -229,6 +240,29 @@
         </div>
 
 
+        {#if currentPostType === 0}
+        <div class="container-detail-svg">
+            <svg width="100%" height="10%" viewBox="0 0 223 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <mask id="mask0_{postData.id}_42" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="223" height="101">
+                    <path d="M11.4988 0H221.999C221.999 7.04556 224.11 -7.74518 221.999 7.04556C216.082 48.5 165.499 69.5 111.499 82C83.3199 88.5229 56.9441 92.6717 31.4991 95.2942C22.6688 96.2042 16.1775 96.9566 11.4988 97.5741V99.4685C12.7603 100.336 -13.2696 100.843 11.4988 97.5741V0Z" fill="url(#paint0_linear_{postData.id}_42)"/>
+                </mask>
+                <g mask="url(#mask0_{postData.id}_42)">
+                    <path d="M164.498 2C117.998 73 56.498 91 9.49805 101C111.752 111.113 226.785 64.5868 226.785 15.4262C187.687 42.7213 164.498 2 164.498 2Z" fill="url(#paint1_linear_{postData.id}_42)"/>
+                </g>
+                <defs>
+                    <linearGradient id="paint0_linear_{postData.id}_42" x1="42.3874" y1="-258.999" x2="42.3874" y2="104.556" gradientUnits="userSpaceOnUse">
+                        <stop offset="0.0001" stop-color={currentDetailColors[1][0]}/>
+                        <stop offset="1" stop-color={currentDetailColors[1][1]}/>
+                    </linearGradient>
+                    <linearGradient id="paint1_linear_{postData.id}_42" x1="168.998" y1="2.00002" x2="94.4881" y2="102.638" gradientUnits="userSpaceOnUse">
+                        <stop stop-color={currentDetailColors[1][0]}/>
+                        <stop offset="1"  stop-color={currentDetailColors[1][1]}/>
+                    </linearGradient>
+                </defs>
+            </svg>
+
+        </div>
+        {/if}
     </a>
 </div>
 
@@ -250,7 +284,7 @@
     .container-postit-content{
         white-space: break-spaces;
         word-break: break-all;
-        padding: 1em;
+        padding: 0 1em;
     }
     .container-postit a{
         text-decoration: none !important;
@@ -271,6 +305,9 @@
     .container-postit svg{
         transition: ease-in-out 0.2s;
         filter: drop-shadow(0 15px 5px rgba(0,0,0,0.1));
+    }
+    .container-detail-svg svg{
+        filter:none;
     }
 
     .container-postit.is-link a:hover{
@@ -307,7 +344,6 @@
     .postit-size-small{
         line-height: 116%;
         font-size: 1em;
-
     }
 
     .postit-mail,
@@ -319,20 +355,50 @@
         text-align: center;
     }
 
-    .container-postit-color-0 a{
-        color: #9B6475;
+    .postit-icon{
+        height: 4em;
     }
-    .container-postit-color-1 a{
-        color: #2C8378;
-    }
-    .container-postit-color-2 a{
-        color: #487AA5;
-    }
-    .container-postit-color-3 a{
-        color: #AA8B5C;
+    .postit-small-icon{
+
+        padding-top: 2em;
     }
 
+    .postit-icon-big-container{
+        flex-flow: row wrap;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .postit-big-icon{
+        width: min-content;
+        transition: 0.2s;
+        cursor: help;
+        filter: opacity(0.8) brightness(1.2) contrast(0.5);
+    }
+
+    .postit-big-icon:hover{
+        filter: opacity(1) brightness(1) contrast(1);
+    }
+    .postit-big-icon:first-child{
+        width: 100%;
+        text-align: center;
+        margin: -1em 0;
+    }
+    .postit-big-icon:nth-child(4){
+        position: absolute;
+        width: 2em;
+        left: calc(50% - 38px);
+        bottom: 1.4em;
+        height: 2em;
+    }
+    .postit-big-icon:nth-child(4) svg{
+        width: 100% !important;
+    }
+    .container-detail-svg{
+        position: absolute;
+        bottom: -1.8%;
+        right: 1.5%;
+        width: 63%;
+        pointer-events: none;
+    }
 </style>
-
-
-

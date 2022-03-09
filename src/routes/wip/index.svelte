@@ -132,8 +132,9 @@
 
 
        <div class="postits-wrapper">
+           <!--
            <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
-
+-->
            {#each postItsData as postItData, i}
                 <div class="group-container" class:container-padding-bottom={i === 0}>
 
@@ -246,7 +247,7 @@
         position: absolute;
         font-size: 80px;
         font-weight: 800;
-        top: -2em;
+        top: -1.6em;
         z-index: -1;
         letter-spacing: -4px;
 

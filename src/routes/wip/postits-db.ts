@@ -77,28 +77,28 @@ export let postItsDB = [
                 [{
                     id: 'frontend',
                     text: 'Frontend\nFrameworks',
-
+                    bigIcons: ['angular', 'react', 'jquery', 'svelte'],
                     postType: t.bentL,
                     colour: c.green,
                 }],
                 [{
                     id: 'vrar',
                     text: 'VR/AR\nDevelopment',
-
+                    bigIcons: ['unity', 'blender', 'unreal'],
                     postType: t.bentR,
                     colour: c.blue,
                 }],
                 [{
                     id: 'uxui',
                     text: 'UX/UI\nDesign',
-
+                    bigIcons: ['figma', 'photoshop', 'aftereffects'],
                     postType: t.stickD,
                     colour: c.red,
                 }],
                 [{
                     id: 'product',
                     text: 'Product\nManagement',
-
+                    bigIcons: ['jira', 'bitbucket', 'confluence'],
                     postType: t.stickU,
                     colour: c.yellow,
                 }]
