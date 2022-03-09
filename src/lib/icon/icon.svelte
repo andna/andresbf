@@ -1,6 +1,6 @@
 <script>
     export let id = 'mail'
-    export let color
+    export let color = null
 </script>
 
 {#if id === 'mail'}

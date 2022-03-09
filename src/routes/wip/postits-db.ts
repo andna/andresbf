@@ -21,6 +21,7 @@ enum s {
 export let postItsDB = [
         {
             id: "about",
+            x: 100, y: 130,
             postItGroups: [
                 [
                     {
@@ -31,6 +32,8 @@ export let postItsDB = [
                         colour: c.blue,
                         postType: t.bentL,
                         size: s.small,
+                        overwriteScrollText: 'contact',
+                        x: 50, y: 160,
                     },
                     {
                         id: 'linkedin',
@@ -40,6 +43,7 @@ export let postItsDB = [
                         colour: c.blue,
                         postType: t.stickU,
                         size: s.small,
+                        notScrollable: true,
                     },
                     {
                         id: 'instagram',
@@ -49,6 +53,7 @@ export let postItsDB = [
                         colour: c.blue,
                         postType: t.bentR,
                         size: s.small,
+                        notScrollable: true,
                     }
                 ],
                 [{
@@ -60,19 +65,22 @@ export let postItsDB = [
 
                     postType: t.bentR,
                     colour: c.green,
+                    x: 320, y: 175,
                 }],
                 [{
-                    id: 'more',
+                    id: 'else',
                     text: '',
                     subtext: 'I live in Buenos Aires... VR... etc etc',
 
                     colour: c.yellow,
                     postType: t.bentL,
+                    x: 683, y: 130
                 }]
             ]
         },
         {
             id: "skills",
+            x: 1640, y: 100,
             postItGroups: [
                 [{
                     id: 'frontend',
@@ -80,6 +88,8 @@ export let postItsDB = [
                     bigIcons: ['angular', 'react', 'jquery', 'svelte'],
                     postType: t.bentL,
                     colour: c.green,
+                    x: 1397, y: 100,
+                    overwriteScrollText: 'Frontend',
                 }],
                 [{
                     id: 'vrar',
@@ -87,6 +97,8 @@ export let postItsDB = [
                     bigIcons: ['unity', 'blender', 'unreal'],
                     postType: t.bentR,
                     colour: c.blue,
+                    overwriteScrollText: 'VR/AR',
+                    x: 1752, y: 100
                 }],
                 [{
                     id: 'uxui',
@@ -94,6 +106,8 @@ export let postItsDB = [
                     bigIcons: ['figma', 'photoshop', 'aftereffects'],
                     postType: t.stickD,
                     colour: c.red,
+                    overwriteScrollText: 'UX/UI',
+                    x: 2113, y: 100
                 }],
                 [{
                     id: 'product',
@@ -101,6 +115,8 @@ export let postItsDB = [
                     bigIcons: ['jira', 'bitbucket', 'confluence'],
                     postType: t.stickU,
                     colour: c.yellow,
+                    x: 2475, y: 100,
+                    overwriteScrollText: 'Product',
                 }]
             ]
         },
@@ -117,16 +133,18 @@ export let postItsDB = [
                     postType: t.stickU,
                     colour: c.green,
                     size: s.medium,
+                    overwriteScrollText: 'is power',
+                    x: 109, y: 971
                     },
                     {
                     id: 'university',
                     text: 'System & Computer Engineering',
                     href: 'https://www.puce.edu.ec/ingenieria-en-sistemas-de-informacion/',
                     subtext: 'ago 2010 » dec 2016',
-
                     postType: t.bentL,
                     colour: c.yellow,
                     size: s.medium,
+                    notScrollable: true,
                     }
                 ],
 
@@ -145,6 +163,8 @@ export let postItsDB = [
                         postType: t.bentL,
                         colour: c.red,
                         size: s.small,
+                        overwriteScrollText: 'past',
+                        x:  710 , y:  967
                     },{
                         id: 'atiko7',
                         text: 'Branding\nWordpress Dev',
@@ -153,6 +173,7 @@ export let postItsDB = [
                         postType: t.stickU,
                         colour: c.yellow,
                         size: s.small,
+                        notScrollable: true,
                 },
                 ],
                 [
@@ -161,10 +182,12 @@ export let postItsDB = [
                         text: 'Qienna Wealth\nManagement Inc.',
                         href: 'https://www.quiena.com/',
                         subtext: 'Co-founder',
+                        overwriteScrollText: 'Quiena',
 
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.medium,
+                        x:  864 , y:  1109
                     },
                     {
                         id: 'productmanager',
@@ -174,6 +197,7 @@ export let postItsDB = [
                         postType: t.stickU,
                         colour: c.green,
                         size: s.small,
+                        notScrollable: true,
                     },
                     {
                         id: 'uxuileader',
@@ -183,6 +207,7 @@ export let postItsDB = [
                         postType: t.bentR,
                         colour: c.red,
                         size: s.small,
+                        notScrollable: true,
                     },
                     {
                         id: 'frontenddev',
@@ -192,6 +217,7 @@ export let postItsDB = [
                         postType: t.stickD,
                         colour: c.green,
                         size: s.small,
+                        notScrollable: true,
                     },
                 ],
                 [
@@ -199,57 +225,67 @@ export let postItsDB = [
                         id: 'quiena1',
                         text: '',
                         postType: 4,
+                        overwriteScrollText: 'recent',
+                        x:  1126 , y:  1110
                     },
                     {
                         id: 'quiena2',
                         text: '',
                         postType: t.polaroid,
+                        notScrollable: true,
                     }
                 ],
             ]
         },
         {
             id: "portfolio",
+            x: 2120, y: 1070,
             postItGroups: [
 
                 [
                     {
-                        id: 'lavaSurf',
-                        text: '',
+                        id: 'spaceO2',
+                        text: 'Space O2 VR',
                         postType: t.polaroid,
+                        x:  1870 , y:  962
                     },
                 ],
                 [
 
+                    {
+                        id: 'lavaSurf',
+                        text: '',
+                        postType: t.polaroid,
+                        x:  2218 , y:  1001
+                    },
                     {
                         id: 'vrDinning',
                         text: '',
                         postType: t.polaroid,
-                    },
-                    {
-                        id: 'Space O2 VR',
-                        text: '',
-                        postType: t.polaroid,
+                        x:  2218 , y:  1270
                     },
                 ],
                 [
 
                     {
-                        id: 'moderaGame',
+                        id: 'moderaIt',
                         text: '',
                         postType: t.polaroid,
+                        x:  2577 , y:  1030
                     },
                     {
                         id: 'Smatchups',
                         text: '',
                         postType: t.polaroid,
+                        x:  2577 , y:  1298
                     },
                 ],
                 [
                     {
-                        id: 'andmore',
+                        id: 'reel',
                         text: '',
                         postType: t.polaroid,
+                        x:  2946 , y:  1026
                     },
 
                     {
@@ -261,6 +297,8 @@ export let postItsDB = [
                         postType: t.bentR,
                         colour: c.red,
                         size: s.small,
+                        overwriteScrollText: 'else...',
+                        x:  2870 , y:  1453
                     },
 
                     {
@@ -272,6 +310,7 @@ export let postItsDB = [
                         postType: t.stickD,
                         colour: c.green,
                         size: s.small,
+                        notScrollable: true,
                     },
                     {
                         id: 'last',
@@ -280,6 +319,7 @@ export let postItsDB = [
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.small,
+                        notScrollable: true,
                     },
                 ],
             ]

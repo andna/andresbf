@@ -7,6 +7,7 @@
 <script>
     import { onMount } from 'svelte'
     import Postit from '$lib/Postit/Postit.svelte';
+    import MediaQuery from '$lib/MediaQuery.svelte';
     import { postItsDB } from './postits-db.ts';
     import logo from './abfLogo.svg';
 
@@ -70,31 +71,62 @@
 
     let postItsData = postItsDB;
 
+    let scrollPositionsDesktop = [];
+    let scrollPositionsMobile = [];
 
-    let scrollPositions = [
-        { id: 'about', x: 100, y: 130 },
-        { id: 'skills', x: 1640, y: 100 },
-        { id: 'eduxperience', x: 400, y: 1000 },
-        { id: 'portfolio', x: 2120, y: 1070 },
-    ]
+    postItsData.forEach(data => {
+        if(data.id != 'experience'){
+            scrollPositionsDesktop.push(data.id == 'education' ?
+                { id: 'eduxperience', text: 'Education & Experience', x: 400, y: 1000 }                :
+                {id: data.id, x: data.x, y: data.y });
+        }
+        data.postItGroups.forEach(group => {
+            group.forEach(postit => {
+                if(!postit.notScrollable){
+                    scrollPositionsMobile.push(
+                        { id: postit.id,
+                            text: postit.overwriteScrollText || postit.id,
+                            category: data.id,
+                            x: postit.x,
+                            y: postit.y,
+                        }
+                    )
+                }
+            });
+        });
+
+        //move name first
+        var element = scrollPositionsMobile[1];
+        scrollPositionsMobile.splice(1, 1);
+        scrollPositionsMobile.splice(0, 0, element);
+
+    });
+
 
     let currentScrollpos = 0
 
-    function scrollTo(pos){
-        console.log(pos)
-        window.scrollTo( scrollPositions[pos].x, scrollPositions[pos].y)
+    function scrollTo(pos, arr){
+        window.scrollTo( arr[pos].x, arr[pos].y)
     }
 
-    function changeScrollPos(pos){
-        if(pos > scrollPositions.length - 1){
+    function changeScrollPos(pos, isDesktop = null){
+        var arr = isDesktop ? scrollPositionsDesktop : scrollPositionsMobile;
+        if(pos > arr.length - 1){
             pos = 0
         }
         if(pos < 0){
-            pos = scrollPositions.length - 1
+            pos = arr.length - 1
         }
         currentScrollpos = pos
-        scrollTo(pos)
+        scrollTo(pos, arr)
     }
+
+    var menuExpanded;
+
+    function expandMenu(){
+        menuExpanded = !menuExpanded;
+    }
+
 </script>
 <svelte:window on:scroll={onScrollEvent}
                on:keyup={onKeyUp}
@@ -107,20 +139,26 @@
     </div>
 
     <div class="menu-wrapper">
-        <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1)}> b </div>
-        <div class="menu-button menu-button-navigation">
-            <div >o</div>
-            <div>
-                <div>experience</div>
-                <div>Space O2 VR</div>
-            </div>
-            <div>
-                <p>
-                    1/2
-                </p>
-            </div>
-        </div>
-        <div class="menu-button menu-button-back"  on:click={() => changeScrollPos(currentScrollpos + 1)}> f </div>
+        <MediaQuery query="(min-width: 1360px)" let:matches>
+            {#if matches}
+                <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1, true)}>  </div>
+                <div class="menu-button menu-button-navigation">
+                    <div class="menu-title">{scrollPositionsDesktop[currentScrollpos] ? (scrollPositionsDesktop[currentScrollpos].text || scrollPositionsDesktop[currentScrollpos].id) : ''}</div>
+                </div>
+                <div class="menu-button menu-button-forward"  on:click={() => changeScrollPos(currentScrollpos + 1, true)}>  </div>
+            {:else}
+                <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1)}>  </div>
+                <div class="menu-button menu-button-navigation" on:click={expandMenu}>
+                    <div class="menu-button-expand" class:menu-button-expand-expanded={menuExpanded}><div></div></div>
+                    <div>
+                        <div class="menu-category">{scrollPositionsMobile[currentScrollpos].category}</div>
+                        <div class="menu-title">{scrollPositionsMobile[currentScrollpos].text || scrollPositionsMobile[currentScrollpos].id}</div>
+                    </div>
+                    <div class="menu-button-counter">{currentScrollpos + 1} of {scrollPositionsMobile.length}</div>
+                </div>
+                <div class="menu-button menu-button-forward"  on:click={() => changeScrollPos(currentScrollpos + 1)}>  </div>
+            {/if}
+        </MediaQuery>
     </div>
     <div id="wrapper"
          on:mouseenter={() => blur()}
@@ -158,6 +196,9 @@
 </div>
 
 <style>
+    :root{
+        --dark: #859aac;
+    }
     .logo{
         position: fixed;
         left: 2vh;
@@ -174,7 +215,7 @@
         height: 5em;
         align-items: center;
         justify-content: center;
-        z-index: 10;
+        z-index: 100;
         bottom: 3%;
         transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
     }
@@ -200,13 +241,91 @@
         height: 60px;
         cursor: pointer;
         user-select: none;
-
+        position: relative;
+        line-height: 1.2em;
+        color: var(--dark);
     }
+    .menu-button-expand>div,
+    .menu-button-expand:before,
+    .menu-button-expand:after,
+    .menu-button-back:before,
+    .menu-button-forward:before,
+    .menu-button-back:after,
+    .menu-button-forward:after{
+        content: ' ';
+        position: absolute;
+        width: 2px;
+        height: 11px;
+        background: var(--dark);
+        border-radius: 59px;
+        transform: rotate(45deg) translate(-4px, -2px);
+        transition: ease-in-out 0.2s;
+    }
+
+    .menu-button-back:after{
+        transform: rotate(-45deg) translate(-3px, 1px);
+    }
+
+    .menu-button-forward:before{
+        transform: rotate(-45deg) translate(4px, -2px);
+    }
+
+    .menu-button-forward:after{
+        transform: rotate(45deg) translate(3px, 1px);
+    }
+    .menu-button-expand:before{
+        transform: rotate(90deg) translate(-16px, 0px);
+    }
+
+    .menu-button-expand > div{
+        transform: rotate(90deg) translate(-4px, -16px);
+    }
+    .menu-button-expand:after{
+        transform: rotate(90deg) translate(-10px, 0px);
+    }
+    .menu-button-expand:before,
+    .menu-button-expand:after,
+    .menu-button-expand > div{
+        height: 16px;
+    }
+
+    .menu-button-expand-expanded:before{
+        transform: rotate(45deg) translate(-8px, -5px);
+    }
+    .menu-button-expand-expanded > div{
+        transform: rotate(135deg) translate(-17px, -4px);
+    }
+    .menu-button-expand-expanded:after{
+        height: 0;
+        transform: rotate(90deg) translate(0px, 0px);
+    }
+
     .menu-button:last-child{
         margin-right: 0;
     }
+    .menu-button-counter,
+    .menu-button-expand{
+        width: 40px;
+        font-size: 65%;
+        letter-spacing: -.4px;
+    }
+    .menu-button-counter{
+        text-align: right;
+    }
     .menu-button-navigation{
         flex-grow: 1;
+    }
+    .menu-title{
+        font-weight: 800;
+        letter-spacing: -.6px;
+        min-width: 110px;
+    }
+    .menu-category{
+        font-size: 75%;
+    }
+    .menu-title,
+    .menu-category{
+
     }
     .postits-wrapper{
         flex-flow: row wrap;
