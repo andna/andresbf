@@ -85,7 +85,11 @@ export let postItsDB = [
                 [{
                     id: 'frontend',
                     text: 'Frontend\nFrameworks',
-                    bigIcons: ['angular', 'react', 'jquery', 'svelte'],
+                    bigIcons: [
+                        {id:'angular', tooltip: 'Angular 2+'},
+                        {id:'react', tooltip: 'ReactJS &\nReact Native'},
+                        {id:'jquery', tooltip: 'Jquery'},
+                        {id:'svelte', tooltip: 'Svelte'},],
                     postType: t.bentL,
                     colour: c.green,
                     x: 1397, y: 100,
@@ -94,7 +98,10 @@ export let postItsDB = [
                 [{
                     id: 'vrar',
                     text: 'VR/AR\nDevelopment',
-                    bigIcons: ['unity', 'blender', 'unreal'],
+                    bigIcons: [
+                        {id:'unity', tooltip: 'Unity'},
+                        {id:'blender', tooltip: 'Blender'},
+                        {id:'unreal', tooltip: 'Unreal\nEngine'},],
                     postType: t.bentR,
                     colour: c.blue,
                     overwriteScrollText: 'VR/AR',
@@ -103,7 +110,10 @@ export let postItsDB = [
                 [{
                     id: 'uxui',
                     text: 'UX/UI\nDesign',
-                    bigIcons: ['figma', 'photoshop', 'aftereffects'],
+                    bigIcons:[
+                        {id:'figma', tooltip: 'Figma'},
+                        {id:'photoshop', tooltip: 'Photoshop'},
+                        {id:'aftereffects', tooltip: 'After Effects'},],
                     postType: t.stickD,
                     colour: c.red,
                     overwriteScrollText: 'UX/UI',
@@ -112,7 +122,10 @@ export let postItsDB = [
                 [{
                     id: 'product',
                     text: 'Product\nManagement',
-                    bigIcons: ['jira', 'bitbucket', 'confluence'],
+                    bigIcons: [
+                        {id:'jira', tooltip: 'Jira'},
+                        {id:'bitbucket', tooltip: 'Bitbucket\n<small>(and other VCS)</small>'},
+                        {id:'confluence', tooltip: 'Confluence\n<small>(and other\ncollab tools)</small>'},],
                     postType: t.stickU,
                     colour: c.yellow,
                     x: 2475, y: 100,

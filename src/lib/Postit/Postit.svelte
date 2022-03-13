@@ -94,7 +94,7 @@
     postit-{postData.id}
     container-postit-{currentPostType}
     {postData.href ? 'is-link' : ''}" style={containerSize}>
-    <a href={postData.href} target="_blank" style="color: {textColors[currentColor]}">
+    <a href={postData.href || void(0)} target="_blank" style="color: {textColors[currentColor]}">
         <div class="container-postit-content  postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
 
             {#if postData.icon}
@@ -115,7 +115,10 @@
                 <div class="postit-icon-big-container">
                     {#each postData.bigIcons as bigIcon}
                         <div class="postit-icon postit-big-icon">
-                            <Icon id={bigIcon}/>
+                            <span class="big-icon-tooltip">
+                                  {@html bigIcon.tooltip}
+                            </span><Icon id={bigIcon.id}/>
+
                         </div>
                     {/each}
                 </div>
@@ -284,7 +287,9 @@
     .container-postit-content{
         white-space: break-spaces;
         word-break: break-all;
-        padding: 0 1em;
+        padding: 1em;
+        display: flex;
+        flex-direction: column;
     }
     .container-postit a{
         text-decoration: none !important;
@@ -374,15 +379,51 @@
         transition: 0.2s;
         cursor: help;
         filter: opacity(0.8) brightness(1.2) contrast(0.5);
+        position: relative;
+    }
+    .big-icon-tooltip{
+        position: absolute;
+        font-size: 15px;
+        line-height: 18px;
+        font-weight: 800;
+        background: #525252;
+        padding: 7px;
+        text-align: center;
+        border-radius: 5px;
+        bottom: 100%;
+        color: white;
+        white-space: pre;
+        margin-left: 10px;
+        transform: scale(0);
+        transform-origin: 50% 160%;
+        transition: ease-in 0.2s;
+        user-select: none;
+    }
+
+    .big-icon-tooltip:after{
+        content: ' ';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 100%;
+        left: calc(50% - 8px);
+        border-color: #525252 transparent transparent;
+        border-style: dashed;
+        border-width: 8px;
+        box-sizing: border-box;
     }
 
     .postit-big-icon:hover{
         filter: opacity(1) brightness(1) contrast(1);
     }
+    .postit-big-icon:hover .big-icon-tooltip{
+        transform: scale(1);
+    }
+
     .postit-big-icon:first-child{
         width: 100%;
         text-align: center;
-        margin: -1em 0;
+        margin-bottom: -1em;
     }
     .postit-big-icon:nth-child(4){
         position: absolute;
