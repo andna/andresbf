@@ -97,6 +97,10 @@
     <a href={postData.href || void(0)} target="_blank" style="color: {textColors[currentColor]}">
         <div class="container-postit-content  postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
 
+            {#if postData.wideIcon}
+                <Icon id={postData.id}/>
+            {/if}
+
             {#if postData.icon}
                 <div class="postit-icon postit-small-icon">
                     <Icon id={postData.id} color={textColors[currentColor]}/>
@@ -118,11 +122,11 @@
                             <span class="big-icon-tooltip">
                                   {@html bigIcon.tooltip}
                             </span><Icon id={bigIcon.id}/>
-
                         </div>
                     {/each}
                 </div>
             {/if}
+
         </div>
 
         {#if currentPostType === 4}
@@ -283,6 +287,7 @@
         position: absolute;
         left: 18px;
         top: 14px;
+        z-index: 0;
     }
     .container-postit-content{
         white-space: break-spaces;

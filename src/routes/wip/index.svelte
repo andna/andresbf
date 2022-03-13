@@ -5,13 +5,16 @@
 </svelte:head>
 
 <script>
-    import { onMount } from 'svelte'
+    import { goto } from '$app/navigation'
+    import {page} from '$app/stores'
     import Postit from '$lib/Postit/Postit.svelte';
     import MediaQuery from '$lib/MediaQuery.svelte';
     import { postItsDB } from './postits-db.ts';
     import logo from './abfLogo.svg';
 
+    import { onMount } from 'svelte';
 
+    let isMounted
 
     let pos = { top: 0, left: 0, x: 0, y: 0 }
 
@@ -77,7 +80,7 @@
     postItsData.forEach(data => {
         if(data.id != 'experience'){
             scrollPositionsDesktop.push(data.id == 'education' ?
-                { id: 'eduxperience', text: 'education & experience', x: 400, y: 1000 }
+                { id: 'education_experience', text: 'education & experience', x: 400, y: 1000 }
                 :
                 {id: data.id, x: data.x, y: data.y });
         }
@@ -106,8 +109,8 @@
 
     let currentScrollpos = 0
 
-    function scrollTo(pos, arr){
-        window.scrollTo( arr[pos].x, arr[pos].y)
+    function scrollTo(x, y){
+        window.scrollTo(x, y)
     }
 
     function changeScrollPos(pos, isDesktop = null){
@@ -119,7 +122,16 @@
             pos = arr.length - 1
         }
         currentScrollpos = pos
-        scrollTo(pos, arr)
+
+
+        window.history.replaceState({}, '', `#${arr[currentScrollpos].id}`);
+
+
+        setCssSmoothBehaviour(true)
+        setTimeout(()=>{
+            setCssSmoothBehaviour()
+        }, 800)
+        scrollTo(arr[pos].x, arr[pos].y)
     }
 
     var menuExpanded;
@@ -128,11 +140,49 @@
         menuExpanded = !menuExpanded;
     }
 
+
+    onMount(() => {
+        var currentHash = window.location.hash.substring(1)
+        scrollPositionsMobile.forEach(pos => {
+            if(pos.id == currentHash || pos.category == currentHash){
+                var x = pos.x;
+                var y = pos.y;
+                if(pos.category == currentHash){
+                    var currentPos = scrollPositionsDesktop.find(posDesktop => posDesktop.id === currentHash)
+                    x = currentPos.x;
+                    y = currentPos.y;
+                }
+                scrollTo(x, y)
+                return;
+            }
+        })
+        setTimeout(()=>{
+            isMounted = true;
+        }, 800)
+    });
+
+
+    function setCssSmoothBehaviour(isSmooth){
+        var setTo = isSmooth ? 'smooth;}' : 'initial;}'
+        var endScrollId = "/*endSrollHere*/"
+        var scrollBehaviourTag = "scroll-behavior:"
+
+        var cssFile = document.getElementsByTagName("style")[1].innerHTML
+        var firstSplit = cssFile.split(scrollBehaviourTag)
+        var secondSplit = firstSplit[1].split(endScrollId)
+
+
+        document.getElementsByTagName("style")[1].innerHTML =
+            firstSplit[0] + scrollBehaviourTag + setTo + endScrollId + secondSplit[1]
+
+    }
 </script>
-<svelte:window on:scroll={onScrollEvent}
+<svelte:window
+        on:scroll={onScrollEvent}
                on:keyup={onKeyUp}
                on:keydown={onKeyDown}/>
 <div class="body" class:spacebar={isPressingSpaceBar}>
+    <div class="loader" class:hide-loader={isMounted}></div>
     <div class="logo">
         <img src={logo} alt="ABF" />
         <br>
@@ -381,5 +431,24 @@
 
     .postit-individual.is-link:hover {
         z-index: 10 !important;
+    }
+
+    .loader{
+        position: fixed;
+        z-index: 1000;
+        background: linear-gradient(
+                180deg,
+                var(--primary-color) 0%,
+                var(--secondary-color) 10.45%,
+                var(--tertiary-color) 41.35%
+        );
+        width: 100%;
+        height: 100%;
+        transition: ease-in-out 0.2s;
+        pointer-events: auto;
+    }
+    .hide-loader{
+        opacity: 0;
+        pointer-events: none;
     }
 </style>

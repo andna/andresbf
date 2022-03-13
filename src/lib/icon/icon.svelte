@@ -1,6 +1,12 @@
 <script>
     export let id = 'mail'
     export let color = null
+
+    import IconUba from '$lib/icon/iconUba.svelte';
+    import IconPuce from '$lib/icon/iconPuce.svelte';
+    import IconQuiena from '$lib/icon/iconQuiena.svelte';
+    import IconAtiko7 from '$lib/icon/iconAtiko7.svelte';
+    import IconHalliburton from '$lib/icon/iconHalliburton.svelte';
 </script>
 
 {#if id === 'mail'}
@@ -238,11 +244,15 @@
         </defs>
     </svg>
 
-{:else if id === 'maedi'}
-{:else if id === 'uba'}
-{:else if id === 'puce'}
+{:else if id === 'master'}
+    <IconUba/>
+{:else if id === 'university'}
+    <IconPuce/>
 {:else if id === 'halliburton'}
+    <IconHalliburton/>
 {:else if id === 'atiko7'}
+    <IconAtiko7/>
 {:else if id === 'quiena'}
+    <IconQuiena/>
 
 {/if}

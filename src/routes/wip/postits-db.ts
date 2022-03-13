@@ -88,7 +88,7 @@ export let postItsDB = [
                     bigIcons: [
                         {id:'angular', tooltip: 'Angular 2+'},
                         {id:'react', tooltip: 'ReactJS &\nReact Native'},
-                        {id:'jquery', tooltip: 'Jquery'},
+                        {id:'jquery', tooltip: 'jQuery'},
                         {id:'svelte', tooltip: 'Svelte'},],
                     postType: t.bentL,
                     colour: c.green,
@@ -142,7 +142,7 @@ export let postItsDB = [
                     text: 'Master in Interactive\nDesign',
                     href: 'http://maedi.com.ar/',
                     subtext: 'mar 2020 » on thesis',
-
+                    wideIcon : true,
                     postType: t.stickU,
                     colour: c.green,
                     size: s.medium,
@@ -154,6 +154,7 @@ export let postItsDB = [
                     text: 'System & Computer Engineering',
                     href: 'https://www.puce.edu.ec/ingenieria-en-sistemas-de-informacion/',
                     subtext: 'ago 2010 » dec 2016',
+                    wideIcon : true,
                     postType: t.bentL,
                     colour: c.yellow,
                     size: s.medium,
@@ -172,6 +173,7 @@ export let postItsDB = [
                         id: 'halliburton',
                         text: 'Content Manager',
                         subtext: 'jun 2014 » jan 2015',
+                        wideIcon : true,
 
                         postType: t.bentL,
                         colour: c.red,
@@ -182,6 +184,7 @@ export let postItsDB = [
                         id: 'atiko7',
                         text: 'Branding\nWordpress Dev',
                         subtext: 'sep 2013 » mar 2014',
+                    wideIcon : true,
 
                         postType: t.stickU,
                         colour: c.yellow,
@@ -196,6 +199,7 @@ export let postItsDB = [
                         href: 'https://www.quiena.com/',
                         subtext: 'Co-founder',
                         overwriteScrollText: 'Quiena',
+                        wideIcon : true,
 
                         postType: t.bentL,
                         colour: c.blue,
