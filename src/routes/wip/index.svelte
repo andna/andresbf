@@ -10,9 +10,11 @@
     import Postit from '$lib/Postit/Postit.svelte';
     import MediaQuery from '$lib/MediaQuery.svelte';
     import { postItsDB } from './postits-db.ts';
-    import logo from './abfLogo.svg';
+    import Logo from './abfLogo.svelte';
 
     import { onMount } from 'svelte';
+
+    let breakpointMobile = 1360
 
     let isMounted
 
@@ -24,6 +26,8 @@
     let isPressingSpaceBar
 
     let currentTheme = 0
+
+    let logoDisable = true
 
     function onKeyDown(e){
         if (e.keyCode === 32 && e.target === document.body) {
@@ -72,6 +76,12 @@
     function onScrollEvent(event){
         auxX = Math.round(window.pageXOffset)
         auxY = Math.round(window.pageYOffset)
+
+        var halfHeight = Math.round(window.innerHeight / 2)
+        var halfWidth = Math.round(window.innerWidth / 2)
+        //console.log('x: ', auxX, ', y: ', auxY,',')
+
+        logoDisable = false
     }
 
     let postItsData = postItsDB;
@@ -82,7 +92,7 @@
     postItsData.forEach(data => {
         if(data.id != 'experience'){
             scrollPositionsDesktop.push(data.id == 'education' ?
-                { id: 'education_experience', text: 'education & experience', x: 400, y: 1000 }
+                { id: 'education_experience', text: 'education & experience', x: data.x, y: data.y }
                 :
                 {id: data.id, x: data.x, y: data.y });
         }
@@ -112,6 +122,8 @@
     let currentScrollpos = 0
 
     function scrollTo(x, y){
+        var halfWidth = Math.round(window.innerWidth / 2)
+        var halfHeight = Math.round(window.innerHeight / 2)
         window.scrollTo(x, y)
     }
 
@@ -132,9 +144,11 @@
         window.history.replaceState({}, '#', replaceTo);
 
 
+
         setCssSmoothBehaviour(true)
         setTimeout(()=>{
             setCssSmoothBehaviour()
+            logoDisable = pos == 0
         }, 800)
         scrollTo(arr[pos].x, arr[pos].y)
     }
@@ -172,7 +186,7 @@
 
     function setCssSmoothBehaviour(isSmooth){
         var setTo = isSmooth ? 'smooth' : 'initial'
-        document.documentElement.style.setProperty('scroll-behavior',setTo)
+        //document.documentElement.style.setProperty('scroll-behavior',setTo)
 
     }
 
@@ -180,6 +194,10 @@
         currentTheme != 0 ? currentTheme = 0 : currentTheme = 1
     }
 
+    function returnToStart(){
+        var isDesktop = window.innerWidth >= breakpointMobile
+        changeScrollPos(0, isDesktop)
+    }
 </script>
 <svelte:window
         on:scroll={onScrollEvent}
@@ -187,24 +205,16 @@
                on:keydown={onKeyDown}/>
 <div class="body" class:spacebar={isPressingSpaceBar}>
     <div class="loader" class:hide-loader={isMounted}></div>
-    <div class="logo">
-        <img src={logo} alt="ABF" />
-        <br>
-        <small style="opacity: 0.1"><small>x: {auxX} <br> y: {auxY}</small></small>
+    <div class="logo" on:click={returnToStart} class:logo-disable={logoDisable}>
+        <Logo />
     </div>
 
     <div class="menu-wrapper">
-        <MediaQuery query="(min-width: 1360px)" let:matches>
+        <MediaQuery query="(max-width: {breakpointMobile}px)" let:matches>
             {#if matches}
-                <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1, true)}>  </div>
-                <div class="menu-button menu-button-navigation">
-                    <div class="menu-title">{scrollPositionsDesktop[currentScrollpos] ? (scrollPositionsDesktop[currentScrollpos].text || scrollPositionsDesktop[currentScrollpos].id) : ''}</div>
-                </div>
-                <div class="menu-button menu-button-forward"  on:click={() => changeScrollPos(currentScrollpos + 1, true)}>  </div>
-            {:else}
                 <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1)}>  </div>
                 <div class="menu-button menu-button-navigation" on:click={expandMenu}>
-                    <div class="menu-button-expand" class:menu-button-expand-expanded={menuExpanded}><div></div></div>
+                    <div class="menu-button-expand wip" class:menu-button-expand-expanded={menuExpanded}><div></div></div>
                     <div>
                         <div class="menu-category">{scrollPositionsMobile[currentScrollpos].category}</div>
                         <div class="menu-title">{scrollPositionsMobile[currentScrollpos].text || scrollPositionsMobile[currentScrollpos].id}</div>
@@ -212,11 +222,17 @@
                     <div class="menu-button-counter">{currentScrollpos + 1} of {scrollPositionsMobile.length}</div>
                 </div>
                 <div class="menu-button menu-button-forward"  on:click={() => changeScrollPos(currentScrollpos + 1)}>  </div>
+            {:else}
+                <div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1, true)}>  </div>
+                <div class="menu-button menu-button-navigation">
+                    <div class="menu-title capitilize">{scrollPositionsDesktop[currentScrollpos] ? (scrollPositionsDesktop[currentScrollpos].text || scrollPositionsDesktop[currentScrollpos].id) : ''}</div>
+                </div>
+                <div class="menu-button menu-button-forward"  on:click={() => changeScrollPos(currentScrollpos + 1, true)}>  </div>
             {/if}
         </MediaQuery>
     </div>
 
-    <div class="menu-right">
+    <div class="menu-right wip">
         <div class="menu-button menu-button-theme" on:click={changeTheme}> {currentTheme} </div>
     </div>
     <div id="wrapper"
@@ -231,9 +247,15 @@
 
        <div class="postits-wrapper">
 
-<!--
-            <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=4f7b7d5a-0875-4293-bbb6-1157a34bd36a&env=studio3&turntable=-3" frameborder="0" width="100%" height="480"></iframe>
--->
+
+
+           <div class="ar-iframe-container">
+               <span class="arrow blink_5s">⬆</span>
+
+               <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=4f7b7d5a-0875-4293-bbb6-1157a34bd36a&env=studio3&turntable=-3" frameborder="0" width="100%" height="480"></iframe>
+
+           </div>
+
 
            {#each postItsData as postItData, i}
                 <div id="group-{postItData.id}" class="group-container" class:container-padding-bottom={i === 0}>
@@ -258,35 +280,49 @@
 
     </div>
 </div>
+<div class="reticle"></div>
 
 <style>
+    .reticle{
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        background: red;
+        width: 2px;
+        height: 2px;
+        left: 50%;
+        top: 44%;
+    }
     :root{
         --dark: #859aac;
-    }
-
-    .body-theme-0{
-        background: red;
-    }
-    .body-theme-1{
-        background: blue;
     }
 
 
     .logo{
         position: fixed;
-        left: 2vh;
-        top: 2.5vh;
+        left: 3vh;
+        bottom: 90%;
         width: 13vh;
         z-index: 100;
+        cursor: pointer;
+        transition: 0.2s;
+        opacity: 0.5;
+    }
+    .logo-disable,
+    .logo:hover{
+        opacity: 1;
+    }
+    .logo-disable{
+        pointer-events: none;
     }
     .logo img{ width: 100%; }
     .menu-wrapper{
-        width: 360px;
-        left: calc(50% - 180px);
+        width: 22.5em;
+        right: 7vh;
         transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
     }
     .menu-right{
-        right: 2vw;
+        right: calc(7vw + 20.5em);
     }
 
     .menu-wrapper,
@@ -299,10 +335,15 @@
         align-items: center;
         justify-content: center;
         z-index: 100;
+        transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
     }
     @media all and (max-width: 1360px) {
         .menu-wrapper {
+            right: calc(50% - 180px);
             bottom: 3%;
+        }
+        .menu-right{
+            right: 2vw;
         }
     }
     .menu-button{
@@ -439,21 +480,30 @@
         background-color: #545D62;
         background: #545D62;
     }
-    #ar-iframe{
-        width: 333px;
-        height: 333px;
-        margin-bottom: -200px;
+    .ar-iframe-container{
+
         filter: drop-shadow(20px 18px 7px rgba(0,0,0,.4));
         z-index: 2;
         position: absolute;
-        top: 22em;
-        left: 41em;
+        top: 25.5em;
+        left: 40em;
         transition: 0.2s;
     }
+    #ar-iframe{
+        width: 333px;
+        height: 333px;
+    }
+    .arrow{
+        position: absolute;
+        color: black;
+        right: 21px;
+        top: 50px;
+    }
 
-    #ar-iframe:hover{
+    .ar-iframe-container:hover{
         filter: drop-shadow(10px 10px 3px rgba(0,0,0,.2));
     }
+
     .body{
         font-family: Poppins;
         color: #6C808E;
@@ -504,6 +554,24 @@
         pointer-events: none;
     }
     #group-portfolio{
-        top: -23em;
+        top: -18em;
+    }
+    .wip{
+        visibility: hidden;
+    }
+
+    :global(.blink_1s) {
+        animation: blinker 1s linear infinite;
+    }
+    :global(.blink_5s) {
+        animation: blinker 5s linear infinite;
+    }
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+    .capitilize{
+        text-transform: capitalize;
     }
 </style>

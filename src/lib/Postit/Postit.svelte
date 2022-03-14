@@ -93,6 +93,18 @@
     let containerSize = `height: ${svgSize}px; width: ${svgSize}px;`
 
 
+    let hours = "0"
+    let minutes = "00"
+    if(postData.id == 'else'){
+        setInterval(()=>{
+            const d = new Date();
+            hours = d.getUTCHours() - 3;
+            if(hours < 0){
+                hours = 24 + hours
+            }
+            minutes = d.getUTCMinutes().toString().padStart(2, '0');
+        },1000)
+    }
 
     let textColors = [
         "#9B6475",
@@ -105,8 +117,8 @@
 <div
         class="container-postit
     postit-{postData.id}
-    container-postit-size-{svgSize}
     container-postit-{currentPostType}
+    container-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}
     {postData.href ? 'is-link' : ''}"
         style={containerSize + ' ' + (postData.customStyle ? postData.customStyle : '')}>
     <a href={postData.href || void(0)} target="_blank" style="color: {textColors[currentColor]}">
@@ -130,6 +142,18 @@
                 <div class="postit-subtext">
                     {@html postData.subtext}
                 </div>
+            {/if}
+
+            {#if postData.hasCustomHTML}
+                {#if postData.id == 'else'}
+                    <div class="else-subtext">
+I'm an engineer with a huge passion for joining both the worlds of art and technology.<br>
+I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization we are living in.
+<br>I'm currently based in
+Buenos Aires, Argentina, GMT-3
+(For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
+                    </div>
+                {/if}
             {/if}
 
             {#if postData.bigIcons}
@@ -375,6 +399,12 @@
         line-height: 116%;
 
     }
+
+    .postit-size-medium .postit-text,
+    .postit-size-small .postit-text{
+        margin-bottom: 0.5em;
+    }
+
     .postit-size-small{
         line-height: 116%;
         font-size: 1em;
@@ -389,11 +419,19 @@
         text-align: center;
     }
 
+    .postit-me .postit-subtext{
+        padding-top: 1em;
+    }
+
     .postit-icon{
         height: 4em;
     }
     .postit-wide-icon{
-
+        min-height: 5em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 0.6em;
     }
     .postit-small-icon{
 
@@ -474,9 +512,25 @@
         width: 63%;
         pointer-events: none;
     }
-    .container-postit-size-200 .container-detail-svg{
+    .container-size-medium .container-detail-svg{
+        bottom: -1.8%;
+        right: 2.5%;
+        width: 60%;
+    }
+    .container-size-small .container-detail-svg{
         bottom: -2.8%;
         right: 1.5%;
         width: 61%;
+    }
+    .else-subtext{
+        font-size: 0.44em;
+        word-break: break-word;
+        line-height: 142%;
+        letter-spacing: -0.02em;
+        text-align: justify;
+    }
+
+    .hour-separator{
+        margin: 0 1px;
     }
 </style>

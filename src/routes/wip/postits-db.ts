@@ -21,8 +21,8 @@ enum s {
 export let postItsDB = [
         {
             id: "about",
-            x: 100, y: 130,
-            customTitleStyle: 'top: 3.5em; left: 6em;',
+            x:  177 , y:  190,
+            customTitleStyle: 'top: 3.5em; left: 5.8em;',
             postItGroups: [
                 [
                     {
@@ -34,7 +34,8 @@ export let postItsDB = [
                         postType: t.bentL,
                         size: s.small,
                         overwriteScrollText: 'contact',
-                        x: 43, y: 262,
+                        x:  50 , y:  246 ,
+                        customStyle: 'left: 3em;'
                     },
                     {
                         id: 'linkedin',
@@ -45,6 +46,7 @@ export let postItsDB = [
                         postType: t.stickU,
                         size: s.small,
                         notScrollable: true,
+                        customStyle: 'left: -3em; top: -2em;'
                     },
                     {
                         id: 'instagram',
@@ -55,6 +57,7 @@ export let postItsDB = [
                         postType: t.bentR,
                         size: s.small,
                         notScrollable: true,
+                        customStyle: 'left: 3em; top: -5em;'
                     }
                 ],
                 [{
@@ -66,36 +69,35 @@ export let postItsDB = [
 
                     postType: t.bentR,
                     colour: c.green,
-                    x: 410, y: 0,
-                    customStyle : 'top: -10em; left: 5em'
+                    x: 410, y: 15,
+                    customStyle : 'top: -10em; left: 5em;     padding-top: 3em;'
                 }],
                 [{
                     id: 'else',
                     text: '',
-                    subtext: 'I live in Buenos Aires... VR... etc etc',
-
+                    hasCustomHTML:true,
                     colour: c.yellow,
                     postType: t.bentL,
-                    x: 750, y: 360,
+                    x:  748 , y:  395,
                     customStyle : 'top: 11em; left: 3em',
                 }]
             ]
         },
         {
             id: "skills",
-            x: 1640, y: 100,
+            x:  1728 , y:  124,
             postItGroups: [
                 [{
                     id: 'frontend',
                     text: 'Frontend\nFrameworks',
                     bigIcons: [
-                        {id:'angular', tooltip: 'Angular 2+'},
                         {id:'react', tooltip: 'ReactJS &\nReact Native'},
+                        {id:'angular', tooltip: 'Angular 2+'},
                         {id:'jquery', tooltip: 'jQuery'},
                         {id:'svelte', tooltip: 'Svelte'},],
                     postType: t.bentL,
                     colour: c.green,
-                    x: 1397, y: 100,
+                    x:  1387 , y:  100 ,
                     overwriteScrollText: 'Frontend',
                 }],
                 [{
@@ -108,7 +110,7 @@ export let postItsDB = [
                     postType: t.bentR,
                     colour: c.blue,
                     overwriteScrollText: 'VR/AR',
-                    x: 1752, y: 100
+                    x:  1777 , y:  142 ,
                 }],
                 [{
                     id: 'uxui',
@@ -120,7 +122,7 @@ export let postItsDB = [
                     postType: t.stickD,
                     colour: c.red,
                     overwriteScrollText: 'UX/UI',
-                    x: 2113, y: 100
+                    x: 2173 , y: 142
                 }],
                 [{
                     id: 'product',
@@ -128,42 +130,43 @@ export let postItsDB = [
                     bigIcons: [
                         {id:'jira', tooltip: 'Jira'},
                         {id:'bitbucket', tooltip: 'Bitbucket\n<small>(and other VCS)</small>'},
-                        {id:'confluence', tooltip: 'Confluence\n<small>(and other\ncollab tools)</small>'},],
+                        {id:'confluence', tooltip: 'Confluence\n<small>(and other\ncollab. tools)</small>'},],
                     postType: t.stickU,
                     colour: c.yellow,
-                    x: 2475, y: 100,
+                    x: 2562 , y: 142,
                     overwriteScrollText: 'Product',
                 }]
             ]
         },
         {
             id: "education",
+            x:  490 , y:  1128,
             postItGroups: [
                 [
                     {
                     id: 'master',
                     text: 'Master in Interactive\nDesign',
                     href: 'http://maedi.com.ar/',
-                    subtext: 'mar 2020 » on thesis',
+                    subtext: 'Mar 2020 ➡ On thesis',
                     wideIcon : true,
                     postType: t.stickU,
                     colour: c.green,
                     size: s.medium,
-                    overwriteScrollText: 'is power',
-                    x: 109, y: 971,
-                        customStyle : 'left: 5em;',
+                    overwriteScrollText: 'Tech & Art',
+                    x:  103 , y:  1022 ,
+                    customStyle : 'left: 5em;',
                     },
                     {
                     id: 'university',
                     text: 'System & Computer Engineering',
                     href: 'https://www.puce.edu.ec/ingenieria-en-sistemas-de-informacion/',
-                    subtext: 'ago 2010 » dec 2016',
+                    subtext: 'Ago 2010 ➡ Dec 2016',
                     wideIcon : true,
                     postType: t.bentL,
                     colour: c.yellow,
                     size: s.medium,
                     notScrollable: true,
-                        customStyle : 'top: -4em; padding-top: 2em;',
+                        customStyle : 'top: -4em; padding-top: 1em;',
                     }
                 ],
 
@@ -171,34 +174,35 @@ export let postItsDB = [
         },
         {
             id: "experience",
+            customTitleStyle: 'left: -2em',
             postItGroups: [
                 [
 
                     {
                         id: 'halliburton',
                         text: 'Content Manager',
-                        subtext: 'jun 2014 » jan 2015',
+                        subtext: 'Jun 2014 ➡ Jan 2015',
                         wideIcon : true,
 
                         postType: t.bentL,
                         colour: c.red,
                         size: s.small,
-                        overwriteScrollText: 'past',
-                        x:  710 , y:  967,
+                        overwriteScrollText: 'Past',
+                        x:  560 , y:  1018 ,
 
-                        customStyle : 'left: -5em; top: 6em;',
+                        customStyle : 'left: -1em; top: 1em;',
 
                     },{
                         id: 'atiko7',
                         text: 'Branding\nWordpress Dev',
-                        subtext: 'sep 2013 » mar 2014',
+                        subtext: 'Sep 2013 ➡ Mar 2014',
                     wideIcon : true,
 
                         postType: t.stickU,
                         colour: c.yellow,
                         size: s.small,
                         notScrollable: true,
-                        customStyle : 'top: 3em; padding-top: 2.6em; left: -8em;',
+                        customStyle : 'top: -1em; left: -7em;',
                 },
                 ],
                 [
@@ -210,18 +214,18 @@ export let postItsDB = [
                         overwriteScrollText: 'Quiena',
                         wideIcon : true,
 
-                        postType: t.bentL,
+                        postType: t.bentR,
                         colour: c.blue,
                         size: s.medium,
-                        x:  864 , y:  1109,
+                        x:  886 , y:  1166 ,
                         customStyle : 'left: 5em;'
                     },
                     {
                         id: 'productmanager',
                         text: 'Product\nManager',
-                        subtext: 'jun 2021 » today',
+                        subtext: 'Jun 2021 ➡ Today',
 
-                        postType: t.bentR,
+                        postType: t.stickU,
                         colour: c.green,
                         size: s.small,
                         notScrollable: true,
@@ -230,7 +234,7 @@ export let postItsDB = [
                     {
                         id: 'uxuileader',
                         text: 'UX/UI\nLeader',
-                        subtext: 'nov 2020 » jun 2021',
+                        subtext: 'Nov 2020 ➡ Jun 2021',
 
                         postType: t.stickD,
                         colour: c.red,
@@ -241,9 +245,9 @@ export let postItsDB = [
                     {
                         id: 'frontenddev',
                         text: 'Frontend\nDev',
-                        subtext: 'jan 2016 » nov 2020',
+                        subtext: 'Jan 2016 ➡ Nov 2020',
 
-                        postType: t.stickU,
+                        postType: t.bentL,
                         colour: c.green,
                         size: s.small,
                         notScrollable: true,
@@ -255,8 +259,8 @@ export let postItsDB = [
                         id: 'quiena1',
                         text: '',
                         postType: 4,
-                        overwriteScrollText: 'recent',
-                        x:  1126 , y:  1110,
+                        overwriteScrollText: 'Quiena',
+                        x:  1295 , y:  1130 ,
                         customStyle : 'left: 10em;'
                     },
                     {
@@ -271,8 +275,8 @@ export let postItsDB = [
         },
         {
             id: "portfolio",
-            x: 2120, y: 1070,
-            customTitleStyle: 'top: 3em; left: 0.4em;',
+            x:  2007 , y:  852,
+            customTitleStyle: 'top: -1.6em; left: 0.4em;',
             postItGroups: [
 
                 [
@@ -280,47 +284,46 @@ export let postItsDB = [
                         id: 'spaceO2',
                         text: 'Space O2 VR',
                         postType: t.polaroid,
-                        x:  1870 , y:  962,
-                        customStyle : ' top: 23em;'
+                        x:  1826 , y:  744 ,
                     },
-                ],
-                [
-
                     {
                         id: 'lavaSurf',
                         text: '',
                         postType: t.polaroid,
-                        x:  2218 , y:  1001
-                    },
-                    {
-                        id: 'vrDinning',
-                        text: '',
-                        postType: t.polaroid,
-                        x:  2218 , y:  1270
+                        x:  1826 , y:  1064 ,
                     },
                 ],
                 [
 
                     {
+                        id: 'vrDinning',
+                        text: '',
+                        postType: t.polaroid,
+                        x:  2194 , y:  763 ,
+                    },
+                    {
                         id: 'moderaIt',
                         text: '',
                         postType: t.polaroid,
-                        x:  2577 , y:  1030
+                        x:  2194 , y:  1090 ,
                     },
+                ],
+                [
+
                     {
                         id: 'Smatchups',
                         text: '',
                         postType: t.polaroid,
-                        x:  2577 , y:  1298
+                        x:  2558 , y:  763 ,
                     },
-                ],
-                [
                     {
                         id: 'reel',
                         text: '',
                         postType: t.polaroid,
-                        x:  2946 , y:  1026
+                        x:  2558  , y:  1090
                     },
+                ],
+                [
 
                     {
                         id: 'youtube',
@@ -332,8 +335,8 @@ export let postItsDB = [
                         colour: c.red,
                         size: s.small,
                         overwriteScrollText: 'else...',
-                        x:  2870 , y:  1453,
-                        customStyle: 'left: 6em;'
+                        x:  2937 , y: 858, //y:  962 , //return with last postit
+                        customStyle: 'top: 6em; left: 6em;'
                     },
 
                     {
@@ -346,18 +349,17 @@ export let postItsDB = [
                         colour: c.green,
                         size: s.small,
                         notScrollable: true,
-                        customStyle: 'top: -3em;'
+                        customStyle: 'top: 4em;'
                     },
-                    {
+                    /*{
                         id: 'last',
                         text: '',
-
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.small,
                         notScrollable: true,
-                        customStyle: 'top: -6em; left: 6em;'
-                    },
+                        customStyle: 'top: 2em; left: 6em;'
+                    },*/
                 ],
             ]
         }
