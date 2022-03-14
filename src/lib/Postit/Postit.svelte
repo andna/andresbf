@@ -95,7 +95,7 @@
 
     let hours = "0"
     let minutes = "00"
-    if(postData.id == 'else'){
+    if(postData.id == 'more'){
         setInterval(()=>{
             const d = new Date();
             hours = d.getUTCHours() - 3;
