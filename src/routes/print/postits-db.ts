@@ -22,7 +22,7 @@ export let postItsDB = [
         {
             id: "about",
             x:  177 , y:  130,
-            customTitleStyle: 'top: 0.1em; left: 10.8em;',
+            customTitleStyle: 'top: 3.9em; left: 5.8em;',
             postItGroups: [
                 [
                     {
@@ -71,7 +71,7 @@ export let postItsDB = [
                     postType: t.bentR,
                     colour: c.green,
                     x: 410, y: 0,
-                    customStyle : 'top: -10em; left: 5em;     padding-top: 3.5em;'
+                    customStyle : 'top: -10em; left: 5.3em;     padding-top: 3.5em;'
                 }],
                 [{
                     id: 'more',
