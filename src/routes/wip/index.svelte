@@ -186,7 +186,7 @@
 
     function setCssSmoothBehaviour(isSmooth){
         var setTo = isSmooth ? 'smooth' : 'initial'
-        //document.documentElement.style.setProperty('scroll-behavior',setTo)
+        document.documentElement.style.setProperty('scroll-behavior',setTo)
 
     }
 
@@ -251,9 +251,9 @@
 
            <div class="ar-iframe-container">
                <span class="arrow blink_5s">⬆</span>
-<!--
+
                <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=4f7b7d5a-0875-4293-bbb6-1157a34bd36a&env=studio3&turntable=-3" frameborder="0" width="100%" height="480"></iframe>
--->
+
            </div>
 
 
