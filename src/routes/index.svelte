@@ -14,7 +14,7 @@
 
 	import { onMount } from 'svelte';
 
-	let breakpointMobile = 1360
+	let breakpointMobile = 1500
 
 	let isMounted
 
@@ -138,10 +138,13 @@
 		currentScrollpos = pos
 
 
-		//todo leave url empty when is 1st pos
-		//var replaceTo = currentScrollpos == 0 ? '' : `#${arr[currentScrollpos].id}`
 		var replaceTo = `#${arr[currentScrollpos].id}`
-		window.history.replaceState({}, '#', replaceTo);
+		if(currentScrollpos == 0){
+			window.history.pushState({}, "<name>", " ")
+		} else {
+			window.history.replaceState({}, '#', replaceTo);
+
+		}
 
 
 
@@ -343,7 +346,7 @@
 		z-index: 100;
 		transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
 	}
-	@media all and (max-width: 1360px) {
+	@media all and (max-width: 1500px) {
 		.menu-wrapper {
 			right: calc(50% - 180px);
 			bottom: 3%;

@@ -110,7 +110,7 @@
         "#9B6475",
         "#2C8378",
         "#487AA5",
-        "#5F4013"
+        "#AA8B5C"
     ];
 
 </script>
@@ -145,6 +145,10 @@
             {/if}
 
             {#if postData.hasCustomHTML}
+
+                {#if postData.id == 'me'}
+                    <img class="avatar" alt="avatar" src="/avatar.png"/>
+                {/if}
                 {#if postData.id == 'more'}
                     <div class="else-subtext">
 I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.<br>
@@ -153,6 +157,17 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
 Buenos Aires, Argentina, GMT-3
 (For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
                     </div>
+                {/if}
+                {#if postData.id == 'last'}
+                    <div class="last-subtext">
+This website was developed  in SvelteKit.
+It’s manteined in this <a href="https://gitlab.com/andbastf/andbastf" target="_blank">Gitlab project</a>
+and was designed in this <a href="https://www.figma.com/file/yAaTAFz5Mq7IEo7mgKz68U/Confluence-Variable?node-id=0%3A1" target="_blank">Figma file</a>
+
+It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank">Alec Babala’s</a>
+
+                    </div>
+
                 {/if}
             {/if}
 
@@ -543,15 +558,35 @@ Buenos Aires, Argentina, GMT-3
         right: 1.5%;
         width: 61%;
     }
+
     .else-subtext{
         font-size: 0.44em;
         word-break: break-word;
         line-height: 142%;
         letter-spacing: -0.02em;
         text-align: justify;
+        color: #5F4013;
+    }
+    .last-subtext{
+        font-size: 0.8em;
+        word-break: break-word;
+        line-height: 130%;
+        text-align: center;
+        padding-top: 0.8em;
+        font-weight: 800;
+    }
+    .last-subtext a{
+        text-decoration: underline !important;
+        color: inherit !important;
     }
 
     .hour-separator{
         margin: 0 1px;
+    }
+    .avatar{
+        position: absolute;
+        width: 200px;
+        left: calc(50% - 103px);
+        top: -102px;
     }
 </style>

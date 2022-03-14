@@ -21,8 +21,8 @@ enum s {
 export let postItsDB = [
         {
             id: "about",
-            x:  177 , y:  190,
-            customTitleStyle: 'top: 3.5em; left: 5.8em;',
+            x:  177 , y:  130,
+            customTitleStyle: 'top: 0.1em; left: 10.8em;',
             postItGroups: [
                 [
                     {
@@ -67,10 +67,11 @@ export let postItsDB = [
                         'Algorithmic Designer\n' +
                         'XR Evangelist',
 
+                    hasCustomHTML:true,
                     postType: t.bentR,
                     colour: c.green,
-                    x: 410, y: 15,
-                    customStyle : 'top: -10em; left: 5em;     padding-top: 3em;'
+                    x: 410, y: 0,
+                    customStyle : 'top: -10em; left: 5em;     padding-top: 3.5em;'
                 }],
                 [{
                     id: 'more',
@@ -79,7 +80,7 @@ export let postItsDB = [
                     colour: c.yellow,
                     postType: t.bentL,
                     x:  748 , y:  395,
-                    customStyle : 'top: 11em; left: 3em',
+                    customStyle : 'top: 11em; left: 3em; color: #5F4013;',
                 }]
             ]
         },
@@ -369,7 +370,7 @@ export let postItsDB = [
                         colour: c.red,
                         size: s.small,
                         overwriteScrollText: 'Else...',
-                        x:  2937 , y: 858, //y:  962 , //return with last postit
+                        x:  2930 , y: 968 ,
                         customStyle: 'top: 6em; left: 6em;'
                     },
 
@@ -385,15 +386,16 @@ export let postItsDB = [
                         notScrollable: true,
                         customStyle: 'top: 4em;'
                     },
-                    /*{
+                    {
                         id: 'last',
                         text: '',
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.small,
                         notScrollable: true,
-                        customStyle: 'top: 2em; left: 6em;'
-                    },*/
+                        customStyle: 'top: 2em; left: 6em;',
+                        hasCustomHTML: true,
+                    },
                 ],
             ]
         }
