@@ -1,5 +1,8 @@
 <script>
     export let postData
+    export let currentTheme = 0
+
+    $: currentTheme && startFadeColor(true)
 
     import Icon from '$lib/icon/icon.svelte';
 
@@ -14,12 +17,17 @@
 
     let svgSize = sizes[postData.size] ? sizes[postData.size].svg : 360
 
-    import { svgColorsDB } from './svg-colors-db.js';
+    import { postitThemes, monokai } from './postitThemes.js';
 
-    let svgColors = svgColorsDB
+    let themes = [
+
+    ]
+
+    let svgColors = postitThemes
+    let svgColors2 = monokai
 
 
-    function returnColor(type, postColor, detail,pos){
+    function returnColor(type, postColor, detail, pos){
         let color = svgColors[type][postColor][detail][pos]
         return `rgb( ${color.r}, ${color.g}, ${color.b})`
     }
@@ -38,20 +46,24 @@
     let animationLength = 500;
     let isFading = false;
 
-    function startFadeColor() {
+    function startFadeColor(newTheme) {
         if(!isFading){
-            isFading = true;
+            isFading = true
+            var themeTo = newTheme ? svgColors2 : svgColors
+            var nextColor = newTheme ? currentColor : getNextColor()
             currentDetailColors.forEach((detail, detailIndex) => {
 
                 detail.forEach((color, index) => {
                     let start = svgColors[currentPostType][currentColor][detailIndex][index]
-                    let end = svgColors[currentPostType][getNextColor()][detailIndex][index]
+                    let end = themeTo[currentPostType][nextColor][detailIndex][index]
                     fadeColor(start, end, detailIndex, index)
                 })
             });
             setTimeout(function(){
                 isFading = false;
-                currentColor = getNextColor();
+                if(!newTheme){
+                    currentColor = getNextColor();
+                }
             },animationLength);
         }
     }
@@ -90,15 +102,20 @@
     ];
 
 </script>
-<div on:click={startFadeColor}  class="container-postit
+<div
+        class="container-postit
     postit-{postData.id}
+    container-postit-size-{svgSize}
     container-postit-{currentPostType}
-    {postData.href ? 'is-link' : ''}" style={containerSize}>
+    {postData.href ? 'is-link' : ''}"
+        style={containerSize + ' ' + (postData.customStyle ? postData.customStyle : '')}>
     <a href={postData.href || void(0)} target="_blank" style="color: {textColors[currentColor]}">
         <div class="container-postit-content  postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
 
             {#if postData.wideIcon}
-                <Icon id={postData.id}/>
+                <div class="postit-wide-icon">
+                    <Icon id={postData.id}/>
+                </div>
             {/if}
 
             {#if postData.icon}
@@ -276,6 +293,13 @@
 <style>
     .container-postit{
         position: relative;
+        margin: 0 8px 8px 0;
+        box-sizing: border-box;
+    }
+
+
+    :global(#group-skills .container-postit){
+        margin: 0 32px 8px 0;
     }
     .container-postit-svg{
         position: absolute;
@@ -368,9 +392,12 @@
     .postit-icon{
         height: 4em;
     }
+    .postit-wide-icon{
+
+    }
     .postit-small-icon{
 
-        padding-top: 2em;
+        padding: 2em 0 0.5em;
     }
 
     .postit-icon-big-container{
@@ -446,5 +473,10 @@
         right: 1.5%;
         width: 63%;
         pointer-events: none;
+    }
+    .container-postit-size-200 .container-detail-svg{
+        bottom: -2.8%;
+        right: 1.5%;
+        width: 61%;
     }
 </style>

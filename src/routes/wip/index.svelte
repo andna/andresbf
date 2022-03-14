@@ -23,6 +23,8 @@
 
     let isPressingSpaceBar
 
+    let currentTheme = 0
+
     function onKeyDown(e){
         if (e.keyCode === 32 && e.target === document.body) {
             e.preventDefault();
@@ -124,7 +126,10 @@
         currentScrollpos = pos
 
 
-        window.history.replaceState({}, '', `#${arr[currentScrollpos].id}`);
+        //todo leave url empty when is 1st pos
+        //var replaceTo = currentScrollpos == 0 ? '' : `#${arr[currentScrollpos].id}`
+        var replaceTo = `#${arr[currentScrollpos].id}`
+        window.history.replaceState({}, '#', replaceTo);
 
 
         setCssSmoothBehaviour(true)
@@ -143,6 +148,7 @@
 
     onMount(() => {
         var currentHash = window.location.hash.substring(1)
+        var foundHash = false
         scrollPositionsMobile.forEach(pos => {
             if(pos.id == currentHash || pos.category == currentHash){
                 var x = pos.x;
@@ -153,29 +159,27 @@
                     y = currentPos.y;
                 }
                 scrollTo(x, y)
+                foundHash = true
                 return;
             }
         })
-        setTimeout(()=>{
-            isMounted = true;
-        }, 800)
+        if(!foundHash){
+            scrollTo(scrollPositionsMobile[0].x,scrollPositionsMobile[0].y)
+        }
+        isMounted = true;
     });
 
 
     function setCssSmoothBehaviour(isSmooth){
-        var setTo = isSmooth ? 'smooth;}' : 'initial;}'
-        var endScrollId = "/*endSrollHere*/"
-        var scrollBehaviourTag = "scroll-behavior:"
-
-        var cssFile = document.getElementsByTagName("style")[1].innerHTML
-        var firstSplit = cssFile.split(scrollBehaviourTag)
-        var secondSplit = firstSplit[1].split(endScrollId)
-
-
-        document.getElementsByTagName("style")[1].innerHTML =
-            firstSplit[0] + scrollBehaviourTag + setTo + endScrollId + secondSplit[1]
+        var setTo = isSmooth ? 'smooth' : 'initial'
+        document.documentElement.style.setProperty('scroll-behavior',setTo)
 
     }
+
+    function changeTheme(){
+        currentTheme != 0 ? currentTheme = 0 : currentTheme = 1
+    }
+
 </script>
 <svelte:window
         on:scroll={onScrollEvent}
@@ -211,7 +215,12 @@
             {/if}
         </MediaQuery>
     </div>
+
+    <div class="menu-right">
+        <div class="menu-button menu-button-theme" on:click={changeTheme}> {currentTheme} </div>
+    </div>
     <div id="wrapper"
+         class="wrapper-theme-{currentTheme}"
          on:mouseenter={() => blur()}
          on:mouseout={() => blur(true)}
          on:blur={() => blur(true)}
@@ -222,18 +231,22 @@
 
        <div class="postits-wrapper">
 
-           <!--<iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=d2ea42d2-dfb8-44e0-9f1f-ee8ea6303e82&env=studio1&turntable=3" frameborder="0" width="100%" height="480"></iframe>
+<!--
+            <iframe title="ar-iframe" id="ar-iframe" src="https://app.vectary.com/viewer/v1/?model=4f7b7d5a-0875-4293-bbb6-1157a34bd36a&env=studio3&turntable=-3" frameborder="0" width="100%" height="480"></iframe>
 -->
-           {#each postItsData as postItData, i}
-                <div class="group-container" class:container-padding-bottom={i === 0}>
 
-                    <div class="group-title">{postItData.id}</div>
+           {#each postItsData as postItData, i}
+                <div id="group-{postItData.id}" class="group-container" class:container-padding-bottom={i === 0}>
+
+                    <div class="group-title" style="{postItData.customTitleStyle ? postItData.customTitleStyle : ''}">
+                        {postItData.id}
+                    </div>
                     <div  class="postits-group">
                         {#each postItData.postItGroups as postItGroup}
                             <div class="postits-group-column">
                                 {#each postItGroup as postIt, j (postIt.id)}
                                     <div class="postit-individual {postIt.href ? 'is-link' : ''}" style="z-index: {postItGroup.length - j}">
-                                        <Postit postData={postIt} />
+                                        <Postit postData={postIt} currentTheme={currentTheme} />
                                     </div>
                                 {/each}
                             </div>
@@ -250,6 +263,15 @@
     :root{
         --dark: #859aac;
     }
+
+    .body-theme-0{
+        background: red;
+    }
+    .body-theme-1{
+        background: blue;
+    }
+
+
     .logo{
         position: fixed;
         left: 2vh;
@@ -259,20 +281,28 @@
     }
     .logo img{ width: 100%; }
     .menu-wrapper{
-        position: fixed;
         width: 360px;
         left: calc(50% - 180px);
+        transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
+    }
+    .menu-right{
+        right: 2vw;
+    }
+
+    .menu-wrapper,
+    .menu-right{
+
+        bottom: 90%;
+        position: fixed;
         display: flex;
-        height: 5em;
+        height: 4em;
         align-items: center;
         justify-content: center;
         z-index: 100;
-        bottom: 3%;
-        transition: cubic-bezier(0.61, 0.38, 0.13, 1.01) 2s;
     }
-    @media all and (min-width: 1360px) {
+    @media all and (max-width: 1360px) {
         .menu-wrapper {
-            bottom: 90%;
+            bottom: 3%;
         }
     }
     .menu-button{
@@ -391,16 +421,38 @@
         height: 1800px;
         user-select: none;
         padding: 42vh 12vw 12vh 35vw;
+        transition: ease-in 0.2s;
+    }
+
+    .wrapper-theme-0{
+
+        background-color: var(--primary-color);
+        background: linear-gradient(
+                180deg,
+                var(--primary-color) 0%,
+                var(--secondary-color) 10.45%,
+                var(--tertiary-color) 41.35%
+        );
+    }
+    .wrapper-theme-1{
+
+        background-color: #545D62;
+        background: #545D62;
     }
     #ar-iframe{
         width: 333px;
         height: 333px;
         margin-bottom: -200px;
-        filter: drop-shadow(20px 28px 6px rgba(0,0,0,.3));
+        filter: drop-shadow(20px 18px 7px rgba(0,0,0,.4));
         z-index: 2;
         position: absolute;
-        top: 220px;
-        left: 658px;
+        top: 22em;
+        left: 41em;
+        transition: 0.2s;
+    }
+
+    #ar-iframe:hover{
+        filter: drop-shadow(10px 10px 3px rgba(0,0,0,.2));
     }
     .body{
         font-family: Poppins;
@@ -408,17 +460,17 @@
     }
     .group-container{
         position: relative;
-        padding-right: 22em;
+        padding-right: 20em;
     }
     .postits-group-column{
         display: flex; flex-direction: column;
     }
     .group-title{
         position: absolute;
-        font-size: 80px;
+        font-size: 4em;
         font-weight: 800;
         top: -1.6em;
-        z-index: -1;
+        z-index: 0;
         letter-spacing: -4px;
 
     }
@@ -426,7 +478,7 @@
         cursor: grab;
     }
     .container-padding-bottom{
-        padding-bottom: 15em;
+        padding-bottom: 17em;
     }
 
     .postit-individual.is-link:hover {
@@ -450,5 +502,8 @@
     .hide-loader{
         opacity: 0;
         pointer-events: none;
+    }
+    #group-portfolio{
+        top: -23em;
     }
 </style>

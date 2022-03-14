@@ -22,6 +22,7 @@ export let postItsDB = [
         {
             id: "about",
             x: 100, y: 130,
+            customTitleStyle: 'top: 3.5em; left: 6em;',
             postItGroups: [
                 [
                     {
@@ -33,7 +34,7 @@ export let postItsDB = [
                         postType: t.bentL,
                         size: s.small,
                         overwriteScrollText: 'contact',
-                        x: 50, y: 160,
+                        x: 43, y: 262,
                     },
                     {
                         id: 'linkedin',
@@ -65,7 +66,8 @@ export let postItsDB = [
 
                     postType: t.bentR,
                     colour: c.green,
-                    x: 320, y: 175,
+                    x: 410, y: 0,
+                    customStyle : 'top: -10em; left: 5em'
                 }],
                 [{
                     id: 'else',
@@ -74,7 +76,8 @@ export let postItsDB = [
 
                     colour: c.yellow,
                     postType: t.bentL,
-                    x: 683, y: 130
+                    x: 750, y: 360,
+                    customStyle : 'top: 11em; left: 3em',
                 }]
             ]
         },
@@ -147,7 +150,8 @@ export let postItsDB = [
                     colour: c.green,
                     size: s.medium,
                     overwriteScrollText: 'is power',
-                    x: 109, y: 971
+                    x: 109, y: 971,
+                        customStyle : 'left: 5em;',
                     },
                     {
                     id: 'university',
@@ -159,6 +163,7 @@ export let postItsDB = [
                     colour: c.yellow,
                     size: s.medium,
                     notScrollable: true,
+                        customStyle : 'top: -4em; padding-top: 2em;',
                     }
                 ],
 
@@ -179,7 +184,10 @@ export let postItsDB = [
                         colour: c.red,
                         size: s.small,
                         overwriteScrollText: 'past',
-                        x:  710 , y:  967
+                        x:  710 , y:  967,
+
+                        customStyle : 'left: -5em; top: 6em;',
+
                     },{
                         id: 'atiko7',
                         text: 'Branding\nWordpress Dev',
@@ -190,6 +198,7 @@ export let postItsDB = [
                         colour: c.yellow,
                         size: s.small,
                         notScrollable: true,
+                        customStyle : 'top: 3em; padding-top: 2.6em; left: -8em;',
                 },
                 ],
                 [
@@ -204,37 +213,41 @@ export let postItsDB = [
                         postType: t.bentL,
                         colour: c.blue,
                         size: s.medium,
-                        x:  864 , y:  1109
+                        x:  864 , y:  1109,
+                        customStyle : 'left: 5em;'
                     },
                     {
                         id: 'productmanager',
                         text: 'Product\nManager',
                         subtext: 'jun 2021 » today',
 
-                        postType: t.stickU,
+                        postType: t.bentR,
                         colour: c.green,
                         size: s.small,
                         notScrollable: true,
+                        customStyle : 'left: 7.4em; top: -5em;  padding-top: 5em;'
                     },
                     {
                         id: 'uxuileader',
                         text: 'UX/UI\nLeader',
                         subtext: 'nov 2020 » jun 2021',
 
-                        postType: t.bentR,
+                        postType: t.stickD,
                         colour: c.red,
                         size: s.small,
                         notScrollable: true,
+                        customStyle : 'top: -12em; padding-top: 5em; left: 2.4em;'
                     },
                     {
                         id: 'frontenddev',
                         text: 'Frontend\nDev',
                         subtext: 'jan 2016 » nov 2020',
 
-                        postType: t.stickD,
+                        postType: t.stickU,
                         colour: c.green,
                         size: s.small,
                         notScrollable: true,
+                        customStyle : 'top: -17em; left: -1em; padding-top: 4em;'
                     },
                 ],
                 [
@@ -243,13 +256,15 @@ export let postItsDB = [
                         text: '',
                         postType: 4,
                         overwriteScrollText: 'recent',
-                        x:  1126 , y:  1110
+                        x:  1126 , y:  1110,
+                        customStyle : 'left: 10em;'
                     },
                     {
                         id: 'quiena2',
                         text: '',
                         postType: t.polaroid,
                         notScrollable: true,
+                        customStyle : 'left: 10em;'
                     }
                 ],
             ]
@@ -257,6 +272,7 @@ export let postItsDB = [
         {
             id: "portfolio",
             x: 2120, y: 1070,
+            customTitleStyle: 'top: 3em; left: 0.4em;',
             postItGroups: [
 
                 [
@@ -264,7 +280,8 @@ export let postItsDB = [
                         id: 'spaceO2',
                         text: 'Space O2 VR',
                         postType: t.polaroid,
-                        x:  1870 , y:  962
+                        x:  1870 , y:  962,
+                        customStyle : ' top: 23em;'
                     },
                 ],
                 [
@@ -315,7 +332,8 @@ export let postItsDB = [
                         colour: c.red,
                         size: s.small,
                         overwriteScrollText: 'else...',
-                        x:  2870 , y:  1453
+                        x:  2870 , y:  1453,
+                        customStyle: 'left: 6em;'
                     },
 
                     {
@@ -328,6 +346,7 @@ export let postItsDB = [
                         colour: c.green,
                         size: s.small,
                         notScrollable: true,
+                        customStyle: 'top: -3em;'
                     },
                     {
                         id: 'last',
@@ -337,6 +356,7 @@ export let postItsDB = [
                         colour: c.blue,
                         size: s.small,
                         notScrollable: true,
+                        customStyle: 'top: -6em; left: 6em;'
                     },
                 ],
             ]
