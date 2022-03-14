@@ -261,14 +261,16 @@ export let postItsDB = [
                         postType: 4,
                         overwriteScrollText: 'Quiena',
                         x:  1295 , y:  1130 ,
-                        customStyle : 'left: 10em;'
+                        customStyle : 'left: 10em;',
+                        imgId: 'quiena1'
                     },
                     {
                         id: 'quiena2',
                         text: '',
                         postType: t.polaroid,
                         notScrollable: true,
-                        customStyle : 'left: 10em;'
+                        customStyle : 'left: 10em;',
+                        imgId: 'quiena2'
                     }
                 ],
             ]
@@ -281,29 +283,44 @@ export let postItsDB = [
 
                 [
                     {
-                        id: 'spaceO2',
+                        id: 'space_o2',
                         text: 'Space O2 VR',
+                        overwriteScrollText: 'Space O2 VR',
+                        subtext: 'Incremental VR videogame',
+                        videoUrl: 'VKvfS5y1mG4',
+                        href: 'https://andbf.itch.io/space-o2',
                         postType: t.polaroid,
                         x:  1826 , y:  744 ,
                     },
                     {
-                        id: 'lavaSurf',
-                        text: '',
+                        id: 'lava_surf',
+                        text: 'Lava Surf VR',
+                        overwriteScrollText: 'Lava Surf VR',
+                        subtext: 'Cardboard game - Thesis',
                         postType: t.polaroid,
                         x:  1826 , y:  1064 ,
+                        videoUrl: 'CocjtK3EBuA',
+                        href: 'https://andbf.itch.io/lava-surf-vr'
                     },
                 ],
                 [
 
                     {
-                        id: 'vrDinning',
-                        text: '',
+                        id: 'vr_dinning',
+                        text: 'VR Dinning',
+                        subtext: 'Master thesis experience plan',
+                        overwriteScrollText: 'VR Dinning',
+                        videoUrl: 'TOI1ie4dzRw',
                         postType: t.polaroid,
                         x:  2194 , y:  763 ,
                     },
                     {
-                        id: 'moderaIt',
-                        text: '',
+                        id: 'modera_game',
+                        text: 'Modera Dance',
+                        subtext: 'Hackathon social game',
+                        overwriteScrollText: 'Modera Dance',
+                        videoUrl: 'bKNcZ4yMe40',
+                        href: 'https://andbf.itch.io/modera-game',
                         postType: t.polaroid,
                         x:  2194 , y:  1090 ,
                     },
@@ -311,17 +328,33 @@ export let postItsDB = [
                 [
 
                     {
-                        id: 'Smatchups',
-                        text: '',
+                        id: 'smatchups',
+                        text: 'Smatchups',
+                        subtext: 'Community voting fullstack project ',
                         postType: t.polaroid,
+                        overwriteScrollText: 'Smatchups',
+                        href: 'https://twitter.com/InfoSmatchups',
                         x:  2558 , y:  763 ,
+                        imgId: 'smatchups'
                     },
                     {
+                        id: 'pokeweakto',
+                        text: 'Poke Weak To',
+                        overwriteScrollText: 'Poke Weak To',
+                        subtext: 'Interactive companion tool',
+                        postType: t.polaroid,
+                        x:  2558  , y:  1090,
+                        href: 'https://poke-weak-to.vercel.app/',
+                        imgId: 'pokeweakto'
+                    },
+                    /*{
                         id: 'reel',
-                        text: '',
+                        text: 'and more...',
+                        overwriteScrollText: 'Extra Reel',
+                        subtext: ' ',
                         postType: t.polaroid,
                         x:  2558  , y:  1090
-                    },
+                    },*/
                 ],
                 [
 

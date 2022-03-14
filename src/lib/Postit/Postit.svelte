@@ -147,8 +147,8 @@
             {#if postData.hasCustomHTML}
                 {#if postData.id == 'else'}
                     <div class="else-subtext">
-I'm an engineer with a huge passion for joining both the worlds of art and technology.<br>
-I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization we are living in.
+I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.<br>
+I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization that we are going through.
 <br>I'm currently based in
 Buenos Aires, Argentina, GMT-3
 (For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
@@ -171,7 +171,11 @@ Buenos Aires, Argentina, GMT-3
         </div>
 
         {#if currentPostType === 4}
-            <iframe title={postData.id} class="video-iframe" width={svgSize - 92} height={svgSize - 92} src="//www.youtube.com/embed/1onw8rSfDsg?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+            {#if postData.videoUrl}
+                <iframe title={postData.id} class="video-iframe" width={svgSize - 92} height={svgSize - 92} src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+            {:else }
+                <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
+            {/if}
         {/if}
 
         <div class="container-postit-svg">
@@ -337,6 +341,13 @@ Buenos Aires, Argentina, GMT-3
         top: 14px;
         z-index: 0;
     }
+    .polaroid-image{
+        max-width: 268px;
+        left: 18px;
+        position: relative;
+        top: 14px;
+        border: 1px solid #dedede;
+    }
     .container-postit-content{
         white-space: break-spaces;
         word-break: break-all;
@@ -379,8 +390,18 @@ Buenos Aires, Argentina, GMT-3
     }
     .container-postit-4 .container-postit-content{
         position: absolute;
-        bottom: 34px;
+        bottom: 0.9em;
         left: 0;
+        width: 300px;
+        font-size: 0.9em;
+        text-align: center;
+        box-sizing: border-box;
+        color: #7c7874;
+        line-height: 1.5em;
+    }
+
+    .container-postit-4 .postit-subtext{
+        font-size: inherit !important;
     }
 
     .postit-size-big{
