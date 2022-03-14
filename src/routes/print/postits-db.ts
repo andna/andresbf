@@ -73,7 +73,7 @@ export let postItsDB = [
                     customStyle : 'top: -10em; left: 5em;     padding-top: 3em;'
                 }],
                 [{
-                    id: 'else',
+                    id: 'more',
                     text: '',
                     hasCustomHTML:true,
                     colour: c.yellow,
@@ -140,7 +140,8 @@ export let postItsDB = [
         },
         {
             id: "education",
-            x:  490 , y:  1128,
+            x:  490 , y:  1158,
+            overwriteId: { id: 'education_experience', text: 'education & experience'},
             postItGroups: [
                 [
                     {
@@ -153,7 +154,7 @@ export let postItsDB = [
                     colour: c.green,
                     size: s.medium,
                     overwriteScrollText: 'Tech & Art',
-                    x:  103 , y:  1022 ,
+                    x:  103 , y:  1052 ,
                     customStyle : 'left: 5em;',
                     },
                     {
@@ -217,7 +218,7 @@ export let postItsDB = [
                         postType: t.bentR,
                         colour: c.blue,
                         size: s.medium,
-                        x:  886 , y:  1166 ,
+                        x:  866 , y:  1196 ,
                         customStyle : 'left: 5em;'
                     },
                     {
@@ -316,9 +317,9 @@ export let postItsDB = [
                     },
                     {
                         id: 'modera_game',
-                        text: 'Modera Dance',
+                        text: 'Modera Game',
                         subtext: 'Hackathon social game',
-                        overwriteScrollText: 'Modera Dance',
+                        overwriteScrollText: 'ModeraGame',
                         videoUrl: 'bKNcZ4yMe40',
                         href: 'https://andbf.itch.io/modera-game',
                         postType: t.polaroid,
@@ -367,7 +368,7 @@ export let postItsDB = [
                         postType: t.bentR,
                         colour: c.red,
                         size: s.small,
-                        overwriteScrollText: 'else...',
+                        overwriteScrollText: 'Else...',
                         x:  2937 , y: 858, //y:  962 , //return with last postit
                         customStyle: 'top: 6em; left: 6em;'
                     },

@@ -9,8 +9,8 @@
 	import {page} from '$app/stores'
 	import Postit from '$lib/Postit/Postit.svelte';
 	import MediaQuery from '$lib/MediaQuery.svelte';
-	import { postItsDB } from './wip/postits-db.ts';
-	import Logo from './wip/abfLogo.svelte';
+	import { postItsDB } from './print/postits-db.ts';
+	import Logo from './print/abfLogo.svelte';
 
 	import { onMount } from 'svelte';
 
@@ -91,8 +91,8 @@
 
 	postItsData.forEach(data => {
 		if(data.id != 'experience'){
-			scrollPositionsDesktop.push(data.id == 'education' ?
-					{ id: 'education_experience', text: 'education & experience', x: data.x, y: data.y }
+			scrollPositionsDesktop.push(data.overwriteId ?
+					{ id: data.overwriteId.id, text: data.overwriteId.text, x: data.x, y: data.y }
 					:
 					{id: data.id, x: data.x, y: data.y });
 		}
@@ -163,22 +163,26 @@
 	onMount(() => {
 		var currentHash = window.location.hash.substring(1)
 		var foundHash = false
-		scrollPositionsMobile.forEach(pos => {
-			if(pos.id == currentHash || pos.category == currentHash){
-				var x = pos.x;
-				var y = pos.y;
-				if(pos.category == currentHash){
-					var currentPos = scrollPositionsDesktop.find(posDesktop => posDesktop.id === currentHash)
-					x = currentPos.x;
-					y = currentPos.y;
+		scrollPositionsMobile.forEach((pos, i) => {
+			if(pos.id == currentHash || pos.category == currentHash || pos.category.id == currentHash){
+				var x = pos.x
+				var y = pos.y
+				var newPos = i
+				if(pos.category == currentHash || pos.category.id == currentHash){
+					var currentPos = scrollPositionsDesktop.find(posDesktop => posDesktop.id === currentHash || (posDesktop.category && posDesktop.category.id == currentHash))
+					newPos = scrollPositionsDesktop.findIndex(posDesktop => posDesktop.id === currentHash || (posDesktop.category && posDesktop.category.id == currentHash))
+					x = currentPos.x
+					y = currentPos.y
 				}
-				scrollTo(x, y)
+				currentScrollpos = newPos
 				foundHash = true
+				scrollTo(x, y)
 				return;
 			}
 		})
 		if(!foundHash){
-			scrollTo(scrollPositionsMobile[0].x,scrollPositionsMobile[0].y)
+			var posArr = isMobile() ? scrollPositionsMobile : scrollPositionsDesktop
+			scrollTo(posArr[0].x,posArr[0].y)
 		}
 		isMounted = true;
 	});
@@ -195,8 +199,11 @@
 	}
 
 	function returnToStart(){
-		var isDesktop = window.innerWidth >= breakpointMobile
-		changeScrollPos(0, isDesktop)
+		changeScrollPos(0, !isMobile())
+	}
+
+	function isMobile(){
+		return window.innerWidth < breakpointMobile
 	}
 </script>
 <svelte:window

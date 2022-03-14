@@ -110,7 +110,7 @@
         "#9B6475",
         "#2C8378",
         "#487AA5",
-        "#AA8B5C"
+        "#5F4013"
     ];
 
 </script>
@@ -145,7 +145,7 @@
             {/if}
 
             {#if postData.hasCustomHTML}
-                {#if postData.id == 'else'}
+                {#if postData.id == 'more'}
                     <div class="else-subtext">
 I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.<br>
 I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization that we are going through.
