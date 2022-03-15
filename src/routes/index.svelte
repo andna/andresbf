@@ -167,20 +167,23 @@
 		var currentHash = window.location.hash.substring(1)
 		var foundHash = false
 		scrollPositionsMobile.forEach((pos, i) => {
-			if(pos.id == currentHash || pos.category == currentHash || pos.category.id == currentHash){
+			if(!foundHash && (pos.id == currentHash || pos.category == currentHash || pos.category.id == currentHash)){
 				var x = pos.x
 				var y = pos.y
 				var newPos = i
 				if(pos.category == currentHash || pos.category.id == currentHash){
 					var currentPos = scrollPositionsDesktop.find(posDesktop => posDesktop.id === currentHash || (posDesktop.category && posDesktop.category.id == currentHash))
 					newPos = scrollPositionsDesktop.findIndex(posDesktop => posDesktop.id === currentHash || (posDesktop.category && posDesktop.category.id == currentHash))
+					if(isMobile()){
+						currentPos = pos
+						newPos = i
+					}
 					x = currentPos.x
 					y = currentPos.y
 				}
 				currentScrollpos = newPos
 				foundHash = true
 				scrollTo(x, y)
-				return;
 			}
 		})
 		if(!foundHash){
