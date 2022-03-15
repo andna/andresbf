@@ -21,7 +21,7 @@ enum s {
 export let postItsDB = [
         {
             id: "about",
-            x:  177 , y:  130,
+            x:  177 , y:  110,
             customTitleStyle: 'top: 3.9em; left: 5.8em;',
             postItGroups: [
                 [
