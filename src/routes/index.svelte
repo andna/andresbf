@@ -73,13 +73,66 @@
 
 	let auxX = 0
 	let auxY = 0
+
+
+
+
+	let innerHeight = 0
+	let innerWidth = 0
+	let innerHeightHalf = 0
+	let innerWidthHalf = 0
+	let paddingLeft = 0
+	let paddingTop = 0
+
+	function resizedScreen(){
+		innerHeightHalf = Math.round(window.innerHeight / 2)
+		innerWidthHalf = Math.round(window.innerWidth / 2)
+		paddingLeft = Math.round(window.innerWidth * 0.56)
+		paddingTop = Math.round(window.innerHeight * 0.56)
+	}
+	//$: (innerHeight || innerWidth) && resizedScreen()
+
+
+	let countScrollFrame = 0
+
+
 	function onScrollEvent(event){
 		auxX = Math.round(window.pageXOffset)
 		auxY = Math.round(window.pageYOffset)
 
-		var halfHeight = Math.round(window.innerHeight / 2)
-		var halfWidth = Math.round(window.innerWidth / 2)
-		//console.log('x: ', auxX, ', y: ', auxY,',')
+		if(!currentlyScrollingByButton && countScrollFrame == 0){
+			let foundCurrentPos = false
+			if(isMobile()){
+
+				scrollPositionsMobile.forEach((pos,i) => {
+					let box = pos.boxCollider
+					if(!foundCurrentPos &&
+							auxX >= box.x1 && auxX < box.x2 &&
+							auxY >= box.y1 && auxY < box.y2
+					){
+						foundCurrentPos = true
+						currentScrollpos = i
+					}
+				});
+
+			} else {
+				scrollPositionsDesktop.forEach((pos,i) => {
+					let box = pos.boxCollider
+					if(!foundCurrentPos &&
+							auxX >= box.x1 && auxX < box.x2 &&
+							auxY >= box.y1 && auxY < box.y2
+					){
+						foundCurrentPos = true
+						currentScrollpos = i
+
+					}
+				});
+			}
+		}
+
+		countScrollFrame = countScrollFrame > 10 ? 0 : countScrollFrame + 1;
+
+
 
 		logoDisable = false
 	}
@@ -92,9 +145,9 @@
 	postItsData.forEach(data => {
 		if(data.id != 'experience'){
 			scrollPositionsDesktop.push(data.overwriteId ?
-					{ id: data.overwriteId.id, text: data.overwriteId.text, x: data.x, y: data.y }
+					{ id: data.overwriteId.id, text: data.overwriteId.text, x: data.x, y: data.y, boxCollider: data.boxCollider }
 					:
-					{id: data.id, x: data.x, y: data.y });
+					{id: data.id, x: data.x, y: data.y, boxCollider: data.boxCollider });
 		}
 		data.postItGroups.forEach(group => {
 			group.forEach(postit => {
@@ -105,6 +158,12 @@
 								category: data.id,
 								x: postit.x,
 								y: postit.y,
+								boxCollider: {
+									x1: postit.x - 200,
+									y1: postit.y - (postit.hasExtraBox ? 300 : 200) - 40,
+									x2: postit.x + 200,
+									y2: postit.y + (postit.hasExtraBox ? 300 : 200)  - 40,
+								}
 							}
 					)
 				}
@@ -122,12 +181,15 @@
 	let currentScrollpos = 0
 
 	function scrollTo(x, y){
-		var halfWidth = Math.round(window.innerWidth / 2)
-		var halfHeight = Math.round(window.innerHeight / 2)
+		//var halfWidth = Math.round(window.innerWidth / 2)
+		//var halfHeight = Math.round(window.innerHeight / 2)
 		window.scrollTo(x, y)
 	}
 
+	let currentlyScrollingByButton
+
 	function changeScrollPos(pos, isDesktop = null){
+		currentlyScrollingByButton = true
 		var arr = isDesktop ? scrollPositionsDesktop : scrollPositionsMobile;
 		if(pos > arr.length - 1){
 			pos = 0
@@ -138,11 +200,10 @@
 		currentScrollpos = pos
 
 
-		var replaceTo = `#${arr[currentScrollpos].id}`
 		if(currentScrollpos == 0){
 			window.history.pushState({}, "<name>", " ")
 		} else {
-			window.history.replaceState({}, '#', replaceTo);
+			window.history.replaceState({}, '#', `#${arr[currentScrollpos].id}`);
 
 		}
 
@@ -151,8 +212,9 @@
 		setCssSmoothBehaviour(true)
 		setTimeout(()=>{
 			setCssSmoothBehaviour()
+			currentlyScrollingByButton = false
 			logoDisable = pos == 0
-		}, 800)
+		}, 600)
 		scrollTo(arr[pos].x, arr[pos].y)
 	}
 
@@ -185,6 +247,31 @@
 				foundHash = true
 				scrollTo(x, y)
 			}
+
+
+			var drawColliders = false
+			if(pos.boxCollider && drawColliders){
+
+				var box = pos.boxCollider
+				var newBox = document.createElement("div");
+				newBox.style = "border: 1px solid;\n" +
+						"\t\tposition: absolute;\n" +
+						"\t\twidth: " + (box.x2 - box.x1) +
+						"px;\n" +
+						"\t\theight: " + (box.y2 - box.y1) +
+						"px;\n" +
+						"\t\tleft: " + box.x1 +
+						"px;\n" +
+						"\t\ttop: " + box.y1 +
+						"px;\n" +
+						"\t\tz-index: 1232323;\n" +
+						"\t\tcontent: ' ';" +
+						"pointer-events: none"
+				document.getElementsByClassName("postits-wrapper")[0].append(newBox)
+			}
+
+
+
 		})
 		if(!foundHash){
 			var posArr = isMobile() ? scrollPositionsMobile : scrollPositionsDesktop
@@ -211,8 +298,12 @@
 	function isMobile(){
 		return window.innerWidth < breakpointMobile
 	}
+
+
 </script>
 <svelte:window
+		bind:innerHeight={innerHeight}
+		bind:innerWidth={innerWidth}
 		on:scroll={onScrollEvent}
 		on:keyup={onKeyUp}
 		on:keydown={onKeyDown}/>
@@ -222,7 +313,7 @@
 		<Logo />
 	</div>
 
-	<div class="menu-wrapper">
+	<div class="menu-wrapper"  class:currently-disabled-button={currentlyScrollingByButton}>
 		<MediaQuery query="(max-width: {breakpointMobile}px)" let:matches>
 			{#if matches}
 				<div class="menu-button menu-button-back" on:click={() => changeScrollPos(currentScrollpos - 1)}>  </div>
@@ -293,11 +384,15 @@
 
 	</div>
 </div>
-<div class="reticle"></div>
+<!--
+<div class="reticle">
+	x: {auxX}
+	y: {auxY}
+</div>
+-->
 
 <style>
 	.reticle{
-		display: none;
 		position: fixed;
 		z-index: 2000;
 		background: red;
@@ -378,6 +473,7 @@
 		position: relative;
 		line-height: 1.2em;
 		color: var(--dark);
+		transition: 0.3s;
 	}
 	.menu-button-expand>div,
 	.menu-button-expand:before,
@@ -470,10 +566,10 @@
 		display:flex;
 	}
 	#wrapper{
-		width: 3600px;
-		height: 1800px;
+		width: 3366px;
+		height: 1700px;
 		user-select: none;
-		padding: 42vh 12vw 12vh 35vw;
+		padding: 50vh 42vw 42vh 50vw;
 		transition: ease-in 0.2s;
 	}
 
@@ -523,6 +619,10 @@
 	.group-container{
 		position: relative;
 		padding-right: 20em;
+	}
+
+	.group-container:last-child{
+		padding: 0;
 	}
 	.postits-group-column{
 		display: flex; flex-direction: column;
@@ -585,5 +685,10 @@
 	}
 	.capitilize{
 		text-transform: capitalize;
+	}
+	.currently-disabled-button .menu-button-back,
+	.currently-disabled-button .menu-button-forward{
+		opacity: .5;
+		pointer-events: none;
 	}
 </style>

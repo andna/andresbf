@@ -21,7 +21,8 @@ enum s {
 export let postItsDB = [
         {
             id: "about",
-            x:  177 , y:  110,
+            x:  505 , y:  184 ,
+            boxCollider: {x1: 0, y1: 0, x2: 1200, y2: 800},
             customTitleStyle: 'top: 3.9em; left: 5.8em;',
             postItGroups: [
                 [
@@ -34,8 +35,9 @@ export let postItsDB = [
                         postType: t.bentL,
                         size: s.small,
                         overwriteScrollText: 'contact',
-                        x:  50 , y:  246 ,
-                        customStyle: 'left: 3em;'
+                        x:  106 , y:  295  ,
+                        customStyle: 'left: 3em;',
+                        hasExtraBox: true
                     },
                     {
                         id: 'linkedin',
@@ -70,7 +72,7 @@ export let postItsDB = [
                     hasCustomHTML:true,
                     postType: t.bentR,
                     colour: c.green,
-                    x: 410, y: 0,
+                    x: 471, y: 82,
                     customStyle : 'top: -10em; left: 5.3em;     padding-top: 3.5em;'
                 }],
                 [{
@@ -79,14 +81,15 @@ export let postItsDB = [
                     hasCustomHTML:true,
                     colour: c.yellow,
                     postType: t.bentL,
-                    x:  748 , y:  395,
+                    x:  806 , y:  466 ,
                     customStyle : 'top: 11em; left: 3em; color: #5F4013;',
                 }]
             ]
         },
         {
             id: "skills",
-            x:  1728 , y:  124,
+            x:  2027 , y:  236 ,
+            boxCollider: {x1: 1200, y1: 0, x2: 3058, y2: 542},
             postItGroups: [
                 [{
                     id: 'frontend',
@@ -98,7 +101,7 @@ export let postItsDB = [
                         {id:'svelte', tooltip: 'Svelte'},],
                     postType: t.bentL,
                     colour: c.green,
-                    x:  1387 , y:  100 ,
+                    x:  1442 , y:  153 ,
                     overwriteScrollText: 'Frontend',
                 }],
                 [{
@@ -107,11 +110,11 @@ export let postItsDB = [
                     bigIcons: [
                         {id:'unity', tooltip: 'Unity'},
                         {id:'blender', tooltip: 'Blender'},
-                        {id:'unreal', tooltip: 'Unreal\nEngine'},],
+                        {id:'unreal', tooltip: 'Unreal\nEngine 4/5'},],
                     postType: t.bentR,
                     colour: c.blue,
                     overwriteScrollText: 'VR/AR',
-                    x:  1777 , y:  142 ,
+                    x:  1836 , y:  190 ,
                 }],
                 [{
                     id: 'uxui',
@@ -123,7 +126,7 @@ export let postItsDB = [
                     postType: t.stickD,
                     colour: c.red,
                     overwriteScrollText: 'UX/UI',
-                    x: 2173 , y: 142
+                    x:  2230 , y:  190 ,
                 }],
                 [{
                     id: 'product',
@@ -134,14 +137,15 @@ export let postItsDB = [
                         {id:'confluence', tooltip: 'Confluence\n<small>(and other\ncollab. tools)</small>'},],
                     postType: t.stickU,
                     colour: c.yellow,
-                    x: 2562 , y: 142,
+                    x: 2619 , y: 190 ,
                     overwriteScrollText: 'Product',
                 }]
             ]
         },
         {
             id: "education",
-            x:  490 , y:  1158,
+            x:  778 , y:  1214 ,
+            boxCollider: {x1: 0, y1: 800, x2: 1642, y2: 1642},
             overwriteId: { id: 'education_experience', text: 'education & experience'},
             postItGroups: [
                 [
@@ -155,8 +159,9 @@ export let postItsDB = [
                     colour: c.green,
                     size: s.medium,
                     overwriteScrollText: 'Tech & Art',
-                    x:  103 , y:  1052 ,
+                    x:  160 , y:  1086 ,
                     customStyle : 'left: 5em;',
+                    hasExtraBox: true
                     },
                     {
                     id: 'university',
@@ -190,9 +195,10 @@ export let postItsDB = [
                         colour: c.red,
                         size: s.small,
                         overwriteScrollText: 'Past',
-                        x:  560 , y:  1018 ,
+                        x:  621 , y:  1086 ,
 
                         customStyle : 'left: -1em; top: 1em;',
+                        hasExtraBox: true
 
                     },{
                         id: 'atiko7',
@@ -219,8 +225,9 @@ export let postItsDB = [
                         postType: t.bentR,
                         colour: c.blue,
                         size: s.medium,
-                        x:  866 , y:  1196 ,
-                        customStyle : 'left: 5em;'
+                        x:  933 , y:  1240 ,
+                        customStyle : 'left: 5em;',
+                        hasExtraBox: true
                     },
                     {
                         id: 'productmanager',
@@ -262,9 +269,10 @@ export let postItsDB = [
                         text: '',
                         postType: 4,
                         overwriteScrollText: 'Quiena',
-                        x:  1295 , y:  1130 ,
+                        x:  1355 , y:  1190 ,
                         customStyle : 'left: 10em;',
-                        imgId: 'quiena1'
+                        imgId: 'quiena1',
+                        hasExtraBox: true
                     },
                     {
                         id: 'quiena2',
@@ -279,7 +287,8 @@ export let postItsDB = [
         },
         {
             id: "portfolio",
-            x:  2007 , y:  852,
+            x:  2457 , y:  930 ,
+            boxCollider: {x1: 1642, y1: 542, x2: 3058, y2: 1642},
             customTitleStyle: 'top: -1.6em; left: 0.4em;',
             postItGroups: [
 
@@ -292,7 +301,7 @@ export let postItsDB = [
                         videoUrl: 'VKvfS5y1mG4',
                         href: 'https://andbf.itch.io/space-o2',
                         postType: t.polaroid,
-                        x:  1826 , y:  744 ,
+                        x:  1886 , y:  772 ,
                     },
                     {
                         id: 'lava_surf',
@@ -300,7 +309,7 @@ export let postItsDB = [
                         overwriteScrollText: 'Lava Surf VR',
                         subtext: 'Cardboard game - Thesis',
                         postType: t.polaroid,
-                        x:  1826 , y:  1064 ,
+                        x:  1886 , y:  1122  ,
                         videoUrl: 'CocjtK3EBuA',
                         href: 'https://andbf.itch.io/lava-surf-vr'
                     },
@@ -314,7 +323,7 @@ export let postItsDB = [
                         overwriteScrollText: 'VR Dinning',
                         videoUrl: 'TOI1ie4dzRw',
                         postType: t.polaroid,
-                        x:  2194 , y:  763 ,
+                        x:  2250  , y:  772 ,
                     },
                     {
                         id: 'modera_game',
@@ -324,7 +333,7 @@ export let postItsDB = [
                         videoUrl: 'bKNcZ4yMe40',
                         href: 'https://andbf.itch.io/modera-game',
                         postType: t.polaroid,
-                        x:  2194 , y:  1090 ,
+                        x:  2250  , y:  1122 ,
                     },
                 ],
                 [
@@ -336,7 +345,7 @@ export let postItsDB = [
                         postType: t.polaroid,
                         overwriteScrollText: 'Smatchups',
                         href: 'https://twitter.com/InfoSmatchups',
-                        x:  2558 , y:  763 ,
+                        x:  2617  , y:  772 ,
                         imgId: 'smatchups'
                     },
                     {
@@ -345,18 +354,10 @@ export let postItsDB = [
                         overwriteScrollText: 'Poke Weak To',
                         subtext: 'Interactive companion tool',
                         postType: t.polaroid,
-                        x:  2558  , y:  1090,
+                        x:  2617   , y:  1122,
                         href: 'https://poke-weak-to.vercel.app/',
                         imgId: 'pokeweakto'
                     },
-                    /*{
-                        id: 'reel',
-                        text: 'and more...',
-                        overwriteScrollText: 'Extra Reel',
-                        subtext: ' ',
-                        postType: t.polaroid,
-                        x:  2558  , y:  1090
-                    },*/
                 ],
                 [
 
@@ -370,8 +371,9 @@ export let postItsDB = [
                         colour: c.red,
                         size: s.small,
                         overwriteScrollText: 'Else...',
-                        x:  2930 , y: 968 ,
-                        customStyle: 'top: 6em; left: 6em;'
+                        x:  2986 , y:  1018  ,
+                        customStyle: 'top: 6em; left: 6em;',
+                        hasExtraBox: true
                     },
 
                     {
