@@ -161,7 +161,7 @@ Buenos Aires, Argentina, GMT-3
                 {#if postData.id == 'last'}
                     <div class="last-subtext">
 This website was developed  in SvelteKit.
-It’s manteined in this <a href="https://gitlab.com/andbastf/andbastf" target="_blank">Gitlab project</a>
+It’s maintained in this <a href="https://gitlab.com/andbastf/andbastf" target="_blank">Gitlab project</a>
 and was designed in this <a href="https://www.figma.com/file/yAaTAFz5Mq7IEo7mgKz68U/Confluence-Variable?node-id=0%3A1" target="_blank">Figma file</a>
 
 It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank">Alec Babala’s</a>
