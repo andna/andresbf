@@ -140,8 +140,21 @@
                 <div class="postit-text">
                         {@html postData.text}</div>{/if}{#if postData.subtext}
                 <div class="postit-subtext">
-                    {@html postData.subtext}
+                    {@html postData.subtext}{
+                        #if postData.tools}
+                       .<small title="Development tools."> {@html postData.tools}</small>
+                    {/if}
                 </div>
+                {#if postData.otherLinks}
+                    <div class="links-container">
+                        {#each postData.otherLinks as link}
+                            <a href={link.href}
+                               target="_blank" rel="noreferrer">
+                                <small>{link.label}</small></a>
+                        {/each}
+                    </div>
+                {/if}
+
             {/if}
 
             {#if postData.hasCustomHTML}
@@ -187,7 +200,9 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
 
         {#if currentPostType === 4}
             {#if postData.videoUrl}
-                <iframe title={postData.id} class="video-iframe" width={svgSize - 92} height={svgSize - 92} src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+                <iframe title={postData.id} class="video-iframe"
+                        width={(svgSize - 92) * 1.25} height={(svgSize - 92) * 1.25}
+                        src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
             {:else }
                 <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
             {/if}
@@ -293,7 +308,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
                     </defs>
                 {:else}
                     <rect width="330" height="360" fill="white"/>
-                    <rect x="18.293" y="14.6338" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
+                    <rect x="31" y="14.6338" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
                     <defs>
                         <linearGradient id="paint0_linear_216_2404" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
                             <stop stop-color="#736F6B"/>
@@ -339,6 +354,9 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         margin: 0 8px 8px 0;
         box-sizing: border-box;
     }
+    .container-postit.container-postit-4{
+        margin: 0 0 24px 0;
+    }
 
 
     :global(#group-skills .container-postit){
@@ -352,9 +370,11 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
     }
     .video-iframe{
         position: absolute;
-        left: 18px;
+        left: 31px;
         top: 14px;
         z-index: 0;
+        transform: scale(0.8);
+        transform-origin: 0 0;
     }
 
     .video-container{
@@ -369,7 +389,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
     }
     .polaroid-image{
         max-width: 268px;
-        left: 18px;
+        left: 30px;
         position: relative;
         top: 14px;
         border: 1px solid #dedede;
@@ -416,7 +436,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
     }
     .container-postit-4 .container-postit-content{
         position: absolute;
-        bottom: 0.9em;
+        bottom: 0em;
         left: 0;
         width: 330px;
         font-size: 0.9em;
@@ -428,6 +448,11 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
 
     .container-postit-4 .postit-subtext{
         font-size: inherit !important;
+    }
+
+    .container-postit-4 .postit-subtext small{
+        opacity: 0.5;
+        padding-left: 10px;
     }
 
     .postit-size-big{
@@ -586,8 +611,12 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         padding-top: 0.8em;
         font-weight: 800;
     }
-    .last-subtext a{
+    .last-subtext a,
+    .container-postit-4 a{
         text-decoration: underline !important;
+        text-decoration-color: initial !important;
+    }
+    .last-subtext a{
         color: inherit !important;
     }
 
@@ -599,6 +628,11 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         width: 200px;
         left: calc(50% - 103px);
         top: -102px;
+    }
+    .links-container{
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
     }
 
 </style>

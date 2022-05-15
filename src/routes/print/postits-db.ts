@@ -288,7 +288,7 @@ export let postItsDB = [
     },
     {
         id: "portfolio",
-        x:  2457 , y:  930 ,
+        x:  2457 , y:  960 ,
         boxCollider: {x1: 1642, y1: 542, x2: 3058, y2: 1642},
         customTitleStyle: 'top: -1.6em; left: 0.4em;',
         postItGroups: [
@@ -296,11 +296,14 @@ export let postItsDB = [
             [
                 {
                     id: 'space_o2',
-                    subtext: 'Incremental VR videogame',
+                    subtext: 'VR Videogame',
+                    tools: 'Unity, C#, Blender, Quest 2.',
                     videoUrl: 'VKvfS5y1mG4',
-                    href: 'https://andbf.itch.io/space-o2',
                     postType: t.polaroid,
                     x:  1886 , y:  742 ,
+                    otherLinks: [
+                        {label: 'APK Download', href: 'https://andbf.itch.io/space-o2'},
+                    ]
                 },
                 {
                     id: 'lava_surf',
