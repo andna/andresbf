@@ -112,27 +112,7 @@
         "#487AA5",
         "#AA8B5C"
     ];
-    function requestFullScreen(element) {
-        // Supports most browsers and their versions.
-        var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullscreen;
 
-        if (requestMethod) { // Native full screen.
-            requestMethod.call(element);
-        } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
-            var wscript = new ActiveXObject("WScript.Shell");
-            if (wscript !== null) {
-                wscript.SendKeys("{F11}");
-            }
-        }
-    }
-    // FullScreen function
-    function makeFullScreen(e) {
-        if(document.getElementById("vr_dining")) document.getElementById("vr_dining").className = "fullScreen";
-
-        console.log(document.getElementById("vr_dining"))
-        var elem = document.body;
-        requestFullScreen(e);
-    }
 </script>
 <div
         class="container-postit
@@ -207,18 +187,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
 
         {#if currentPostType === 4}
             {#if postData.videoUrl}
-                <div class="video-container" on:click={() => console.log('aaa')}>
-                    <iframe
-                            id={postData.id}
-                            title={postData.id} class="video-iframe"
-                            width={svgSize - 92}
-                            height={svgSize - 92}
-                            on:load={(e) => {makeFullScreen(e)}}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
-                            src="//www.youtube.com/embed/{postData.videoUrl}?mute=1&modestbranding=0&autoplay=1&autohide=1&rel=0&showinfo=0&controls=0&disablekb=1&enablejsapi=1&iv_load_policy=3&loop=1&playsinline=1&fs=0" frameborder="0"
-                            ></iframe>
-                </div>
-
+                <iframe title={postData.id} class="video-iframe" width={svgSize - 92} height={svgSize - 92} src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
             {:else }
                 <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
             {/if}
@@ -382,15 +351,10 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         z-index: -1;
     }
     .video-iframe{
-        position: relative;
-        top: 15vh;
-        width: 96vw;
-        height: 96vw;
-        max-height: 500px;
-        max-width: 500px;
-        margin: 0 auto;
-        display: block;
-        border-radius: 8px;
+        position: absolute;
+        left: 18px;
+        top: 14px;
+        z-index: 0;
     }
 
     .video-container{
