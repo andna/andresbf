@@ -98,8 +98,8 @@
 
 
 	function onScrollEvent(event) {
-		auxX = Math.round(window.pageXOffset)
-		auxY = Math.round(window.pageYOffset)
+		auxX = Math.round(window.scrollX)
+		auxY = Math.round(window.scrollY)
 
 		if (!currentlyScrollingByButton && countScrollFrame == 0) {
 			let foundCurrentPos = false

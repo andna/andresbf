@@ -296,8 +296,6 @@ export let postItsDB = [
             [
                 {
                     id: 'space_o2',
-                    text: 'Space O2 VR',
-                    overwriteScrollText: 'Space O2 VR',
                     subtext: 'Incremental VR videogame',
                     videoUrl: 'VKvfS5y1mG4',
                     href: 'https://andbf.itch.io/space-o2',

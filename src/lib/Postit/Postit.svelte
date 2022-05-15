@@ -112,7 +112,27 @@
         "#487AA5",
         "#AA8B5C"
     ];
+    function requestFullScreen(element) {
+        // Supports most browsers and their versions.
+        var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullscreen;
 
+        if (requestMethod) { // Native full screen.
+            requestMethod.call(element);
+        } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+    }
+    // FullScreen function
+    function makeFullScreen(e) {
+        if(document.getElementById("vr_dining")) document.getElementById("vr_dining").className = "fullScreen";
+
+        console.log(document.getElementById("vr_dining"))
+        var elem = document.body;
+        requestFullScreen(e);
+    }
 </script>
 <div
         class="container-postit
@@ -187,7 +207,18 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
 
         {#if currentPostType === 4}
             {#if postData.videoUrl}
-                <iframe title={postData.id} class="video-iframe" width={svgSize - 92} height={svgSize - 92} src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+                <div class="video-container" on:click={() => console.log('aaa')}>
+                    <iframe
+                            id={postData.id}
+                            title={postData.id} class="video-iframe"
+                            width={svgSize - 92}
+                            height={svgSize - 92}
+                            on:load={(e) => {makeFullScreen(e)}}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+                            src="//www.youtube.com/embed/{postData.videoUrl}?mute=1&modestbranding=0&autoplay=1&autohide=1&rel=0&showinfo=0&controls=0&disablekb=1&enablejsapi=1&iv_load_policy=3&loop=1&playsinline=1&fs=0" frameborder="0"
+                            ></iframe>
+                </div>
+
             {:else }
                 <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
             {/if}
@@ -292,7 +323,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
                         </clipPath>
                     </defs>
                 {:else}
-                    <rect width="300" height="340.244" fill="white"/>
+                    <rect width="330" height="360" fill="white"/>
                     <rect x="18.293" y="14.6338" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
                     <defs>
                         <linearGradient id="paint0_linear_216_2404" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
@@ -351,10 +382,26 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         z-index: -1;
     }
     .video-iframe{
-        position: absolute;
-        left: 18px;
-        top: 14px;
-        z-index: 0;
+        position: relative;
+        top: 15vh;
+        width: 96vw;
+        height: 96vw;
+        max-height: 500px;
+        max-width: 500px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 8px;
+    }
+
+    .video-container{
+        position: fixed;
+        z-index: 101;
+        background: rgba(32,32,32,.4);
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        cursor: pointer;
     }
     .polaroid-image{
         max-width: 268px;
@@ -407,7 +454,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         position: absolute;
         bottom: 0.9em;
         left: 0;
-        width: 300px;
+        width: 330px;
         font-size: 0.9em;
         text-align: center;
         box-sizing: border-box;
@@ -589,4 +636,5 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         left: calc(50% - 103px);
         top: -102px;
     }
+
 </style>
