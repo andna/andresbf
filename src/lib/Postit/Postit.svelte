@@ -208,7 +208,9 @@ Buenos Aires, Argentina, GMT-3
             {:else if postData.imgId }
                 <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
             {:else if postData.id === 'this_web' }
-                <div id="this_web_canvas"></div>
+                <div id="this_web_canvas">
+                    <div id="canvas_loading"></div>
+                </div>
             {/if}
         {/if}
 
@@ -315,8 +317,8 @@ Buenos Aires, Argentina, GMT-3
                     <rect x="31" y="20" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
                     <defs>
                         <linearGradient id="paint0_linear_216_2404" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#b9c6d2"/>
-                            <stop offset="1" stop-color="#edf0f8"/>
+                            <stop stop-color="#B3C1CD"/>
+                            <stop offset="1" stop-color="#F3F5FA"/>
                         </linearGradient>
                     </defs>
                 {/if}
@@ -644,12 +646,12 @@ Buenos Aires, Argentina, GMT-3
     }
 
     #this_web_canvas{
-        width: 268px;
+        width: 264px;
         height: 226px;
         height: fit-content;
         overflow: hidden;
         position: absolute;
-        left: 31px;
+        left: 33px;
         top: 60px;
         border: 3px solid transparent;
         border-radius: 2px;
@@ -658,26 +660,51 @@ Buenos Aires, Argentina, GMT-3
         opacity: 0.7;
     }
 
-    #this_web_canvas:after{
-        content: 'This is an screenshot\'d canvas';
-        text-align: center;
-        display: block;
-        background: inherit;
-        font-size: 0;
-        transition: 0.3s;
-        color: #8899a7;
-        cursor: help;
-    }
-    #this_web_canvas:hover{
-        transform: scale(3);
-        border-color: #e6ecff;
-        background: #e6ecff;
-        opacity: 1;
+    @media screen and (min-width: 800px){
+
+        #this_web_canvas{
+            width: 271px;
+            left: 29px;
+        }
+        #this_web_canvas:hover{
+            transform: scale(3);
+            border-color: #e6ecff;
+            background: #e6ecff;
+            opacity: 1;
+        }
+        #this_web_canvas:after{
+            content: 'This is a right-click-to-download canvas 👨🏻‍💻';
+            text-align: center;
+            display: block;
+            background: inherit;
+            font-size: 0;
+            transition: 0.3s;
+            color: #8899a7;
+            cursor: help;
+        }
+        #this_web_canvas:hover:after{
+            font-size: 10px;
+        }
     }
 
-    #this_web_canvas:hover:after{
-        font-size: inherit;
-    }
 
+    #canvas_loading{
+        width: 180px;
+        height: 180px;
+        margin: 0 auto;
+        border: 7px dotted #ffffff;
+        border-radius: 1000px;
+        transform: rotate(0deg);
+        opacity: 0.5;
+        animation: spin 10s linear infinite;
+        pointer-events: none;
+    }
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        } to {
+              transform: rotate(360deg);
+          }
+    }
 
 </style>

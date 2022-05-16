@@ -58,7 +58,40 @@
 		isDragging = false
 	}
 
+	let currentCanvasTick = 0;
+	let initCanvas;
+
+
 	function handleMouseMove(event) {
+
+		currentCanvasTick++;
+		if(currentCanvasTick >= 10){
+			currentCanvasTick = 0;
+			let canvas = document.getElementById(canvasId);
+			if(canvas && !isDragging){
+				canvas = canvas.firstChild;
+				if(canvas && !canvas.id){
+					const x = Math.round(event.clientX + window.scrollX);
+					const y = Math.round(event.clientY + window.scrollY);
+
+
+					var ctx = canvas.getContext("2d");
+
+					if(!initCanvas){
+						initCanvas = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+					}
+
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.putImageData(initCanvas, 0, 0);
+					ctx.beginPath();
+					ctx.strokeStyle = '#6f2eaf';
+					ctx.lineWidth = 30;
+					ctx.arc(x, y, 100, 0, 2 * Math.PI);
+					ctx.stroke();
+				}
+			}
+
+		}
 		if (isDragging) {
 			const dx = event.clientX - pos.x;
 			const dy = event.clientY - pos.y;
@@ -245,6 +278,7 @@
 
 	import html2canvas from 'html2canvas';
 
+	let canvasId = 'this_web_canvas';
 
 	onMount(() => {
 		html2canvas(document.getElementById('wrapper')).then(function(canvas) {
@@ -254,8 +288,11 @@
 				height: auto;
 				left: -60px;
 				position: relative;
+				top: -2px;
 			`;
-			document.getElementById('this_web_canvas').appendChild(canvas);
+			const container = document.getElementById(canvasId);
+			container.innerHTML = '';
+			container.appendChild(canvas);
 		});
 		currentUrl = window.location.href;
 		var currentHash = window.location.hash.substring(1)
