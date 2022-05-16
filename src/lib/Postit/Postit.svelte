@@ -1,6 +1,7 @@
 <script>
     export let postData
     export let currentTheme = 0
+    export let currentUrl = ''
 
     $: currentTheme && startFadeColor(true)
 
@@ -113,6 +114,17 @@
         "#AA8B5C"
     ];
 
+
+    import {onMount} from 'svelte';
+
+    onMount(async () => {
+        if(postData.id === 'this_web'){
+
+        }
+    })
+
+
+
 </script>
 <div
         class="container-postit
@@ -148,8 +160,9 @@
                 {#if postData.otherLinks}
                     <div class="links-container">
                         {#each postData.otherLinks as link}
-                            <a href={link.href}
-                               target="_blank" rel="noreferrer">
+                            <a href={link.href === '#' ? currentUrl : link.href}
+                               target={link.href === '#' ? '' : '_blank'}
+                               rel="noreferrer">
                                 <small>{link.label}</small></a>
                         {/each}
                     </div>
@@ -170,17 +183,6 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
 Buenos Aires, Argentina, GMT-3
 (For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
                     </div>
-                {/if}
-                {#if postData.id == 'last'}
-                    <div class="last-subtext">
-This website was developed  in SvelteKit.
-It’s maintained in this <a href="https://gitlab.com/andbastf/andbastf" target="_blank">Gitlab project</a>
-and was designed in this <a href="https://www.figma.com/file/yAaTAFz5Mq7IEo7mgKz68U/Confluence-Variable?node-id=0%3A1" target="_blank">Figma file</a>
-
-It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank">Alec Babala’s</a>
-
-                    </div>
-
                 {/if}
             {/if}
 
@@ -203,8 +205,10 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
                 <iframe title={postData.id} class="video-iframe"
                         width={(svgSize - 92) * 1.25} height={(svgSize - 92) * 1.25}
                         src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
-            {:else }
+            {:else if postData.imgId }
                 <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
+            {:else if postData.id === 'this_web' }
+                <div id="this_web_canvas"></div>
             {/if}
         {/if}
 
@@ -308,11 +312,11 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
                     </defs>
                 {:else}
                     <rect width="330" height="360" fill="white"/>
-                    <rect x="31" y="14.6338" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
+                    <rect x="31" y="20" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
                     <defs>
                         <linearGradient id="paint0_linear_216_2404" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#736F6B"/>
-                            <stop offset="1" stop-color="#5F5243"/>
+                            <stop stop-color="#b9c6d2"/>
+                            <stop offset="1" stop-color="#edf0f8"/>
                         </linearGradient>
                     </defs>
                 {/if}
@@ -371,7 +375,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
     .video-iframe{
         position: absolute;
         left: 31px;
-        top: 14px;
+        top: 20px;
         z-index: 0;
         transform: scale(0.8);
         transform-origin: 0 0;
@@ -391,7 +395,7 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         max-width: 268px;
         left: 30px;
         position: relative;
-        top: 14px;
+        top: 20px;
         border: 1px solid #dedede;
     }
     .container-postit-content{
@@ -449,10 +453,14 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
     .container-postit-4 .postit-subtext{
         font-size: inherit !important;
     }
+    .postit-smatchups .postit-subtext:before{
+        content: '1D ';
+        opacity: 0.05;
+    }
 
     .container-postit-4 .postit-subtext small{
         opacity: 0.5;
-        padding-left: 10px;
+        padding-left: 4px;
     }
 
     .postit-size-big{
@@ -634,5 +642,42 @@ It’s heavily inspired on <a href="https://www.alecbabala.com/" target="_blank"
         justify-content: space-around;
         align-items: center;
     }
+
+    #this_web_canvas{
+        width: 268px;
+        height: 226px;
+        height: fit-content;
+        overflow: hidden;
+        position: absolute;
+        left: 31px;
+        top: 60px;
+        border: 3px solid transparent;
+        border-radius: 2px;
+        box-sizing: border-box;
+        transition: 0.3s;
+        opacity: 0.7;
+    }
+
+    #this_web_canvas:after{
+        content: 'This is an screenshot\'d canvas';
+        text-align: center;
+        display: block;
+        background: inherit;
+        font-size: 0;
+        transition: 0.3s;
+        color: #8899a7;
+        cursor: help;
+    }
+    #this_web_canvas:hover{
+        transform: scale(3);
+        border-color: #e6ecff;
+        background: #e6ecff;
+        opacity: 1;
+    }
+
+    #this_web_canvas:hover:after{
+        font-size: inherit;
+    }
+
 
 </style>

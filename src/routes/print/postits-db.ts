@@ -270,9 +270,15 @@ export let postItsDB = [
                     text: '',
                     postType: 4,
                     overwriteScrollText: 'Quiena Cont.',
-                    x:  1355 , y:  1160 ,
+                    x:  1365 , y:  1160 ,
                     customStyle : 'left: 10em;',
                     imgId: 'quiena1',
+                    subtext: 'Fintech Solution',
+                    tools: 'Angular, React, Native & +',
+                    otherLinks: [
+                        {label: 'Web', href: 'https://www.quiena.com'},
+                        {label: 'App', href: 'https://www.quiena.com/#connect'},
+                    ],
                     hasExtraBox: true
                 },
                 {
@@ -295,110 +301,123 @@ export let postItsDB = [
 
             [
                 {
+                    id: 'themoviecube',
+                    subtext: '3D Web',
+                    tools: 'React, Three.js, Jest, TS.',
+                    overwriteScrollText: 'The Movie ◱',
+                    x:  1886 , y:  742 ,
+                    videoUrl: 'ow2xQUg1NXg',
+                    postType: t.polaroid,
+
+                    otherLinks: [
+                        {label: 'Live', href: 'https://themoviecube.vercel.app/'},
+                        {label: 'Repo', href: 'https://github.com/andna/themoviecube'},
+                    ]
+                },
+                {
+                    id: 'pokitdex',
+                    overwriteScrollText: 'Pok\'it Dex',
+                    subtext: '2D Web',
+                    tools: 'React, Redux, Next.js, MUI, Formik, TS.',
+                    videoUrl: 'TC-ZUk__xWY',
+                    postType: t.polaroid,
+                    x:  1886 , y:  1120  ,
+                    otherLinks: [
+                        {label: 'Live', href: 'https://pokitdex.vercel.app/'},
+                        {label: 'Repo', href: 'https://github.com/andna/pokitdex'},
+                    ]
+                },
+            ],
+            [
+                {
                     id: 'space_o2',
-                    subtext: 'VR Videogame',
-                    tools: 'Unity, C#, Blender, Quest 2.',
+                    overwriteScrollText: 'Space O²',
+                    subtext: '6DoF VR Game',
+                    tools: 'Unity, C#, Meta Quest 2.',
                     videoUrl: 'VKvfS5y1mG4',
                     postType: t.polaroid,
-                    x:  1886 , y:  742 ,
+                    x:  2250  , y:  792 ,
                     otherLinks: [
-                        {label: 'APK Download', href: 'https://andbf.itch.io/space-o2'},
+                        {label: 'APK', href: 'https://andbf.itch.io/space-o2'},
                     ]
                 },
                 {
                     id: 'lava_surf',
-                    text: 'Lava Surf VR',
                     overwriteScrollText: 'Lava Surf VR',
-                    subtext: 'Cardboard game - Thesis',
+                    subtext: '3DoF VR Game',
+                    tools: 'Unity, Blender, Cardboard.',
                     postType: t.polaroid,
-                    x:  1886 , y:  1120  ,
+                    x:  2250  , y:  1132 ,
                     videoUrl: 'CocjtK3EBuA',
-                    href: 'https://andbf.itch.io/lava-surf-vr'
+                    otherLinks: [
+                        {label: 'APK', href: 'https://andbf.itch.io/lava-surf-vr'},
+                    ]
                 },
             ],
             [
-
                 {
-                    id: 'vr_dinning',
-                    text: 'VR Dinning',
-                    subtext: 'Master thesis experience plan',
-                    overwriteScrollText: 'VR Dinning',
-                    videoUrl: 'TOI1ie4dzRw',
+                    id: 'smatchups',
+                    subtext: 'Web',
+                    tools: 'JQuery, Sass, Fullstack PHP practice.',
                     postType: t.polaroid,
-                    x:  2250  , y:  792 ,
+                    overwriteScrollText: 'Smatchups',
+                    x:  2610  , y:  792 ,
+                    imgId: 'smatchups',
+                    otherLinks: [
+                        {label: 'Live', href: 'https://smatchups.vercel.app/'},
+                        {label: 'Repo', href: 'https://github.com/andna/smatchups'},
+                    ]
                 },
                 {
                     id: 'modera_game',
-                    text: 'Modera Game',
-                    subtext: 'Hackathon social game',
+                    subtext: '2D Game',
+                    tools: 'Unityscript, GameMaker.',
                     overwriteScrollText: 'ModeraGame',
                     videoUrl: 'bKNcZ4yMe40',
-                    href: 'https://andbf.itch.io/modera-game',
                     postType: t.polaroid,
-                    x:  2250  , y:  1132 ,
+                    x:  2610   , y:  1132,
+                    otherLinks: [
+                        {label: 'APK', href: 'https://andbf.itch.io/modera-game'},
+                    ]
                 },
             ],
             [
-
                 {
-                    id: 'smatchups',
-                    text: 'Smatchups',
-                    subtext: 'Community voting fullstack project ',
+                    id: 'this_web',
+                    subtext: 'This Web',
+                    tools: 'SvelteKit, Next.js, Figma.',
+                    overwriteScrollText: 'This Web',
                     postType: t.polaroid,
-                    overwriteScrollText: 'Smatchups',
-                    href: 'https://twitter.com/InfoSmatchups',
-                    x:  2617  , y:  792 ,
-                    imgId: 'smatchups'
+                    x:  2970   , y:  792,
+                    otherLinks: [
+                        {label: 'Repo', href: 'https://github.com/andna/andresbf'},
+                        {label: 'Figma', href: 'https://www.figma.com/file/yAaTAFz5Mq7IEo7mgKz68U/Confluence-Variable?node-id=0%3A1'},
+                        {label: 'Live', href: '#'},
+                    ]
                 },
-                {
-                    id: 'pokeweakto',
-                    text: 'PokeWeak To',
-                    overwriteScrollText: 'PokeWeak To',
-                    subtext: 'Interactive companion tool',
-                    postType: t.polaroid,
-                    x:  2617   , y:  1132,
-                    href: 'https://poke-weak-to.vercel.app/',
-                    imgId: 'pokeweakto'
-                },
-            ],
-            [
-
                 {
                     id: 'youtube',
                     icon: true,
                     text: 'youtube.com/user/andzofficial',
                     href: 'https://www.youtube.com/user/andzofficial/videos',
-
                     postType: t.bentR,
                     colour: c.red,
                     size: s.small,
                     overwriteScrollText: 'Else...',
-                    x:  2986 , y:  970  ,
-                    customStyle: 'top: 6em; left: 6em;',
+                    x:  2970 , y:  1132  ,
+                    customStyle: 'top: 1em; left: 1em',
                     hasExtraBox: true
                 },
-
                 {
                     id: 'behance',
                     icon: true,
                     text: 'be.net/andbastf',
                     href: 'https://www.behance.net/andbastf',
-
                     postType: t.stickD,
                     colour: c.green,
                     size: s.small,
                     notScrollable: true,
-                    customStyle: 'top: 4em;'
-                },
-                {
-                    id: 'last',
-                    text: '',
-                    postType: t.bentL,
-                    colour: c.blue,
-                    size: s.small,
-                    notScrollable: true,
-                    customStyle: 'top: 2em; left: 6em;',
-                    hasCustomHTML: true,
+                    customStyle: 'top: -2em; left: 8em;'
                 },
             ],
         ]

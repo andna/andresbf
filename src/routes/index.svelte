@@ -2,6 +2,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin>
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;800&display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"> </script>
 </svelte:head>
 
 <script>
@@ -26,6 +27,8 @@
 	let currentTheme = 0
 
 	let logoDisable = true
+	let currentUrl = ''
+
 
 	function onKeyDown(e) {
 		if (e.keyCode === 32 && e.target === document.body) {
@@ -202,6 +205,7 @@
 
 	let currentlyScrollingByButton
 
+
 	function changeScrollPos(pos, isDesktop = null) {
 		currentlyScrollingByButton = true
 		var arr = isDesktop ? scrollPositionsDesktop : scrollPositionsMobile;
@@ -221,6 +225,7 @@
 
 		}
 
+		currentUrl = window.location.href;
 
 		setCssSmoothBehaviour(true)
 		setTimeout(() => {
@@ -238,7 +243,21 @@
 	}
 
 
+	import html2canvas from 'html2canvas';
+
+
 	onMount(() => {
+		html2canvas(document.getElementById('wrapper')).then(function(canvas) {
+			// language=CSS prefix=*{ suffix=}
+			canvas.style = `
+				width: 385px;
+				height: auto;
+				left: -60px;
+				position: relative;
+			`;
+			document.getElementById('this_web_canvas').appendChild(canvas);
+		});
+		currentUrl = window.location.href;
 		var currentHash = window.location.hash.substring(1)
 		var foundHash = false
 		scrollPositionsMobile.forEach((pos, i) => {
@@ -310,7 +329,6 @@
 	function isMobile() {
 		return window.innerWidth < breakpointMobile
 	}
-
 
 </script>
 <svelte:window
@@ -429,7 +447,9 @@
 								{#each postItGroup as postIt, j (postIt.id)}
 									<div class="postit-individual {postIt.href ? 'is-link' : ''}"
 										 style="z-index: {postItGroup.length - j}">
-										<Postit postData={postIt} currentTheme={currentTheme}/>
+										<Postit postData={postIt}
+												currentUrl={currentUrl}
+												currentTheme={currentTheme}/>
 									</div>
 								{/each}
 							</div>
@@ -688,7 +708,7 @@
 	}
 
 	.menu-button-navigation {
-		padding-top: 18px;
+		padding-top: 20px;
 		box-sizing: border-box;
 	}
 
