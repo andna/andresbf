@@ -2,7 +2,8 @@
     red,
     green,
     blue,
-    yellow
+    yellow,
+    black
 }
 enum t {
     bentR,
@@ -93,11 +94,10 @@ export let postItsDB = [
         postItGroups: [
             [{
                 id: 'frontend',
-                text: 'Frontend\nFrameworks',
+                text: 'Frontend\nDevelopment',
                 bigIcons: [
                     {id:'react', tooltip: 'ReactJS &\nReact Native'},
-                    {id:'angular', tooltip: 'Angular 2+'},
-                    {id:'jquery', tooltip: 'jQuery'},
+                    {id:'threejs', tooltip: 'Three.js'},
                     {id:'svelte', tooltip: 'Svelte'},],
                 postType: t.bentL,
                 colour: c.green,
@@ -185,36 +185,6 @@ export let postItsDB = [
         customTitleStyle: 'left: -2em',
         postItGroups: [
             [
-
-                {
-                    id: 'halliburton',
-                    text: 'Content Manager',
-                    subtext: 'Jun 2014 ➡ Jan 2015',
-                    wideIcon : true,
-
-                    postType: t.bentL,
-                    colour: c.red,
-                    size: s.small,
-                    overwriteScrollText: 'Past',
-                    x:  621 , y:  1036 ,
-
-                    customStyle : 'left: -1em; top: 1em;',
-                    hasExtraBox: true
-
-                },{
-                id: 'atiko7',
-                text: 'Branding\nWordpress Dev',
-                subtext: 'Sep 2013 ➡ Mar 2014',
-                wideIcon : true,
-
-                postType: t.stickU,
-                colour: c.yellow,
-                size: s.small,
-                notScrollable: true,
-                customStyle : 'top: -1em; left: -7em;',
-            },
-            ],
-            [
                 {
                     id: 'quiena',
                     text: 'Qienna Wealth\nManagement Inc.',
@@ -223,23 +193,23 @@ export let postItsDB = [
                     overwriteScrollText: 'Quiena',
                     wideIcon : true,
 
-                    postType: t.bentR,
+                    postType: t.bentL,
                     colour: c.blue,
                     size: s.medium,
                     x:  933 , y:  1160 ,
-                    customStyle : 'left: 5em;',
+                    customStyle : 'left: -3em;',
                     hasExtraBox: true
                 },
                 {
                     id: 'productmanager',
                     text: 'Product\nManager',
-                    subtext: 'Jun 2021 ➡ Today',
+                    subtext: 'Jun 2021 ➡ Apr 2022',
 
                     postType: t.stickU,
                     colour: c.green,
                     size: s.small,
                     notScrollable: true,
-                    customStyle : 'left: 7.4em; top: -5em;  padding-top: 5em;'
+                    customStyle : 'left: -1.4em; top: -5em;  padding-top: 5em;'
                 },
                 {
                     id: 'uxuileader',
@@ -250,18 +220,18 @@ export let postItsDB = [
                     colour: c.red,
                     size: s.small,
                     notScrollable: true,
-                    customStyle : 'top: -12em; padding-top: 5em; left: 2.4em;'
+                    customStyle : 'top: -12em; padding-top: 5em; left: -5.4em;'
                 },
                 {
                     id: 'frontenddev',
                     text: 'Frontend\nDev',
                     subtext: 'Jan 2016 ➡ Nov 2020',
 
-                    postType: t.bentL,
+                    postType: t.stickU,
                     colour: c.green,
                     size: s.small,
                     notScrollable: true,
-                    customStyle : 'top: -17em; left: -1em; padding-top: 4em;'
+                    customStyle : 'top: -17em; left: -7em; padding-top: 4em;'
                 },
             ],
             [
@@ -271,7 +241,7 @@ export let postItsDB = [
                     postType: 4,
                     overwriteScrollText: 'Quiena Cont.',
                     x:  1365 , y:  1160 ,
-                    customStyle : 'left: 10em;',
+                    customStyle : 'left: -2em;',
                     imgId: 'quiena1',
                     subtext: 'Fintech Solution',
                     tools: 'Angular, React, Native & +',
@@ -286,9 +256,26 @@ export let postItsDB = [
                     text: '',
                     postType: t.polaroid,
                     notScrollable: true,
-                    customStyle : 'left: 10em;',
+                    customStyle : 'left: -7em; top: 1em;',
                     imgId: 'quiena2'
                 }
+            ],
+            [
+                {
+                    id: 'zemoga',
+                    text: 'Senior FE Dev',
+                    href: 'https://www.zemoga.com/',
+                    subtext: 'May 2022 ➡ Today',
+                    overwriteScrollText: 'Zemoga',
+                    wideIcon : true,
+
+                    postType: t.bentR,
+                    colour: c.black,
+                    size: s.big,
+                    x:  933 , y:  1160 ,
+                    customStyle : 'left: 1em; transform: rotate(-7deg);     top: -3em;',
+                    hasExtraBox: true
+                },
             ],
         ]
     },

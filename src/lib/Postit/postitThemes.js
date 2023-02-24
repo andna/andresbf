@@ -2,7 +2,8 @@ let single = {
     red: {r: 255, g: 173, b: 152},
     green: {r: 208, g: 231, b: 159},
     blue: {r: 151, g: 234, b: 224},
-    yellow: {r: 231, g: 223, b: 152}
+    yellow: {r: 231, g: 223, b: 152},
+    black: [{r: 10, g: 52, b: 64} ],
 }
 
 let detailPost0 = {
@@ -10,6 +11,7 @@ let detailPost0 = {
     green: [{r: 118, g: 222, b: 197},  {r: 119, g: 168, b: 148}],
     blue: [{r: 144, g: 182, b: 214},  {r: 109, g: 137, b: 160}],
     yellow: [{r: 214, g: 207, b: 136},  {r: 192, g: 172, b: 100} ],
+    black: [{r: 60, g: 100, b: 90},  {r: 10, g: 52, b: 64} ],
 }
 
 export let postitThemes = [
@@ -30,6 +32,10 @@ export let postitThemes = [
         [//yellow
             [{r: 255, g: 249, b: 193}, {r: 231, g: 222, b: 135} ],
             detailPost0.yellow,
+        ],
+        [//black
+            [{r: 10, g: 52, b: 64}, {r: 23, g: 31, b: 25} ],
+            detailPost0.black,
         ]
     ],
     [// post1
@@ -44,6 +50,9 @@ export let postitThemes = [
         ],
         [//yellow
             [{r: 255, g: 250, b: 192}, {r: 235, g: 228, b: 159}, {r: 218, g: 205, b: 128}, {r: 230, g: 221, b: 150}],
+        ],
+        [//black
+            [{r: 10, g: 52, b: 64}, {r: 10, g: 52, b: 64} ]
         ]
     ],
     [// post2
@@ -58,6 +67,9 @@ export let postitThemes = [
         ],
         [//yellow
             [{r: 255, g: 249, b: 191}, {r: 250, g: 244, b: 180}, {r: 231, g: 223, b: 154}, {r: 214, g: 199, b: 120}],
+        ],
+        [//black
+            [{r: 10, g: 52, b: 64}, {r: 10, g: 52, b: 64} ]
         ]
     ],
     [// post3
@@ -72,6 +84,9 @@ export let postitThemes = [
         ],
         [//yellow
             [{r: 251, g: 245, b: 182}, {r: 226, g: 220, b: 151}, {r: 221, g: 208, b: 132}],
+        ],
+        [//black
+            [{r: 10, g: 52, b: 64}, {r: 10, g: 52, b: 64} ]
         ]
     ]
 ]
@@ -95,6 +110,10 @@ export let monokai = [
         [//yellow
             [single.yellow, single.yellow],
             detailPost0.yellow,
+        ],
+        [//black
+            [single.black, single.black ],
+            detailPost0.black,
         ]
     ],
     [// post1
@@ -109,6 +128,9 @@ export let monokai = [
         ],
         [//yellow
             [single.yellow, single.yellow, single.yellow, single.yellow, ],
+        ],
+        [//black
+            [single.black, single.black,single.black,single.black ]
         ]
     ],
     [// post2
@@ -123,6 +145,9 @@ export let monokai = [
         ],
         [//yellow
             [single.yellow, single.yellow, single.yellow, single.yellow, ],
+        ],
+        [//black
+            [single.black, single.black, single.black, single.black ]
         ]
     ],
     [// post3
@@ -137,6 +162,9 @@ export let monokai = [
         ],
         [//yellow
             [single.yellow, single.yellow, single.yellow,  ],
+        ],
+        [//black
+            [single.black, single.black, single.black ]
         ]
     ]
 ]

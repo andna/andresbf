@@ -99,7 +99,7 @@
     if(postData.id == 'more'){
         setInterval(()=>{
             const d = new Date();
-            hours = d.getUTCHours() - 3;
+            hours = d.getUTCHours() - 5;
             if(hours < 0){
                 hours = 24 + hours
             }
@@ -111,7 +111,8 @@
         "#9B6475",
         "#2C8378",
         "#487AA5",
-        "#AA8B5C"
+        "#AA8B5C",
+        "#ece5e5"
     ];
 
 
@@ -180,7 +181,7 @@
 I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.<br>
 I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization that we are going through.
 <br>I'm currently based in
-Buenos Aires, Argentina, GMT-3
+Quito, Ecuador, GMT-5
 (For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
                     </div>
                 {/if}
@@ -215,7 +216,6 @@ Buenos Aires, Argentina, GMT-3
         {/if}
 
         <div class="container-postit-svg">
-
             <svg width={svgSize} height={svgSize} viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {#if currentPostType === 0}
                     <g clip-path="url(#clip0_{postData.id})">
