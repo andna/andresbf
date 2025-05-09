@@ -181,7 +181,7 @@
 I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.<br>
 I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization that we are going through.
 <br>I'm currently based in
-Quito, Ecuador, GMT-5
+Bogotá, Colombia, GMT-5
 (For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
                     </div>
                 {/if}
