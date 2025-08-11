@@ -1,0 +1,19 @@
+@use './variables' as vars;
+
+@mixin flex-center {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin aspect-landscape {
+  @media (min-width: vars.$mid-breakpoint) and (min-height: vars.$portrait-height-breakpoint) {
+    @content;
+  }
+}
+
+@mixin aspect-portrait {
+  @media not all and (min-width: vars.$mid-breakpoint) and (min-height: vars.$portrait-height-breakpoint) {
+    @content;
+  }
+}
