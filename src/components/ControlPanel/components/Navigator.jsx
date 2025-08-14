@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Edges, OrbitControls, OrthographicCamera } from '@react-three/drei'
+import {Edges, OrbitControls, OrthographicCamera, Stars, Sparkles, Sky} from '@react-three/drei'
 
 const lineWidth = 2
 
@@ -55,28 +55,13 @@ function Helix({ skewValue = -0.1, planesPerCycle = 4, indexHovered = -1, select
     const targetRotationY = useRef(0)
     const currentRotationIndex = useRef(0)
 
-    useEffect(() => {
-        const current = currentRotationIndex.current % planesPerCycle
-        const target = selectedIndex % planesPerCycle
-        let delta = target - current
-        const half = planesPerCycle / 2
-        if (delta > half) delta -= planesPerCycle
-        if (delta < -half) delta += planesPerCycle
-        currentRotationIndex.current += delta
-        targetRotationY.current = -currentRotationIndex.current * baseRotation
-    }, [selectedIndex, baseRotation, planesPerCycle])
 
-    useFrame(() => {
-        if (mesh.current) {
-            mesh.current.rotation.y += (targetRotationY.current - mesh.current.rotation.y) * 0.1
-        }
-    })
 
     const planeWidth = 1
     const radius = planeWidth / (2 * Math.tan(Math.PI / planesPerCycle))
 
     const { skewedPlaneGeometry } = useMemo(() => {
-        const geometry = new THREE.PlaneGeometry(1, 0.35)
+        const geometry = new THREE.PlaneGeometry(1, 0.75)
         const m = new THREE.Matrix4()
         m.makeShear(skewValue, 0, 0, 0, 0, 0)
         geometry.applyMatrix4(m)
@@ -128,17 +113,6 @@ function Helix({ skewValue = -0.1, planesPerCycle = 4, indexHovered = -1, select
     )
 }
 
-function Common({ color, zoom }) {
-    return (
-        <Suspense fallback={null}>
-            {color && <color attach='background' args={[color]} />}
-            <ambientLight />
-            <directionalLight color={'white'} position={[20, 30, 10]} intensity={23233} decay={0.2} />
-            <OrthographicCamera makeDefault position={[0, 0, 10]} zoom={zoom} />
-        </Suspense>
-    )
-}
-
 function Slider({ title, value, onChange, min, max, step = 1, left = '300px' }) {
     return (
         <div style={{ left }} className="absolute bottom-4 z-10 bg-white bg-opacity-90 p-4 rounded-lg shadow-lg">
@@ -158,15 +132,51 @@ function Slider({ title, value, onChange, min, max, step = 1, left = '300px' }) 
     )
 }
 
+
+function RotatingOrthoCamera({ zoom, selectedIndex, planesPerCycle, radius = 10, height = 0 }) {
+    const camRef = useRef()
+    const baseRotation = (Math.PI * 2) / planesPerCycle
+    const currentIndexRef = useRef(0)
+    const targetAngleRef = useRef(0)
+
+    useEffect(() => {
+        const current = ((currentIndexRef.current % planesPerCycle) + planesPerCycle) % planesPerCycle
+        const target = ((selectedIndex % planesPerCycle) + planesPerCycle) % planesPerCycle
+        let delta = target - current
+        const half = planesPerCycle / 2
+        if (delta > half) delta -= planesPerCycle
+        if (delta < -half) delta += planesPerCycle
+        currentIndexRef.current += delta
+        targetAngleRef.current = currentIndexRef.current * baseRotation
+    }, [selectedIndex, baseRotation, planesPerCycle])
+
+    useFrame(() => {
+        const cam = camRef.current
+        if (!cam) return
+        cam.userData.angle ??= targetAngleRef.current
+        cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.1
+
+        const a = cam.userData.angle
+        cam.position.set(Math.sin(a) * radius, height, Math.cos(a) * radius)
+        cam.lookAt(0, 0, 0)
+        cam.updateProjectionMatrix()
+    })
+
+    return <OrthographicCamera ref={camRef} makeDefault zoom={zoom} />
+}
+
+
+
+
 export default function Navigator() {
-    const [skewValue, setSkewValue] = useState(-0.37)
+    const [skewValue, setSkewValue] = useState(-0.75)
     const [planesPerCycle, setPlanesPerCycle] = useState(3)
     const [indexHovered, setIndexHovered] = useState(-1)
     const helixScale = 0.6
     const orthoZoom = 200
     const skewAngle = Math.atan(Math.abs(skewValue))
     const RAD2DEG = 180 / Math.PI
-    const skewYDeg = skewAngle * RAD2DEG * 1.6
+    const skewYDeg = skewAngle * RAD2DEG * 0.8
     const stepWorld = Math.sin(skewAngle) + Math.pow(Math.abs(skewValue), 2.5) * 0.1
     const planeWidthWorld = 1
     const radiusWorld = planeWidthWorld / (2 * Math.tan(Math.PI / planesPerCycle))
@@ -183,17 +193,41 @@ export default function Navigator() {
             <div style={{ position: 'relative' }}>
                 <Slider title="Planes per cycle" value={planesPerCycle} onChange={setPlanesPerCycle} min={3} max={8} step={1} left='0px' />
                 <Slider title="Skew" value={skewValue} onChange={setSkewValue} min={-2} max={0.01} step={0.01} left='300px' />
-                <div style={{ width: `${helixViewWidthPx}px`, height: '80vh' }}>
-                    <Canvas orthographic camera={{ position: [0, 0, 10], zoom: orthoZoom }}>
+                <div style={{ width: `100vw`, height: '80vh' }}>
+                    <Canvas>
+
+                             <Stars radius={0.1} depth={30} count={5000} factor={1} saturation={10} fade speed={0} />
+
+
+
                         <Suspense fallback={null}>
-                            <group position={[0, 3, 0]} scale={[0.5, 1, 1]}>
-                                <Helix scale={helixScale} skewValue={skewValue} planesPerCycle={planesPerCycle} indexHovered={indexHovered} selectedIndex={selectedIndex} setSelectedIndex={setSelectedIndex} totalPlanes={totalPlanes - 1} />
+                            <group position={[0, 0, 0]} scale={[1, 1, 1]}>
+                                <Helix
+                                    scale={helixScale}
+                                    skewValue={skewValue}
+                                    planesPerCycle={planesPerCycle}
+                                    indexHovered={indexHovered}
+                                    selectedIndex={selectedIndex}
+                                    setSelectedIndex={setSelectedIndex}
+                                    totalPlanes={totalPlanes - 1}
+                                />
                             </group>
-                            <Common zoom={orthoZoom} />
-                            <OrbitControls />
+
+
+                            <RotatingOrthoCamera
+                                zoom={orthoZoom}
+                                selectedIndex={selectedIndex}
+                                planesPerCycle={planesPerCycle}
+                                radius={10}     // tweak as you like
+                                height={0}      // set a constant Y if needed
+                            />
+
+
+
                         </Suspense>
                     </Canvas>
                 </div>
+
             </div>
             <ul style={{ lineHeight: `${lineHeightPx}px`, color: 'white', marginTop: '6rem', transform: `skewY(${skewYDeg}deg)`, fontSize: '20px', fontWeight: '900', marginLeft: `${listLeftPx}px`, position: 'absolute', left: 0, top: 0 }}>
                 {['Blob', 'Helix', 'Torus', 'Tube', 'Sphere', 'Torus Knot'].map((name, index) => (
