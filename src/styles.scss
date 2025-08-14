@@ -5,6 +5,22 @@
   color-scheme: light dark;
   --padding: 2rem;
   --max-width: 25rem;
+  --color-primary: #000;
+  --color-secondary: #fff;
+
+  --controls-bg: #444;
+
+  --button-color: #000;
+  --button-bg: #fff;
+  --button-bg-primary: #5dad42;
+  --button-hover: #bbb;
+
+  --transition: 0.3s ease;
+
+
+  --font-size-s: 0.75rem;
+  --font-size-m: 1.25rem;
+  --font-size-l: 1.5rem;
 }
 
 * {
@@ -16,17 +32,112 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
+button {
+    @include pill-r;
+    @include hght;
+
+    font-weight: 900;
+    border: none;
+
+    cursor: pointer;
+    color: var(--button-color);
+    background-color: var(--button-bg);
+    transition: background-color var(--transition);
+
+    &:hover {
+        background-color: var(--button-hover);
+    }
+}
+
 .app {
   display: flex;
 }
 
+
+
+
 .control-panel {
-    background-color: #444;
+    background-color: var(--controls-bg);
     padding: var(--padding);
     width: 100vw;
     max-width: var(--max-width);
 }
 
+.cut-selector {
+    @include pill-r;
+    @include hght;
+    box-sizing: unset;
+    
+
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+
+    cursor: pointer;
+
+    .cut-percent {
+        text-align: right;
+    }
+
+    .cut-narrate {
+        display: none;
+        background: var(--button-bg-primary);
+        color: var(--button-bg);
+    }
+
+    .cut-name {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        justify-content: center;
+        align-items: flex-start;
+        width: 10rem;
+
+        .cut-name-text {
+            font-size: var(--font-size-m);
+            font-weight: 900;
+        }
+        .cut-verb {
+            font-size: var(--font-size-s);
+        }
+    }
+
+    .cut-verb {
+        opacity: 0;
+        height: 0;
+        transition: opacity var(--transition), height var(--transition), margin-top var(--transition);
+       
+    }
+
+
+    transition: background-color var(--transition), color var(--transition);
+
+    &.selected, &:hover {
+        color: var(--button-color);
+        background-color: var(--button-hover);
+
+        .cut-verb {
+            opacity: 1;
+            height: auto;
+            margin-top: 0.25rem;
+        }
+    }
+
+    &.selected {
+        background-color: var(--button-bg);
+
+        .cut-narrate{
+            display: block;
+        }
+    }
+}
+
+.narrator {
+   /* height: 100%; */
+    display: flex;
+    align-items: center;
+}
 
 @include aspect-portrait {
     .app {
@@ -45,6 +156,10 @@ body {
 
 
 @include aspect-landscape {
+
+    body {
+        overflow: hidden;
+    }
     .control-panel {
         height: 100vh;
     }

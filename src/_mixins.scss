@@ -17,3 +17,12 @@
     @content;
   }
 }
+
+
+@mixin pill-r {
+  border-radius: 50rem;
+}
+
+@mixin hght {
+  height: 3rem;
+}
