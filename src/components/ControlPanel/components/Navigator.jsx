@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import {Edges, OrbitControls, OrthographicCamera, Stars, Sparkles, Sky} from '@react-three/drei'
 
@@ -8,8 +8,8 @@ const lineWidth = 2
 const colors = {
     selected: '#ffffff',
     hovered: '#555555',
-    default: '#28262B',
-    line: '#444'
+    default: '#000',
+    line: '#fff'
 }
 
 function SkewedPlane({ skewedPlaneGeometry, planeRotation = 0, isSelected = false, isExternallyHovered = false, onClick, ...props }) {
@@ -133,11 +133,21 @@ function Slider({ title, value, onChange, min, max, step = 1, left = '300px' }) 
 }
 
 
-function RotatingOrthoCamera({ zoom, selectedIndex, planesPerCycle, radius = 10, height = 0 }) {
+function RotatingOrthoCamera({
+                                 zoom,
+                                 selectedIndex,
+                                 planesPerCycle,
+                                 radius = 10,
+                                 height = 0,
+                                 targetRef,             // ref to helix pivot group
+                                 offsetPx = [0, 0],     // [x, y] in canvas pixels: +x => move helix right, +y => down
+                             }) {
     const camRef = useRef()
     const baseRotation = (Math.PI * 2) / planesPerCycle
     const currentIndexRef = useRef(0)
     const targetAngleRef = useRef(0)
+    const { size } = useThree()
+    const tmpTarget = new THREE.Vector3()
 
     useEffect(() => {
         const current = ((currentIndexRef.current % planesPerCycle) + planesPerCycle) % planesPerCycle
@@ -152,20 +162,35 @@ function RotatingOrthoCamera({ zoom, selectedIndex, planesPerCycle, radius = 10,
 
     useFrame(() => {
         const cam = camRef.current
-        if (!cam) return
+        const pivot = targetRef?.current
+        if (!cam || !pivot) return
+
+        // Smooth orbit around pivot
         cam.userData.angle ??= targetAngleRef.current
         cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.1
-
         const a = cam.userData.angle
-        cam.position.set(Math.sin(a) * radius, height, Math.cos(a) * radius)
-        cam.lookAt(0, 0, 0)
+
+        pivot.getWorldPosition(tmpTarget)
+        const basePos = tmpTarget.clone().add(new THREE.Vector3(
+            Math.sin(a) * radius, height, Math.cos(a) * radius
+        ))
+
+        cam.position.copy(basePos)
+        cam.lookAt(tmpTarget)
+
+        // --- pure screen-space pan (no rotation) ---
+        const [ox, oy] = offsetPx
+        if ((ox | oy) !== 0) {
+            // setViewOffset uses top-left origin; signs below make ox>0 shift helix right, oy>0 shift helix down.
+            cam.setViewOffset(size.width, size.height, -ox, -oy, size.width, size.height)
+        } else {
+            cam.clearViewOffset()
+        }
         cam.updateProjectionMatrix()
     })
 
     return <OrthographicCamera ref={camRef} makeDefault zoom={zoom} />
 }
-
-
 
 
 export default function Navigator() {
@@ -188,20 +213,30 @@ export default function Navigator() {
     const [selectedIndex, setSelectedIndex] = useState(0)
     const totalPlanes = 7
 
+    const helixPivot = useRef()
     return (
         <div className="navigator" style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
             <div style={{ position: 'relative' }}>
+
+                {/*
                 <Slider title="Planes per cycle" value={planesPerCycle} onChange={setPlanesPerCycle} min={3} max={8} step={1} left='0px' />
                 <Slider title="Skew" value={skewValue} onChange={setSkewValue} min={-2} max={0.01} step={0.01} left='300px' />
-                <div style={{ width: `100vw`, height: '80vh' }}>
+
+*/}
+                <div className="canvas">
                     <Canvas>
 
                              <Stars radius={0.1} depth={30} count={5000} factor={1} saturation={10} fade speed={0} />
 
+                        {/*
+                        <Sky distance={450000} sunPosition={[0.5, 0.2, 0]} inclination={10} azimuth={0.5} />
 
+
+                        */}
 
                         <Suspense fallback={null}>
-                            <group position={[0, 0, 0]} scale={[1, 1, 1]}>
+
+                            <group ref={helixPivot} position={[0, 2, 0]}>
                                 <Helix
                                     scale={helixScale}
                                     skewValue={skewValue}
@@ -218,10 +253,11 @@ export default function Navigator() {
                                 zoom={orthoZoom}
                                 selectedIndex={selectedIndex}
                                 planesPerCycle={planesPerCycle}
-                                radius={10}     // tweak as you like
-                                height={0}      // set a constant Y if needed
+                                radius={10}
+                                height={0}
+                                targetRef={helixPivot}
+                                offsetPx={[330, -300]}  // 160px left, 40px up on the canvas
                             />
-
 
 
                         </Suspense>

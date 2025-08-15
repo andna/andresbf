@@ -28,6 +28,7 @@
 }
 
 body {
+    background: var(--color-primary);
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
@@ -67,7 +68,7 @@ button {
     @include pill-r;
     @include hght;
     box-sizing: unset;
-    
+
 
     display: flex;
     align-items: center;
@@ -107,7 +108,7 @@ button {
         opacity: 0;
         height: 0;
         transition: opacity var(--transition), height var(--transition), margin-top var(--transition);
-       
+
     }
 
 
@@ -138,6 +139,15 @@ button {
     display: flex;
     align-items: center;
 }
+
+.canvas{
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+}
+
 
 @include aspect-portrait {
     .app {
