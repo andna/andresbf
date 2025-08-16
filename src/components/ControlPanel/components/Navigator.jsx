@@ -8,7 +8,7 @@ const lineWidth = 2
 const colors = {
     selected: '#ffffff',
     hovered: '#555555',
-    default: '#000',
+    default: '#28262B',
     line: '#fff'
 }
 
@@ -139,17 +139,21 @@ function RotatingOrthoCamera({
                                  planesPerCycle,
                                  radius = 10,
                                  height = 0,
-                                 targetRef,             // ref to helix pivot group
-                                 offsetPx = [0, 0],     // [x, y] in canvas pixels: +x => move helix right, +y => down
+                                 targetRef,
+                                 offsetPx = [0, 0],
                              }) {
     const camRef = useRef()
+    const controlsRef = useRef()
     const baseRotation = (Math.PI * 2) / planesPerCycle
     const currentIndexRef = useRef(0)
     const targetAngleRef = useRef(0)
     const { size } = useThree()
     const tmpTarget = new THREE.Vector3()
+    const [userRotating, setUserRotating] = useState(false)
 
+    // Compute the shortest-path delta when the index changes.
     useEffect(() => {
+        if (userRotating) return
         const current = ((currentIndexRef.current % planesPerCycle) + planesPerCycle) % planesPerCycle
         const target = ((selectedIndex % planesPerCycle) + planesPerCycle) % planesPerCycle
         let delta = target - current
@@ -158,30 +162,43 @@ function RotatingOrthoCamera({
         if (delta < -half) delta += planesPerCycle
         currentIndexRef.current += delta
         targetAngleRef.current = currentIndexRef.current * baseRotation
-    }, [selectedIndex, baseRotation, planesPerCycle])
+    }, [selectedIndex, baseRotation, planesPerCycle, userRotating])
 
+    // Keep controls.target on the helix pivot (no y-jumps).
+    useFrame(() => {
+        const pivot = targetRef?.current
+        const controls = controlsRef.current
+        if (pivot && controls) {
+            pivot.getWorldPosition(tmpTarget)
+            controls.target.copy(tmpTarget)
+            controls.update()
+        }
+    })
+
+    // Drive auto-rotation only when not user-rotating.
     useFrame(() => {
         const cam = camRef.current
         const pivot = targetRef?.current
         if (!cam || !pivot) return
 
-        // Smooth orbit around pivot
-        cam.userData.angle ??= targetAngleRef.current
-        cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.1
-        const a = cam.userData.angle
-
         pivot.getWorldPosition(tmpTarget)
-        const basePos = tmpTarget.clone().add(new THREE.Vector3(
-            Math.sin(a) * radius, height, Math.cos(a) * radius
-        ))
 
-        cam.position.copy(basePos)
-        cam.lookAt(tmpTarget)
+        if (!userRotating) {
+            cam.userData.angle ??= targetAngleRef.current
+            cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
+            const a = cam.userData.angle
 
-        // --- pure screen-space pan (no rotation) ---
+            const basePos = tmpTarget.clone().add(
+                new THREE.Vector3(Math.sin(a) * radius, height, Math.cos(a) * radius)
+            )
+            cam.position.copy(basePos)
+            cam.lookAt(tmpTarget)
+        }
+        // No camera edits while userRotating—OrbitControls owns it.
+
+        // Screen-space pan
         const [ox, oy] = offsetPx
         if ((ox | oy) !== 0) {
-            // setViewOffset uses top-left origin; signs below make ox>0 shift helix right, oy>0 shift helix down.
             cam.setViewOffset(size.width, size.height, -ox, -oy, size.width, size.height)
         } else {
             cam.clearViewOffset()
@@ -189,8 +206,44 @@ function RotatingOrthoCamera({
         cam.updateProjectionMatrix()
     })
 
-    return <OrthographicCamera ref={camRef} makeDefault zoom={zoom} />
+    const handleControlStart = () => setUserRotating(true)
+
+    const handleControlEnd = () => {
+        setUserRotating(false)
+        const cam = camRef.current
+        const pivot = targetRef?.current
+        if (!cam || !pivot) return
+        pivot.getWorldPosition(tmpTarget)
+
+        // Align internal azimuth with current camera heading
+        const dx = cam.position.x - tmpTarget.x
+        const dz = cam.position.z - tmpTarget.z
+        const azimuth = Math.atan2(dx, dz)
+        cam.userData.angle = azimuth
+        targetAngleRef.current = azimuth
+        currentIndexRef.current = azimuth / baseRotation
+    }
+
+    return (
+        <>
+            <OrthographicCamera ref={camRef} makeDefault zoom={zoom} />
+            <OrbitControls
+                ref={controlsRef}
+                makeDefault           // <<< important: integrate with R3F events so clicks on meshes still work
+                enablePan={false}     // you already have screen-space pan via viewOffset
+                enableZoom={true}     // or false to lock zoom to the `zoom` prop
+                enableDamping
+                dampingFactor={0.1}
+                rotateSpeed={0.9}
+                minPolarAngle={Math.PI / 2}
+                maxPolarAngle={Math.PI / 2}
+                onStart={handleControlStart}
+                onEnd={handleControlEnd}
+            />
+        </>
+    )
 }
+
 
 
 export default function Navigator() {
@@ -226,13 +279,17 @@ export default function Navigator() {
                 <div className="canvas">
                     <Canvas>
 
-                             <Stars radius={0.1} depth={30} count={5000} factor={1} saturation={10} fade speed={0} />
+                             <Stars radius={1} depth={20} rayleigh={2} count={3000} factor={1} saturation={3} fade speed={0} color={"blue"} />
 
                         {/*
-                        <Sky distance={450000} sunPosition={[0.5, 0.2, 0]} inclination={10} azimuth={0.5} />
+                        <Sky distance={40000} sunPosition={[1, 0.2, 0]} inclination={1} azimuth={0} minDirectionalG={0.3}/>
 
 
-                        */}
+
+                           */}
+
+
+
 
                         <Suspense fallback={null}>
 
@@ -256,7 +313,7 @@ export default function Navigator() {
                                 radius={10}
                                 height={0}
                                 targetRef={helixPivot}
-                                offsetPx={[330, -300]}  // 160px left, 40px up on the canvas
+                                offsetPx={[0, -300]}  // 160px left, 40px up on the canvas
                             />
 
 

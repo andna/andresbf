@@ -5,7 +5,7 @@
   color-scheme: light dark;
   --padding: 2rem;
   --max-width: 25rem;
-  --color-primary: #000;
+  --color-primary: #28262B;
   --color-secondary: #fff;
 
   --controls-bg: #444;
@@ -13,9 +13,9 @@
   --button-color: #000;
   --button-bg: #fff;
   --button-bg-primary: #5dad42;
-  --button-hover: #bbb;
+  --button-hover: rgba(0, 0, 0, 0.25);
 
-  --transition: 0.3s ease;
+  --transition: 0.1s;
 
 
   --font-size-s: 0.75rem;
@@ -73,7 +73,7 @@ button {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
 
     cursor: pointer;
 
@@ -90,10 +90,11 @@ button {
     .cut-name {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
         justify-content: center;
         align-items: flex-start;
         width: 10rem;
+        gap: 0;
+        transition: gap var(--transition);
 
         .cut-name-text {
             font-size: var(--font-size-m);
@@ -101,33 +102,33 @@ button {
         }
         .cut-verb {
             font-size: var(--font-size-s);
+            opacity: 0;
+            height: 0;
+            transition: opacity var(--transition), height var(--transition);
         }
     }
 
-    .cut-verb {
-        opacity: 0;
-        height: 0;
-        transition: opacity var(--transition), height var(--transition), margin-top var(--transition);
-
-    }
 
 
     transition: background-color var(--transition), color var(--transition);
 
     &.selected, &:hover {
-        color: var(--button-color);
         background-color: var(--button-hover);
 
-        .cut-verb {
-            opacity: 1;
-            height: auto;
-            margin-top: 0.25rem;
+        .cut-name {
+            gap: 0.25rem;
+
+            .cut-verb {
+                opacity: 1;
+                height: 0.75rem;
+            }
         }
+
     }
 
     &.selected {
-        background-color: var(--button-bg);
 
+        background-color: var(--button-color);
         .cut-narrate{
             display: block;
         }
@@ -171,7 +172,10 @@ button {
         overflow: hidden;
     }
     .control-panel {
-        height: 100vh;
+        position: absolute;
+        z-index: 1;
+        left: calc(50% + -35rem);
+        top: calc(50% + -30rem);
     }
 
 }

@@ -6,7 +6,6 @@ export default function ControlPanel() {
     <div className="control-panel">
       <h3>Logo</h3>
       <Narrator />
-      <Navigator />
     </div>
   )
 }
