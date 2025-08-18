@@ -292,6 +292,33 @@ button {
     left: 0;
 }
 
+.navigator-list {
+    list-style: none;
+    padding: 0;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    margin: 5rem 6rem;
+    font-size: 2rem;
+    font-weight: 900;
+
+    span{
+        opacity: 0.1;
+        transition: opacity 0.2s;
+        cursor: pointer;
+
+        &:hover, &.selected{
+            opacity: 1;
+        }
+
+        &.selected{
+            pointer-events: none;
+        }
+    }
+}
+
 
 @include aspect-portrait {
     .app {

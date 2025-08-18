@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import {Edges, OrbitControls, OrthographicCamera, Stars, Sparkles, Sky} from '@react-three/drei'
+import {Edges, OrbitControls, OrthographicCamera, Stars, Sparkles, Sky, Html} from '@react-three/drei'
 
 const lineWidth = 2
 
@@ -52,16 +52,13 @@ function Helix({ skewValue = -0.1, planesPerCycle = 4, indexHovered = -1, select
     const mesh = useRef(null)
 
     const baseRotation = (Math.PI * 2) / planesPerCycle
-    const targetRotationY = useRef(0)
-    const currentRotationIndex = useRef(0)
-
 
 
     const planeWidth = 1
     const radius = planeWidth / (2 * Math.tan(Math.PI / planesPerCycle))
 
     const { skewedPlaneGeometry } = useMemo(() => {
-        const geometry = new THREE.PlaneGeometry(1, 0.75)
+        const geometry = new THREE.PlaneGeometry(1, 0.5)
         const m = new THREE.Matrix4()
         m.makeShear(skewValue, 0, 0, 0, 0, 0)
         geometry.applyMatrix4(m)
@@ -247,24 +244,25 @@ function RotatingOrthoCamera({
 
 
 export default function Navigator() {
-    const [skewValue, setSkewValue] = useState(-0.75)
+    const [skewValue, setSkewValue] = useState(-0.65)
     const [planesPerCycle, setPlanesPerCycle] = useState(3)
     const [indexHovered, setIndexHovered] = useState(-1)
     const helixScale = 0.6
     const orthoZoom = 200
     const skewAngle = Math.atan(Math.abs(skewValue))
     const RAD2DEG = 180 / Math.PI
-    const skewYDeg = skewAngle * RAD2DEG * 0.8
+    const skewYDeg = skewAngle * RAD2DEG * 0.88
     const stepWorld = Math.sin(skewAngle) + Math.pow(Math.abs(skewValue), 2.5) * 0.1
     const planeWidthWorld = 1
     const radiusWorld = planeWidthWorld / (2 * Math.tan(Math.PI / planesPerCycle))
     const gapPx = 20
     const unitToPx = orthoZoom * helixScale
-    const lineHeightPx = unitToPx * stepWorld * 0.74
+    const lineHeightPx = unitToPx * stepWorld * 1.125
     const helixViewWidthPx = 4 * unitToPx * radiusWorld
     const listLeftPx = helixViewWidthPx + gapPx
     const [selectedIndex, setSelectedIndex] = useState(0)
-    const totalPlanes = 7
+    const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
+    const totalPlanes = sections.length
 
     const helixPivot = useRef()
     return (
@@ -301,8 +299,23 @@ export default function Navigator() {
                                     indexHovered={indexHovered}
                                     selectedIndex={selectedIndex}
                                     setSelectedIndex={setSelectedIndex}
-                                    totalPlanes={totalPlanes - 1}
+                                    totalPlanes={totalPlanes}
                                 />
+                                <Html>
+
+                                    <ul className="navigator-list" style={{ lineHeight: `${lineHeightPx}px`, transform: `skewY(${skewYDeg}deg)` }}>
+                                        {sections.map((name, index) => (
+                                            <li key={index}>
+                                                <span
+                                                    className={`${selectedIndex === index ? 'selected' : ''}`}
+                                                    onClick={() => setSelectedIndex(index)}
+                                                    onMouseEnter={() => setIndexHovered(index)}
+                                                    onMouseLeave={() => setIndexHovered(-1)}>{name}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    
+                                </Html>
                             </group>
 
 
@@ -313,7 +326,7 @@ export default function Navigator() {
                                 radius={10}
                                 height={0}
                                 targetRef={helixPivot}
-                                offsetPx={[0, -300]}  // 160px left, 40px up on the canvas
+                                offsetPx={[200, -300]}  // 160px left, 40px up on the canvas
                             />
 
 
@@ -322,17 +335,6 @@ export default function Navigator() {
                 </div>
 
             </div>
-            <ul style={{ lineHeight: `${lineHeightPx}px`, color: 'white', marginTop: '6rem', transform: `skewY(${skewYDeg}deg)`, fontSize: '20px', fontWeight: '900', marginLeft: `${listLeftPx}px`, position: 'absolute', left: 0, top: 0 }}>
-                {['Blob', 'Helix', 'Torus', 'Tube', 'Sphere', 'Torus Knot'].map((name, index) => (
-                    <li key={index}>
-                        <span
-                            className={`${selectedIndex === index ? 'underline underline-offset-4 text-white' : 'unselected text-gray-300'}`}
-                            onClick={() => setSelectedIndex(index)}
-                            onMouseEnter={() => setIndexHovered(index)}
-                            onMouseLeave={() => setIndexHovered(-1)}>{name}</span>
-                    </li>
-                ))}
-            </ul>
         </div>
     )
 }

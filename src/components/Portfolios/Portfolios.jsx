@@ -3,7 +3,7 @@
 export default function Portfolios() {
   return (
     <div>
-      <h1>Portfolios</h1>
+      <h1></h1>
     </div>
   )
 }
