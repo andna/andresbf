@@ -1,4 +1,4 @@
-import CutsSlider from './CutsSlider'
+import CutsSlider from './components/CutsSlider'
 import {useState} from "react";
 
 export const cuts = [
@@ -15,6 +15,8 @@ export default function Narrator() {
 
   return (
     <div className="narrator">
+      
+      <h3 className="narrator-action">Resize portfolio length</h3>
         <CutsSlider
             cuts={cuts}
             selectedCut={selectedCut}

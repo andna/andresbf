@@ -1,11 +1,11 @@
-import ControlPanel from './components/ControlPanel/ControlPanel'
+import Narrator from './components/Narrator/Narrator.jsx'
 import Portfolios from './components/Portfolios/Portfolios'
-import Navigator from "./components/ControlPanel/components/Navigator.jsx";
+import Navigator from "./components/Navigator/Navigator.jsx";
 
 export default function App() {
   return (
     <div className="app">
-      <ControlPanel />
+      <Narrator />
 
       <Portfolios />
 
