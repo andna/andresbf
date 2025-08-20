@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState, useCallback, memo } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import {Edges, OrbitControls, OrthographicCamera, Stars, Sparkles, Sky, Html} from '@react-three/drei'
@@ -12,7 +12,7 @@ const colors = {
     line: '#fff'
 }
 
-function SkewedPlane({ skewedPlaneGeometry, planeRotation = 0, isSelected = false, isExternallyHovered = false, onClick, ...props }) {
+const SkewedPlane = memo(function SkewedPlane({ skewedPlaneGeometry, planeRotation = 0, isSelected = false, isExternallyHovered = false, onClick, ...props }) {
     const [hovered, hover] = useState(false)
     const edgesRef = useRef(null)
 
@@ -46,9 +46,9 @@ function SkewedPlane({ skewedPlaneGeometry, planeRotation = 0, isSelected = fals
             </group>
         </group>
     )
-}
+})
 
-function Helix({ skewValue = -0.1, planesPerCycle = 4, indexHovered = -1, selectedIndex = 0, setSelectedIndex, totalPlanes, ...props }) {
+const Helix = memo(function Helix({ skewValue = -0.1, planesPerCycle = 4, indexHovered = -1, selectedIndex = 0, setSelectedIndex, totalPlanes, ...props }) {
     const mesh = useRef(null)
 
     const baseRotation = (Math.PI * 2) / planesPerCycle
@@ -108,7 +108,7 @@ function Helix({ skewValue = -0.1, planesPerCycle = 4, indexHovered = -1, select
             })}
         </group>
     )
-}
+})
 
 function Slider({ title, value, onChange, min, max, step = 1, left = '300px' }) {
     return (
@@ -243,32 +243,48 @@ function RotatingOrthoCamera({
 
 
 
+const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
+
 export default function Navigator() {
     const [skewValue, setSkewValue] = useState(-0.65)
     const [planesPerCycle, setPlanesPerCycle] = useState(3)
     const [indexHovered, setIndexHovered] = useState(-1)
+    const [selectedIndex, setSelectedIndex] = useState(0)
+
     const helixScale = 0.6
     const orthoZoom = 200
-    const skewAngle = Math.atan(Math.abs(skewValue))
-    const RAD2DEG = 180 / Math.PI
-    const skewYDeg = skewAngle * RAD2DEG * 0.88
-    const stepWorld = Math.sin(skewAngle) + Math.pow(Math.abs(skewValue), 2.5) * 0.1
-    const planeWidthWorld = 1
-    const radiusWorld = planeWidthWorld / (2 * Math.tan(Math.PI / planesPerCycle))
-    const gapPx = 20
-    const unitToPx = orthoZoom * helixScale
-    const lineHeightPx = unitToPx * stepWorld * 1.125
-    const helixViewWidthPx = 4 * unitToPx * radiusWorld
-    const listLeftPx = helixViewWidthPx + gapPx
-    const [selectedIndex, setSelectedIndex] = useState(0)
-    const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
     const totalPlanes = sections.length
+
+    const calculatedValues = useMemo(() => {
+        const skewAngle = Math.atan(Math.abs(skewValue))
+        const RAD2DEG = 180 / Math.PI
+        const skewYDeg = skewAngle * RAD2DEG * 0.88
+        const stepWorld = Math.sin(skewAngle) + Math.pow(Math.abs(skewValue), 2.5) * 0.1
+        const planeWidthWorld = 1
+        const radiusWorld = planeWidthWorld / (2 * Math.tan(Math.PI / planesPerCycle))
+        const gapPx = 20
+        const unitToPx = orthoZoom * helixScale
+        const lineHeightPx = unitToPx * stepWorld * 1.125
+        const helixViewWidthPx = 4 * unitToPx * radiusWorld
+        const listLeftPx = helixViewWidthPx + gapPx
+
+        return {
+            skewAngle,
+            skewYDeg,
+            stepWorld,
+            radiusWorld,
+            unitToPx,
+            lineHeightPx,
+            helixViewWidthPx,
+            listLeftPx
+        }
+    }, [skewValue, planesPerCycle, helixScale, orthoZoom])
     
     const [scale, setScale] = useState(1)
     const [offsetPx, setOffsetPx] = useState([-700, 0])
     const [animating, setAnimating] = useState(false)
 
-    const animateCombined = (targetScale, targetOffset, duration = 1000) => {
+    const animateCombined = useCallback((targetScale, targetOffset, duration = 1000) => {
         if (animating) return
         setAnimating(true)
         const startScale = scale
@@ -297,11 +313,31 @@ export default function Navigator() {
         }
         
         requestAnimationFrame(animate)
-    }
+    }, [animating, scale, offsetPx])
+
+    const handleAnimationClick = useCallback(() => {
+        const targetScale = scale === 1 ? 0.8 : 1
+        const targetOffset = offsetPx[0] === -700 ? [200, -100] : [-700, 0]
+        animateCombined(targetScale, targetOffset)
+    }, [scale, offsetPx, animateCombined])
+
+    const handleIndexHover = useCallback((index) => setIndexHovered(index), [])
+    const handleIndexLeave = useCallback(() => setIndexHovered(-1), [])
+
+    const navigatorListStyle = useMemo(() => ({
+        lineHeight: `${calculatedValues.lineHeightPx}px`,
+        transform: `skewY(${calculatedValues.skewYDeg}deg) scale(${scale}) translate(7%, -7%)`
+    }), [calculatedValues.lineHeightPx, calculatedValues.skewYDeg, scale])
+
+    const navigatorContainerStyle = useMemo(() => ({
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-start'
+    }), [])
 
     const helixPivot = useRef()
     return (
-        <div className="navigator" style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
+        <div className="navigator" style={navigatorContainerStyle}>
             <div style={{ position: 'relative' }}>
 
                 {/*
@@ -313,11 +349,7 @@ export default function Navigator() {
                 <div className="animation-controls">
                     <button 
                         className="combined-button"
-                        onClick={() => {
-                            const targetScale = scale === 1 ? 0.8 : 1
-                            const targetOffset = offsetPx[0] === -700 ? [200, -100] : [-700, 0]
-                            animateCombined(targetScale, targetOffset)
-                        }}
+                        onClick={handleAnimationClick}
                         disabled={animating}
                     >
                         {animating ? 'Animating...' : 'Combined Animation'}
@@ -352,17 +384,14 @@ export default function Navigator() {
                                 />
                                 <Html>
 
-                                    <ul className="navigator-list" style={{ 
-                                        lineHeight: `${lineHeightPx}px`, 
-                                        transform: `skewY(${skewYDeg}deg) scale(${scale}) translate(7%, -7%)`
-                                    }}>
+                                    <ul className="navigator-list" style={navigatorListStyle}>
                                         {sections.map((name, index) => (
                                             <li key={index}>
                                                 <span
                                                     className={`${selectedIndex === index ? 'selected' : ''}`}
                                                     onClick={() => setSelectedIndex(index)}
-                                                    onMouseEnter={() => setIndexHovered(index)}
-                                                    onMouseLeave={() => setIndexHovered(-1)}>{name}</span>
+                                                    onMouseEnter={() => handleIndexHover(index)}
+                                                    onMouseLeave={handleIndexLeave}>{name}</span>
                                             </li>
                                         ))}
                                     </ul>
