@@ -8,7 +8,7 @@ const lineWidth = 2
 const colors = {
     selected: '#ffffff',
     hovered: '#555555',
-    default: '#28262B',
+    default: '#1e1d1e',
     line: '#fff'
 }
 
@@ -228,7 +228,7 @@ function RotatingOrthoCamera({
                 ref={controlsRef}
                 makeDefault           // <<< important: integrate with R3F events so clicks on meshes still work
                 enablePan={false}     // you already have screen-space pan via viewOffset
-                enableZoom={true}     // or false to lock zoom to the `zoom` prop
+                enableZoom={false}     // or false to lock zoom to the `zoom` prop
                 enableDamping
                 dampingFactor={0.1}
                 rotateSpeed={0.9}
@@ -263,6 +263,41 @@ export default function Navigator() {
     const [selectedIndex, setSelectedIndex] = useState(0)
     const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
     const totalPlanes = sections.length
+    
+    const [scale, setScale] = useState(1)
+    const [offsetPx, setOffsetPx] = useState([-700, 0])
+    const [animating, setAnimating] = useState(false)
+
+    const animateCombined = (targetScale, targetOffset, duration = 1000) => {
+        if (animating) return
+        setAnimating(true)
+        const startScale = scale
+        const startOffset = [...offsetPx]
+        const startTime = Date.now()
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime
+            const progress = Math.min(elapsed / duration, 1)
+            const easeProgress = 1 - Math.pow(1 - progress, 3)
+            
+            const currentScale = startScale + (targetScale - startScale) * easeProgress
+            const currentOffset = [
+                startOffset[0] + (targetOffset[0] - startOffset[0]) * easeProgress,
+                startOffset[1] + (targetOffset[1] - startOffset[1]) * easeProgress
+            ]
+            
+            setScale(currentScale)
+            setOffsetPx(currentOffset)
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate)
+            } else {
+                setAnimating(false)
+            }
+        }
+        
+        requestAnimationFrame(animate)
+    }
 
     const helixPivot = useRef()
     return (
@@ -274,6 +309,20 @@ export default function Navigator() {
                 <Slider title="Skew" value={skewValue} onChange={setSkewValue} min={-2} max={0.01} step={0.01} left='300px' />
 
 */}
+                
+                <div className="animation-controls">
+                    <button 
+                        className="combined-button"
+                        onClick={() => {
+                            const targetScale = scale === 1 ? 0.8 : 1
+                            const targetOffset = offsetPx[0] === -700 ? [200, -100] : [-700, 0]
+                            animateCombined(targetScale, targetOffset)
+                        }}
+                        disabled={animating}
+                    >
+                        {animating ? 'Animating...' : 'Combined Animation'}
+                    </button>
+                </div>
                 <div className="canvas">
                     <Canvas>
 
@@ -291,7 +340,7 @@ export default function Navigator() {
 
                         <Suspense fallback={null}>
 
-                            <group ref={helixPivot} position={[0, 2, 0]}>
+                            <group ref={helixPivot} position={[0, 0, 0]} scale={scale}>
                                 <Helix
                                     scale={helixScale}
                                     skewValue={skewValue}
@@ -303,7 +352,10 @@ export default function Navigator() {
                                 />
                                 <Html>
 
-                                    <ul className="navigator-list" style={{ lineHeight: `${lineHeightPx}px`, transform: `skewY(${skewYDeg}deg)` }}>
+                                    <ul className="navigator-list" style={{ 
+                                        lineHeight: `${lineHeightPx}px`, 
+                                        transform: `skewY(${skewYDeg}deg) scale(${scale}) translate(7%, -7%)`
+                                    }}>
                                         {sections.map((name, index) => (
                                             <li key={index}>
                                                 <span
@@ -326,7 +378,7 @@ export default function Navigator() {
                                 radius={10}
                                 height={0}
                                 targetRef={helixPivot}
-                                offsetPx={[200, -300]}  // 160px left, 40px up on the canvas
+                                offsetPx={offsetPx}  // right side: 450, -450
                             />
 
 

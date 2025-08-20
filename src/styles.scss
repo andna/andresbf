@@ -6,7 +6,7 @@
   --padding: 2rem;
   --padding-half: 1rem;
   --max-width: 25rem;
-  --color-primary: #28262B;
+  --color-primary: #1e1d1e;
   --color-secondary: #fff;
 
 
@@ -294,6 +294,12 @@ button {
     left: 0;
 }
 
+.animation-controls {
+    position: absolute;
+    z-index: 10;
+
+}
+
 .navigator-list {
     list-style: none;
     padding: 0;
@@ -305,6 +311,7 @@ button {
     margin: 5rem 6rem;
     font-size: 2rem;
     font-weight: 900;
+    transform-origin: 0 0;
 
     span{
         opacity: 0.1;
@@ -319,6 +326,23 @@ button {
             pointer-events: none;
         }
     }
+}
+
+
+
+.portfolios{
+    margin: 95vh auto 10rem;
+}
+
+.portfolios-container{
+    width: 600px;
+    background-color: #28262b;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    height: 88vh;
+    box-shadow: 0 1rem 2rem #0000006b;
+    border-radius: 3rem;
 }
 
 
@@ -340,13 +364,10 @@ button {
 
 @include aspect-landscape {
 
-    body {
-        overflow: hidden;
-    }
     .narrator {
-        position: absolute;
-        z-index: 1;
-        left: calc(50% + -35rem);
+        position: fixed;
+        z-index: 2;
+        left: calc(50% + -47rem);
         top: calc(50% + -30rem);
     }
 

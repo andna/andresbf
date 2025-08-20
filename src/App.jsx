@@ -7,9 +7,9 @@ export default function App() {
     <div className="app">
       <Narrator />
 
-      <Portfolios />
+      <Navigator />
 
-        <Navigator />
+      <Portfolios />
     </div>
   )
 }
