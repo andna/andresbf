@@ -27,7 +27,7 @@ export default function CutsSlider({selectedCut, setSelectedCut, cuts}) {
 
 
   return (
-    <div className="cuts-slider">
+    <div className={`cuts-slider cut-selected-${selectedCut.id}`}>
     {cuts.map((cut) => (
         <CutSelector
             key={cut.id}

@@ -255,6 +255,69 @@ export default function Navigator() {
     const orthoZoom = 200
     const totalPlanes = sections.length
 
+    const debounceRef = useRef(null)
+    const lastScrollStateRef = useRef(null)
+    const lastScrollProgressRef = useRef(0)
+
+    const initialState = { scale: 1, offsetPx: [0, -400] }
+    const finalState = { scale: 0.7, offsetPx: [-700, 0] }
+    
+    const [scale, setScale] = useState(initialState.scale)
+    const [offsetPx, setOffsetPx] = useState(initialState.offsetPx)
+
+    const scrollCheckInterval = 1
+    const ease = 1
+
+    const interpolateStates = useCallback((progress) => {
+        const easeProgress = 1 - Math.pow(1 - progress, ease)
+        
+        const currentScale = initialState.scale + (finalState.scale - initialState.scale) * easeProgress
+        const currentOffset = [
+            initialState.offsetPx[0] + (finalState.offsetPx[0] - initialState.offsetPx[0]) * easeProgress,
+            initialState.offsetPx[1] + (finalState.offsetPx[1] - initialState.offsetPx[1]) * easeProgress
+        ]
+        
+        return { scale: currentScale, offsetPx: currentOffset }
+    }, [initialState, finalState])
+
+    const handleScroll = useCallback(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current)
+        }
+        
+        debounceRef.current = setTimeout(() => {
+            const scrollY = window.scrollY
+            const halfScreenHeight = window.innerHeight * 0.5
+            const isPastHalf = scrollY > halfScreenHeight
+            
+            const progress = Math.min(scrollY / halfScreenHeight, 1)
+            const roundedProgress = Math.round(progress * 20) / 20
+            
+            if (Math.abs(roundedProgress - lastScrollProgressRef.current) >= 0.05) {
+                const { scale: newScale, offsetPx: newOffsetPx } = interpolateStates(roundedProgress)
+                setScale(newScale)
+                setOffsetPx(newOffsetPx)
+                lastScrollProgressRef.current = roundedProgress
+            }
+            
+            if (lastScrollStateRef.current !== isPastHalf) {
+                console.log(`Scroll passed 50% threshold: ${isPastHalf ? 'AFTER' : 'BEFORE'} 50% (scrollY: ${scrollY}, threshold: ${halfScreenHeight}, progress: ${Math.round(progress * 100)}%)`)
+                lastScrollStateRef.current = isPastHalf
+            }
+        }, scrollCheckInterval)
+    }, [interpolateStates, scrollCheckInterval])
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current)
+            }
+        }
+    }, [handleScroll])
+
     const calculatedValues = useMemo(() => {
         const skewAngle = Math.atan(Math.abs(skewValue))
         const RAD2DEG = 180 / Math.PI
@@ -280,47 +343,6 @@ export default function Navigator() {
         }
     }, [skewValue, planesPerCycle, helixScale, orthoZoom])
     
-    const [scale, setScale] = useState(1)
-    const [offsetPx, setOffsetPx] = useState([-700, 0])
-    const [animating, setAnimating] = useState(false)
-
-    const animateCombined = useCallback((targetScale, targetOffset, duration = 1000) => {
-        if (animating) return
-        setAnimating(true)
-        const startScale = scale
-        const startOffset = [...offsetPx]
-        const startTime = Date.now()
-        
-        const animate = () => {
-            const elapsed = Date.now() - startTime
-            const progress = Math.min(elapsed / duration, 1)
-            const easeProgress = 1 - Math.pow(1 - progress, 3)
-            
-            const currentScale = startScale + (targetScale - startScale) * easeProgress
-            const currentOffset = [
-                startOffset[0] + (targetOffset[0] - startOffset[0]) * easeProgress,
-                startOffset[1] + (targetOffset[1] - startOffset[1]) * easeProgress
-            ]
-            
-            setScale(currentScale)
-            setOffsetPx(currentOffset)
-            
-            if (progress < 1) {
-                requestAnimationFrame(animate)
-            } else {
-                setAnimating(false)
-            }
-        }
-        
-        requestAnimationFrame(animate)
-    }, [animating, scale, offsetPx])
-
-    const handleAnimationClick = useCallback(() => {
-        const targetScale = scale === 1 ? 0.8 : 1
-        const targetOffset = offsetPx[0] === -700 ? [200, -100] : [-700, 0]
-        animateCombined(targetScale, targetOffset)
-    }, [scale, offsetPx, animateCombined])
-
     const handleIndexHover = useCallback((index) => setIndexHovered(index), [])
     const handleIndexLeave = useCallback(() => setIndexHovered(-1), [])
 
@@ -346,15 +368,6 @@ export default function Navigator() {
 
 */}
                 
-                <div className="animation-controls">
-                    <button 
-                        className="combined-button"
-                        onClick={handleAnimationClick}
-                        disabled={animating}
-                    >
-                        {animating ? 'Animating...' : 'Combined Animation'}
-                    </button>
-                </div>
                 <div className="canvas">
                     <Canvas>
 

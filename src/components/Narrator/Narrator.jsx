@@ -16,6 +16,13 @@ export default function Narrator() {
   return (
     <div className="narrator">
       
+      <div className="narrator-header">
+        <img src="/logo.svg" alt="abf Logo" />
+        <div className="abf-name">
+          Andrés Bastidas Fierro
+        </div>
+      </div>
+
       <h3 className="narrator-action">Resize portfolio length</h3>
         <CutsSlider
             cuts={cuts}

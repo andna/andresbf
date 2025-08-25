@@ -209,17 +209,46 @@ button {
     position: relative;
 
 
-    &:before {
+    &:before,
+    &:after {
         content: "";
         position: absolute;
-        top: 1.75rem;
+        bottom: 2rem;
         width: 0.75rem;
-        height: calc(100% - 3.5rem);
-        background: #ffffff1a;
+        height: 100%;
+        height: -webkit-fill-available;
+        background: rgba(255, 255, 255, 0.1019607843);
         z-index: 0;
         left: 50%;
         border-radius: 1rem;
+        top: 2rem;
     }
+
+    &:after {
+        background-color: #fff;
+        top: inherit;
+        bottom: 1.7rem;
+        padding-top: 0.6rem;
+        display: none;
+    }
+    &.cut-selected-FUL:after {
+        height: 80%;
+    }
+    &.cut-selected-SUM:after {
+        height: 60%;
+    }
+    &.cut-selected-CHA:after {
+        height: 40%;
+    }
+    &.cut-selected-REL:after {
+        height: 20%;
+    }
+    &.cut-selected-BCA:after {      
+        height: 0%;
+    }
+
+
+
 }
 
 .narrator {
@@ -283,6 +312,35 @@ button {
         &.cut-selected-BCA{
             transform: rotate(45deg) translateX(calc(var(--max-width) * -4));
         }
+    }
+
+
+}
+
+
+.narrator-header{
+    position: absolute;
+    bottom: calc(100% + 2rem);
+    left: 0;
+    width: 100%;
+    z-index: 1;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+
+    .abf-name{
+        font-size: 1rem;
+        font-weight: 200;
+        color: var(--color-secondary);
+        white-space: pre-wrap;
+        width: 1rem;
+        line-height: 1rem;
+        text-transform: lowercase;
+    }
+
+    img{
+        height: 6rem;
     }
 }
 
