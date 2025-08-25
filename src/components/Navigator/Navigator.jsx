@@ -260,7 +260,7 @@ export default function Navigator() {
     const lastScrollProgressRef = useRef(0)
 
     const initialState = { scale: 1, offsetPx: [0, -400] }
-    const finalState = { scale: 0.7, offsetPx: [-700, 0] }
+    const finalState = { scale: 0.7, offsetPx: [500, -500] }
     
     const [scale, setScale] = useState(initialState.scale)
     const [offsetPx, setOffsetPx] = useState(initialState.offsetPx)
@@ -354,6 +354,8 @@ export default function Navigator() {
         const helixViewWidthPx = 4 * unitToPx * radiusWorld
         const listLeftPx = helixViewWidthPx + gapPx
 
+      
+
         return {
             skewAngle,
             skewYDeg,
@@ -369,10 +371,20 @@ export default function Navigator() {
     const handleIndexHover = useCallback((index) => setIndexHovered(index), [])
     const handleIndexLeave = useCallback(() => setIndexHovered(-1), [])
 
-    const navigatorListStyle = useMemo(() => ({
+    const navigatorListStyle = useMemo(() => {
+        const t = Math.min(1, Math.max(0, (scale - 0.7) / 0.3));
+
+        // lerp translates
+        const tx = -20 + t * (7 - (-20));  // -20% → 7%
+        const ty = -10 + t * (-7 - (-10)); // -10% → -7%
+
+
+        const translate = `${tx}%, ${ty}%`
+        return {
         lineHeight: `${calculatedValues.lineHeightPx}px`,
-        transform: `skewY(${calculatedValues.skewYDeg}deg) scale(${scale}) translate(7%, -7%)`
-    }), [calculatedValues.lineHeightPx, calculatedValues.skewYDeg, scale])
+        transform: `skewY(${calculatedValues.skewYDeg}deg) scale(${scale}) translate(${translate})`
+    }
+}, [calculatedValues.lineHeightPx, calculatedValues.skewYDeg, scale])
 
     const navigatorContainerStyle = useMemo(() => ({
         position: 'relative',
