@@ -264,48 +264,71 @@ export default function Navigator() {
     
     const [scale, setScale] = useState(initialState.scale)
     const [offsetPx, setOffsetPx] = useState(initialState.offsetPx)
+    const [targetScale, setTargetScale] = useState(initialState.scale)
+    const [targetOffsetPx, setTargetOffsetPx] = useState(initialState.offsetPx)
 
     const scrollCheckInterval = 1
-    const ease = 1
 
-    const interpolateStates = useCallback((progress) => {
-        const easeProgress = 1 - Math.pow(1 - progress, ease)
-        
-        const currentScale = initialState.scale + (finalState.scale - initialState.scale) * easeProgress
-        const currentOffset = [
-            initialState.offsetPx[0] + (finalState.offsetPx[0] - initialState.offsetPx[0]) * easeProgress,
-            initialState.offsetPx[1] + (finalState.offsetPx[1] - initialState.offsetPx[1]) * easeProgress
-        ]
-        
-        return { scale: currentScale, offsetPx: currentOffset }
-    }, [initialState, finalState])
+    const targetScaleRef = useRef(initialState.scale)
+    const targetOffsetPxRef = useRef(initialState.offsetPx)
+    
+    useEffect(() => {
+        targetScaleRef.current = targetScale
+        targetOffsetPxRef.current = targetOffsetPx
+    }, [targetScale, targetOffsetPx])
 
-    const handleScroll = useCallback(() => {
-        if (debounceRef.current) {
-            clearTimeout(debounceRef.current)
+    useEffect(() => {
+        let animationFrame
+        
+        const lerp = (start, end, factor) => start + (end - start) * factor
+        
+        const lerpToTarget = () => {
+            setScale(prevScale => {
+                const newScale = lerp(prevScale, targetScaleRef.current, 0.15)
+                return newScale
+            })
+            setOffsetPx(prevOffset => {
+                const newOffset = [
+                    lerp(prevOffset[0], targetOffsetPxRef.current[0], 0.15),
+                    lerp(prevOffset[1], targetOffsetPxRef.current[1], 0.15)
+                ]
+                return newOffset
+            })
+            
+            animationFrame = requestAnimationFrame(lerpToTarget)
         }
         
-        debounceRef.current = setTimeout(() => {
-            const scrollY = window.scrollY
-            const halfScreenHeight = window.innerHeight * 0.5
-            const isPastHalf = scrollY > halfScreenHeight
-            
-            const progress = Math.min(scrollY / halfScreenHeight, 1)
-            const roundedProgress = Math.round(progress * 20) / 20
-            
-            if (Math.abs(roundedProgress - lastScrollProgressRef.current) >= 0.05) {
-                const { scale: newScale, offsetPx: newOffsetPx } = interpolateStates(roundedProgress)
-                setScale(newScale)
-                setOffsetPx(newOffsetPx)
-                lastScrollProgressRef.current = roundedProgress
+        animationFrame = requestAnimationFrame(lerpToTarget)
+        
+        return () => {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame)
             }
-            
-            if (lastScrollStateRef.current !== isPastHalf) {
-                console.log(`Scroll passed 50% threshold: ${isPastHalf ? 'AFTER' : 'BEFORE'} 50% (scrollY: ${scrollY}, threshold: ${halfScreenHeight}, progress: ${Math.round(progress * 100)}%)`)
-                lastScrollStateRef.current = isPastHalf
-            }
-        }, scrollCheckInterval)
-    }, [interpolateStates, scrollCheckInterval])
+        }
+    }, [])
+
+    const handleScroll = useCallback(() => {
+        const scrollY = window.scrollY
+        const halfScreenHeight = window.innerHeight * 0.5
+        const isPastHalf = scrollY > halfScreenHeight
+        
+        const progress = Math.min(scrollY / halfScreenHeight, 1)
+        
+        const newTargetScale = initialState.scale + (finalState.scale - initialState.scale) * progress
+        const newTargetOffsetPx = [
+            initialState.offsetPx[0] + (finalState.offsetPx[0] - initialState.offsetPx[0]) * progress,
+            initialState.offsetPx[1] + (finalState.offsetPx[1] - initialState.offsetPx[1]) * progress
+        ]
+        
+        setTargetScale(newTargetScale)
+        setTargetOffsetPx(newTargetOffsetPx)
+        
+        if (lastScrollStateRef.current !== isPastHalf) {
+            lastScrollStateRef.current = isPastHalf
+        }
+    }, [initialState, finalState])
+
+
 
     useEffect(() => {
         window.addEventListener('scroll', handleScroll, { passive: true })
