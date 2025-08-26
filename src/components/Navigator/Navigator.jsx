@@ -230,73 +230,91 @@ function CanvasScene({
     </>
   )
 }
-
 /* Your outer component stays R3F-hook free */
 export default function Navigator() {
-  // DOM/state stuff (no useThree/useFrame here)
-  const [skewValue] = useState(-0.65)
-  const [planesPerCycle] = useState(3)
-  const [selectedIndex, setSelectedIndex] = useState(0)
-
-  const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
-  const orthoZoom = 200
-
-  // scroll → targets → lerp loop (same as before)
-  const initialState = { scale: 0.6, offsetPx: [0, -400] }
-  const finalState   = { scale: 0.4, offsetPx: [500, -500] }
-  const [scale, setScale] = useState(initialState.scale)
-  const [offsetPx, setOffsetPx] = useState(initialState.offsetPx)
-  const targetScaleRef = useRef(initialState.scale)
-  const targetOffsetPxRef = useRef(initialState.offsetPx)
-  const lerp = (a,b,t)=>a+(b-a)*t
-
-  const handleScroll = useCallback(() => {
-    const half = window.innerHeight * 0.5
-    const p = Math.min(window.scrollY / half, 1)
-    targetScaleRef.current = lerp(initialState.scale, finalState.scale, p)
-    targetOffsetPxRef.current = [
-      lerp(initialState.offsetPx[0], finalState.offsetPx[0], p),
-      lerp(initialState.offsetPx[1], finalState.offsetPx[1], p),
-    ]
-  }, [])
-
-  useEffect(() => {
-    const onScroll = () => handleScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [handleScroll])
-
-  useEffect(() => {
-    let raf
-    const tick = () => {
-      setScale(s => lerp(s, targetScaleRef.current, 0.15))
-      setOffsetPx(o => [lerp(o[0], targetOffsetPxRef.current[0], 0.15), lerp(o[1], targetOffsetPxRef.current[1], 0.15)])
+    // DOM/state stuff (no useThree/useFrame here)
+    const [skewValue] = useState(-0.65)
+    const [planesPerCycle] = useState(3)
+    const [selectedIndex, setSelectedIndex] = useState(0)
+  
+    const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
+    const orthoZoom = 200
+  
+    // --- renamed + third pose -----------------------------
+    const helixCenter = { scale: 0.6, offsetPx: [0,   -400] }
+    const helixRight  = { scale: 0.4, offsetPx: [500, -500] }
+    const helixLeft   = { scale: 0.4, offsetPx: [-500,-500] } // new pose
+    // ------------------------------------------------------
+  
+    // reactive values lerped toward targets
+    const [scale, setScale] = useState(helixCenter.scale)
+    const [offsetPx, setOffsetPx] = useState(helixCenter.offsetPx)
+    const targetScaleRef = useRef(helixCenter.scale)
+    const targetOffsetPxRef = useRef(helixCenter.offsetPx)
+    const lerp = (a,b,t)=>a+(b-a)*t
+  
+    const handleScroll = useCallback(() => {
+      const vh = window.innerHeight
+      const ratio = window.scrollY / vh // 1 == 100% viewport height, 2 == 200%
+  
+      /*
+      if (ratio >= 2) {
+        // Past 200%: snap targets to helixLeft
+        targetScaleRef.current = helixLeft.scale
+        targetOffsetPxRef.current = [...helixLeft.offsetPx]
+      } else {
+    */
+        // 0% → 100%: interpolate helixCenter → helixRight
+        const p = Math.min(Math.max(ratio, 0), 1)
+        targetScaleRef.current = lerp(helixCenter.scale, helixRight.scale, p)
+        targetOffsetPxRef.current = [
+          lerp(helixCenter.offsetPx[0], helixRight.offsetPx[0], p),
+          lerp(helixCenter.offsetPx[1], helixRight.offsetPx[1], p),
+        ]
+      // }
+    }, []) // no deps; reads from refs only
+  
+    useEffect(() => {
+      const onScroll = () => handleScroll()
+      window.addEventListener('scroll', onScroll, { passive: true })
+      return () => window.removeEventListener('scroll', onScroll)
+    }, [handleScroll])
+  
+    useEffect(() => {
+      let raf
+      const tick = () => {
+        setScale(s => lerp(s, targetScaleRef.current, 0.15))
+        setOffsetPx(o => [
+          lerp(o[0], targetOffsetPxRef.current[0], 0.15),
+          lerp(o[1], targetOffsetPxRef.current[1], 0.15),
+        ])
+        raf = requestAnimationFrame(tick)
+      }
       raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [])
-
-  return (
-    <div className="navigator" style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
-      <div style={{ position: 'relative' }}>
-        <div className="canvas">
-          <Canvas>
-            <Suspense fallback={null}>
-              <CanvasScene
-                orthoZoom={orthoZoom}
-                scale={scale}
-                offsetPx={offsetPx}
-                sections={sections}
-                planesPerCycle={planesPerCycle}
-                skewValue={skewValue}
-                selectedIndex={selectedIndex}
-                setSelectedIndex={setSelectedIndex}
-              />
-            </Suspense>
-          </Canvas>
+      return () => cancelAnimationFrame(raf)
+    }, [])
+  
+    return (
+      <div className="navigator" style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
+        <div style={{ position: 'relative' }}>
+          <div className="canvas">
+            <Canvas>
+              <Suspense fallback={null}>
+                <CanvasScene
+                  orthoZoom={orthoZoom}
+                  scale={scale}
+                  offsetPx={offsetPx}
+                  sections={sections}
+                  planesPerCycle={planesPerCycle}
+                  skewValue={skewValue}
+                  selectedIndex={selectedIndex}
+                  setSelectedIndex={setSelectedIndex}
+                />
+              </Suspense>
+            </Canvas>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+  
