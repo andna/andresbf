@@ -51,22 +51,23 @@ const adjust = (value, fromMin, fromMax, toMin, toMax) => {
 }
 
 const Card = (props) => {
-  const { 
-    id, 
-    name, 
-    number, 
-    set, 
-    types, 
-    subtypes, 
-    supertype, 
-    rarity, 
-    img, 
-    back = 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg', 
-    foil, 
-    mask, 
-    showcase 
+  const {
+    id,
+    name,
+    number,
+    set,
+    types,
+    subtypes,
+    supertype,
+    rarity,
+    img,
+    back = 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg',
+    foil,
+    mask,
+    showcase ,
+    setIsCardActive
   } = props
-  
+
   const { activeCard, setActiveCard } = useActiveCard()
   const o = useOrientation()
   const [loading, setLoading] = useState(true)
@@ -168,12 +169,15 @@ const Card = (props) => {
         onRest: () => {
           isTwirlAnimating.current = false
           hasSpunOut.current = true
+          setIsCardActive(false);
           setActiveCard(undefined)
           setInteracting(false)
         },
       })
       return
     }
+
+    setIsCardActive(false);
     setActiveCard(undefined)
     setInteracting(false)
     api.start({
@@ -199,6 +203,7 @@ const Card = (props) => {
       setActiveCard(thisCard.current)
       if (o && typeof o.resetBase === 'function') o.resetBase()
       hasSpunOut.current = false
+      setIsCardActive(true);
     } else {
       requestDeactivate()
     }
@@ -334,7 +339,7 @@ const Card = (props) => {
   )
 }
 
-const PokemonCardDisplay = ({ 
+const PokemonCardDisplay = ({
   cardData = {
     id: 'sv107',
     name: 'Charizard VMAX',
@@ -349,13 +354,14 @@ const PokemonCardDisplay = ({
     mask: '/img/card/abf-mask.webp',
     back: '/img/card/abf-back.jpg'
   },
-  className = ''
+  className = '',
+                              setIsCardActive
 }) => {
   return (
     <ActiveCardProvider>
       <div className={`card-grid card-custom-grid ${className}`}>
         <div className="card card-hidden"></div>
-        <Card {...cardData} />
+        <Card {...cardData} setIsCardActive={setIsCardActive} />
         <div className="card card-hidden"></div>
       </div>
     </ActiveCardProvider>

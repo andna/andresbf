@@ -386,6 +386,11 @@ button {
 
 .portfolios{
     margin-bottom: 10rem;
+    position: relative;
+
+    &.card-active{
+        z-index: 123123;
+    }
 }
 
 .portfolios-container{
@@ -452,8 +457,8 @@ button {
 @include aspect-landscape-large {
 
     .narrator {
-        left: calc(50% + -47rem);
-        top: 15%;
+        left: calc(50% - 47rem);
+        top: calc(50% - 18rem);
     }
 
     .portfolios{

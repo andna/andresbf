@@ -246,8 +246,8 @@ export default function Navigator() {
     const orthoZoom = 200
 
     // --- renamed + third pose -----------------------------
-    const helixCenter = { scale: 0.6, offsetPx: [0,   -400] }
-    const helixRight  = { scale: 0.4, offsetPx: [500, -500] }
+    const helixCenter = { scale: 0.6, offsetPx: [0,   -350] }
+    const helixRight  = { scale: 0.4, offsetPx: [420, -280] }
     const helixLeft   = { scale: 0.4, offsetPx: [-450, 100] } // new pose
     const helixMobile = { scale: 0.4, offsetPx: [0,   -200] }
     // ------------------------------------------------------
