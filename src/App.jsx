@@ -1,16 +1,19 @@
 import Narrator from './components/Narrator/Narrator.jsx'
 import Portfolios from './components/Portfolios/Portfolios'
 import Navigator from "./components/Navigator/Navigator.jsx";
+import { BreakpointProvider } from './components/BreakpointContext'
 
 export default function App() {
   return (
-    <div className="app">
-      <Narrator />
+    <BreakpointProvider>
+      <div className="app">
+        <Narrator />
 
-      <Navigator />
+        <Navigator />
 
-      <Portfolios />
-    </div>
+        <Portfolios />
+      </div>
+    </BreakpointProvider>
   )
 }
 

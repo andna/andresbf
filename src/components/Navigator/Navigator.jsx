@@ -2,6 +2,7 @@ import { Suspense, useEffect, useMemo, useRef, useState, useCallback, memo } fro
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Edges, OrbitControls, OrthographicCamera, Stars, Html } from '@react-three/drei'
+import { useBreakpoint } from '../BreakpointContext'
 
 const colors = {
   selected: '#ffffff',
@@ -293,6 +294,9 @@ export default function Navigator() {
       raf = requestAnimationFrame(tick)
       return () => cancelAnimationFrame(raf)
     }, [])
+
+    const breakpoint = useBreakpoint()
+    console.log(breakpoint)
   
     return (
       <div className="navigator" style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
