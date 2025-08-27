@@ -23,6 +23,8 @@
   --font-size-l: 1.5rem;
 
     --border-radius: 3rem;
+
+    --portfolio-width: 35rem; // 560px
 }
 
 * {
@@ -66,6 +68,7 @@ button {
 
 .app {
   display: flex;
+  justify-content: end;
 }
 
 
@@ -389,11 +392,12 @@ button {
 
 
 .portfolios{
-    margin: 95vh auto 10rem;
+    margin-top: 95vh;
+    margin-bottom: 10rem;
 }
 
 .portfolios-container{
-    width: 600px;
+    width: var(--portfolio-width);
     background-color: #28262b;
     margin: 0 auto;
     position: relative;
@@ -422,20 +426,32 @@ button {
 
 @include aspect-landscape {
 
+    .portfolios{
+        max-width: 60%;
+    }
+
     .narrator {
         position: fixed;
         z-index: 2;
-        left: calc(50% + -47rem);
-        top: calc(50% + -30rem);
+        left: 4rem;
+        top: 10rem;
     }
+
 
 }
 
 
-@include aspect-portrait-large {
+@include aspect-landscape-large {
 
-    body{
-        background-color: #0ff;
+    .narrator {
+        left: calc(50% + -47rem);
+        top: 15%;
     }
+
+    .portfolios{
+        margin-left: auto;
+        margin-right: auto;
+    }
+
 
 }

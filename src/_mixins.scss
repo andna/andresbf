@@ -12,17 +12,18 @@
   }
 }
 
+@mixin aspect-landscape-large {
+  @media (min-width: vars.$large-breakpoint) and (min-height: vars.$portrait-height-breakpoint) {
+    @content;
+  }
+}
+
 @mixin aspect-portrait {
   @media not all and (min-width: vars.$mid-breakpoint) and (min-height: vars.$portrait-height-breakpoint) {
     @content;
   }
 }
 
-@mixin aspect-portrait-large {
-  @media not all and (min-width: vars.$large-breakpoint) and (min-height: vars.$portrait-height-breakpoint) {
-    @content;
-  }
-}
 
 
 @mixin pill-r {
