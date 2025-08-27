@@ -18,6 +18,12 @@
   }
 }
 
+@mixin aspect-portrait-large {
+  @media not all and (min-width: vars.$large-breakpoint) and (min-height: vars.$portrait-height-breakpoint) {
+    @content;
+  }
+}
+
 
 @mixin pill-r {
   border-radius: 50rem;
