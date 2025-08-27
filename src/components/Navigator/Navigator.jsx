@@ -24,6 +24,7 @@ function CanvasScene({
   skewValue,
   selectedIndex,
   setSelectedIndex,
+  isMobile
 }) {
   const helixScale = 0.6
   const totalPlanes = sections.length
@@ -146,7 +147,9 @@ function CanvasScene({
 
   return (
     <>
+    {!isMobile && (
       <Stars radius={1} depth={20} rayleigh={2} count={3000} factor={1} saturation={3} fade speed={0} color="blue" />
+    )}
 
       <group ref={helixPivot} position={[0, 0, 0]} scale={scale}>
         {Array.from({ length: totalPlanes }).map((_, index) => {
@@ -237,50 +240,95 @@ export default function Navigator() {
     const [skewValue] = useState(-0.65)
     const [planesPerCycle] = useState(3)
     const [selectedIndex, setSelectedIndex] = useState(0)
-  
+    const { isMobile, isMid } = useBreakpoint()
+
     const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
     const orthoZoom = 200
-  
+
     // --- renamed + third pose -----------------------------
     const helixCenter = { scale: 0.6, offsetPx: [0,   -400] }
     const helixRight  = { scale: 0.4, offsetPx: [500, -500] }
-    const helixLeft   = { scale: 0.4, offsetPx: [-500,-500] } // new pose
+    const helixLeft   = { scale: 0.4, offsetPx: [-450, 100] } // new pose
+    const helixMobile = { scale: 0.4, offsetPx: [0,   -200] }
     // ------------------------------------------------------
-  
+
     // reactive values lerped toward targets
     const [scale, setScale] = useState(helixCenter.scale)
     const [offsetPx, setOffsetPx] = useState(helixCenter.offsetPx)
     const targetScaleRef = useRef(helixCenter.scale)
     const targetOffsetPxRef = useRef(helixCenter.offsetPx)
     const lerp = (a,b,t)=>a+(b-a)*t
-  
-    const handleScroll = useCallback(() => {
-      const vh = window.innerHeight
-      const ratio = window.scrollY / vh // 1 == 100% viewport height, 2 == 200%
-  
-      /*
-      if (ratio >= 2) {
-        // Past 200%: snap targets to helixLeft
-        targetScaleRef.current = helixLeft.scale
-        targetOffsetPxRef.current = [...helixLeft.offsetPx]
-      } else {
-    */
-        // 0% → 100%: interpolate helixCenter → helixRight
-        const p = Math.min(Math.max(ratio, 0), 1)
-        targetScaleRef.current = lerp(helixCenter.scale, helixRight.scale, p)
-        targetOffsetPxRef.current = [
-          lerp(helixCenter.offsetPx[0], helixRight.offsetPx[0], p),
-          lerp(helixCenter.offsetPx[1], helixRight.offsetPx[1], p),
-        ]
-      // }
-    }, []) // no deps; reads from refs only
-  
-    useEffect(() => {
-      const onScroll = () => handleScroll()
-      window.addEventListener('scroll', onScroll, { passive: true })
-      return () => window.removeEventListener('scroll', onScroll)
-    }, [handleScroll])
-  
+  useEffect(() => {
+    // helper: clamp
+    const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+    // --- MOBILE: force pose, no scroll listener ---
+    if (isMobile) {
+      const applyMobile = () => {
+        targetScaleRef.current = helixMobile.scale;
+        targetOffsetPxRef.current = [...helixMobile.offsetPx];
+
+        // If you tween current -> target elsewhere and want ZERO blend:
+        // currentScaleRef.current = helixMobile.scale;
+        // currentOffsetPxRef.current = [...helixMobile.offsetPx];
+      };
+
+      applyMobile();
+
+      // Keep it in mobile pose on rotate/resize
+      window.addEventListener('resize', applyMobile);
+      return () => window.removeEventListener('resize', applyMobile);
+    }
+
+    // --- DESKTOP: rAF-batched scroll handling ---
+    let rafId = 0;
+    let lastY = window.scrollY;
+    let vh = window.innerHeight;
+
+    const recomputeVh = () => { vh = Math.max(1, window.innerHeight); };
+
+    const tick = () => {
+      rafId = 0;
+
+      const ratio = lastY / vh; // 1 == 100% viewport height, 2 == 200%
+
+
+      const targetHelix = isMid ? helixLeft : helixRight;
+      const p = clamp01(ratio);
+
+      targetScaleRef.current = lerp(helixCenter.scale, targetHelix.scale, p);
+      targetOffsetPxRef.current = [
+        lerp(helixCenter.offsetPx[0], targetHelix.offsetPx[0], p),
+        lerp(helixCenter.offsetPx[1], targetHelix.offsetPx[1], p),
+      ];
+    };
+
+    const onScroll = () => {
+      lastY = window.scrollY;
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    };
+
+    const onResize = () => {
+      recomputeVh();
+      // re-run tick so targets match new viewport immediately
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    };
+
+    // initial compute
+    recomputeVh();
+    tick();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [isMobile, isMid, helixCenter, helixLeft, helixRight, helixMobile, lerp, targetScaleRef, targetOffsetPxRef]);
+
+
     useEffect(() => {
       let raf
       const tick = () => {
@@ -295,11 +343,8 @@ export default function Navigator() {
       return () => cancelAnimationFrame(raf)
     }, [])
 
-    const breakpoint = useBreakpoint()
-    console.log(breakpoint)
-  
     return (
-      <div className="navigator" style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
+      <div className="navigator">
         <div style={{ position: 'relative' }}>
           <div className="canvas">
             <Canvas>
@@ -313,6 +358,7 @@ export default function Navigator() {
                   skewValue={skewValue}
                   selectedIndex={selectedIndex}
                   setSelectedIndex={setSelectedIndex}
+                  isMobile={isMobile}
                 />
               </Suspense>
             </Canvas>
@@ -321,4 +367,3 @@ export default function Navigator() {
       </div>
     )
   }
-  

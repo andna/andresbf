@@ -53,5 +53,10 @@ export const useBreakpoint = (onChange) => {
     }
   }, [breakpoint, prevBreakpoint, onChange])
 
-  return breakpoint
+  return {
+    breakpoint,
+    isMobile: breakpoint === 'mobile',
+    isMid: breakpoint === 'mid',
+    isLarge: breakpoint === 'large',
+  }
 }

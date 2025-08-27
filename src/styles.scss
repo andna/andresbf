@@ -58,7 +58,7 @@ button {
     transition: background-color var(--transition);
 
     &:hover {
-        
+
     }
 
     &:active {
@@ -66,10 +66,6 @@ button {
     }
 }
 
-.app {
-  display: flex;
-  justify-content: end;
-}
 
 
 
@@ -109,7 +105,7 @@ button {
         small {
             font-size: 90%;
         }
-        
+
     }
 
     .cut-name {
@@ -157,13 +153,13 @@ button {
         padding: 0.5rem;
         transition: opacity 0.4s;
         transition-delay: 0.2s;
- 
+
         .cut-narrate {
             opacity: 0;
             background: var(--button-bg-primary);
             color: var(--button-bg);
             padding: 0.5rem 1rem;
-            
+
         }
     }
 
@@ -246,7 +242,7 @@ button {
     &.cut-selected-REL:after {
         height: 20%;
     }
-    &.cut-selected-BCA:after {      
+    &.cut-selected-BCA:after {
         height: 0%;
     }
 
@@ -286,10 +282,10 @@ button {
             #5b6a3d 42%,
             #845c40 62%,
             #843b3b 70%,
-            #4c6188 100% 
+            #4c6188 100%
           );
-          
-          
+
+
         width: calc(var(--max-width) * 5.4);
         height: 175%;
         transform-origin: 17% 15%;
@@ -348,11 +344,8 @@ button {
 }
 
 .canvas{
-    position: fixed;
     height: 100vh;
     width: 100vw;
-    top: 0;
-    left: 0;
 }
 
 .animation-controls {
@@ -392,7 +385,6 @@ button {
 
 
 .portfolios{
-    margin-top: 95vh;
     margin-bottom: 10rem;
 }
 
@@ -410,7 +402,11 @@ button {
 
 @include aspect-portrait {
     .app {
-        max-width: var(--max-width);
+    }
+
+    .canvas{
+        height: 36rem;
+        width: 22rem;
         margin: 0 auto;
     }
 
@@ -425,8 +421,20 @@ button {
 
 
 @include aspect-landscape {
+    .app {
+        display: flex;
+        justify-content: end;
+    }
 
+
+    .canvas{
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
     .portfolios{
+
+        margin-top: 95vh;
         max-width: 60%;
     }
 
