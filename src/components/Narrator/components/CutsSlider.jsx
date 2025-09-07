@@ -1,25 +1,37 @@
 
 
 function CutSelector({cut, isSelectedCut, setSelectedCut}) {
+    const isFull = cut.id === 'FUL'
+    const isBCard = cut.id === 'BCA'
     return (
+<>
         <div
-        className={`cut-selector ${isSelectedCut ? 'selected' : ''}`}
+        className={`cut-selector cut-${cut.id} ${isSelectedCut ? 'selected' : ''}`}
         onClick={() => setSelectedCut(cut)}>
-            <div className="cut-name">
-                <h4 className="cut-name-text">{cut.name}</h4>
-                <div className="cut-verb">{cut.verb} by {cut.by || 'AI'}</div>
+            <div className="cut-name hide-mobile">
+                <h4 className="cut-name-text">{isBCard ? <><i>B</i>Card</> : cut.name}</h4>
+                <div className="cut-verb">{cut.verb} by {isFull ? 'me' : 'AI'}</div>
             </div>
-            <div className="cut-percent">
+            <div className="cut-percent hide-mobile">
                 {cut.percent}<small>%</small>
             </div>
-           
-            <h3 className="cut-duration">{cut.duration}</h3>
-            <div className="cut-narrate-container">
+
+            <h3 className="cut-duration">
+                {cut.duration}
+                <br />
+                <span className="cut-duration-name">
+                    {cut.name}
+                </span>
+
+            </h3>
+            <div className="cut-narrate-container hide-mobile">
                 <button className="cut-narrate">
                     Narrate
                 </button>
             </div>
         </div>
+<div className="mobile-separator">   </div>
+    </>
     )
 }
 
