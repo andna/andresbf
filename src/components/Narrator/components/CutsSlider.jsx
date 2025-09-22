@@ -10,7 +10,7 @@ function CutSelector({cut, isSelectedCut, setSelectedCut}) {
         onClick={() => setSelectedCut(cut)}>
             <div className="cut-name hide-mobile">
                 <h4 className="cut-name-text">{isBCard ? <><i>B</i>Card</> : cut.name}</h4>
-                <div className="cut-verb">{cut.verb} by {isFull ? 'me' : 'AI'}</div>
+                <div className="cut-verb">{isFull ? 'Written by me' : `AI ${cut.verb}`}</div>
             </div>
             <div className="cut-percent hide-mobile">
                 {cut.percent}<small>%</small>

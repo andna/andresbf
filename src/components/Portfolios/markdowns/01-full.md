@@ -15,6 +15,22 @@ Eager to face more complex problems, even dwelling on new experiences for our in
 
 ---
 
+<details>
+
+<summary>Tips for collapsed sections</summary>
+
+### You can add a header
+
+You can add text within a collapsed section.
+
+You can add an image or a code block, too.
+
+```ruby
+   puts "Hello World"
+```
+
+</details>
+
 ## 🛠 Skills  
 
 ### 👨‍💻 Frontend Development  
