@@ -325,13 +325,16 @@ button {
     align-items: center;
 
     .abf-name{
-        font-size: 1rem;
-        font-weight: 200;
+        font-size: 1.3rem;
+        font-weight: 900;
         color: var(--color-secondary);
-        white-space: pre-wrap;
-        width: 1rem;
-        line-height: 1rem;
-        text-transform: lowercase;
+        width: 10rem;
+        line-height: 1.75rem;
+        text-align: center;
+        span{
+            white-space: pre;
+            font-weight: 200;
+        }
     }
 
     img{
@@ -381,7 +384,6 @@ button {
 
 
 .portfolios{
-    margin-bottom: 10rem;
     position: relative;
 
     &.card-active{
@@ -558,6 +560,10 @@ button {
         }
     }
 
+
+
+   
+
 }
 
 
@@ -575,8 +581,16 @@ button {
     }
     .portfolios{
 
-        margin-top: 95vh;
         max-width: 60%;
+    }
+    .portfolios-container{
+        margin-top: 95vh;
+
+    margin-bottom: 10rem;
+    }
+    .portfolio-BCA{
+        overflow-y: clip;
+        height: 100vh;
     }
 
     .narrator {

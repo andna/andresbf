@@ -1,17 +1,13 @@
 import CutsSlider from './components/CutsSlider'
 import {useState} from "react";
+import { cuts } from '../../constants';
+import { useData } from '../DataContext'
 
-export const cuts = [
-    {id: 'FUL', name: 'Full', percent: 100, verb: 'Written', duration: '12:23'},
-    {id: 'SUM', name: 'Summary', percent: 75, verb: 'Compressed', duration: '2:23'},
-    {id: 'CHA', name: 'Chart', percent: 50, verb: 'Converted', duration: '1:10'},
-    {id: 'VID', name: 'Video', percent: 25, verb: 'Generated', duration: '0:42'},
-    {id: 'BCA', name: 'BCard', percent: 2.3, verb: 'Crafted', duration: '0:21'}
-]
+
 
 export default function Narrator() {
 
-    const [selectedCut, setSelectedCut] = useState(cuts[1]);
+    const { selectedCut, setSelectedCut } = useData()
 
   return (
     <div className="narrator">
@@ -19,11 +15,11 @@ export default function Narrator() {
       <div className="narrator-header">
         <img src="/logo.svg" alt="abf Logo" />
         <div className="abf-name">
-          Andrés Bastidas Fierro
+          <span>Hi, I'm</span> Andrés Bastidas Fierro
         </div>
       </div>
 
-      <h3 className="narrator-action">Resize portfolio length</h3>
+      <h3 className="narrator-action">Welcome to my resizable Portfolio:</h3>
         <CutsSlider
             cuts={cuts}
             selectedCut={selectedCut}

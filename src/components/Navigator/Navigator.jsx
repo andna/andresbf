@@ -242,7 +242,6 @@ export default function Navigator() {
     const [selectedIndex, setSelectedIndex] = useState(0)
     const { isMobile, isMid } = useBreakpoint()
 
-    const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
     const orthoZoom = 200
 
     // --- renamed + third pose -----------------------------
