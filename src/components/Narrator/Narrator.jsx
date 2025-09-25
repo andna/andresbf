@@ -14,12 +14,9 @@ export default function Narrator() {
 
       <div className="narrator-header">
         <img src="/logo.svg" alt="abf Logo" />
-        <div className="abf-name">
-          <span>Hi, I'm</span> Andrés Bastidas Fierro
-        </div>
       </div>
 
-      <h3 className="narrator-action">Welcome to my resizable Portfolio:</h3>
+      <h3 className="narrator-action">Portfolio Length</h3>
         <CutsSlider
             cuts={cuts}
             selectedCut={selectedCut}

@@ -37,6 +37,7 @@ body {
     background: var(--color-primary);
   margin: 0;
   font-family: var(--font-family);
+  overflow-y: scroll;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -273,12 +274,12 @@ button {
     .narrator-gradient{
         background: linear-gradient(
             to right,
-            #4c6188 0%,
-            #437960 30%,
-            #5b6a3d 42%,
-            #845c40 62%,
-            #843b3b 70%,
-            #4c6188 100%
+            #843b3b 0%,
+            #4c6188 30%,
+            #437960 42%,
+            #5b6a3d 62%,
+            #845c40 70%,
+            #843b3b 100%
           );
 
 
@@ -400,8 +401,23 @@ button {
     height: 88vh;
     box-shadow: 0 1rem 2rem #0000006b;
     border-radius: 3rem;
+    padding: 3rem 2rem;
 }
 
+
+.port-avatar{
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.port-hi{
+    line-height: 2.25rem;
+    small{
+        font-weight: 200;
+    }
+}
 
 @include aspect-portrait {
     .app {
@@ -646,4 +662,11 @@ button {
         grid-template-columns: 50rem !important;
 
     }
+}
+
+
+.flex-evenly{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }

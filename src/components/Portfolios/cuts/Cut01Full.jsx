@@ -1,15 +1,25 @@
 // MarkdownViewer.tsx
 import React from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
-export default function MarkdownViewer({ markdown }) {
+export default function Cut01Full({ markdown }) {
   return (
     <div className="prose max-w-none">
   
 
-  <h1>💻 Andrés Bastidas Fierro</h1>
-  <p><strong>Software Engineer / Frontend Developer</strong></p>
+  <div className="flex-evenly">
+    <div className="port-avatar"></div>
+
+    <h1 className="port-hi">
+      <small>Hi! I'm </small>
+      <br />
+      Andrés
+      <br />
+      <small>Bastidas Fierro</small>
+    </h1>
+  </div>
+
+  <p>� <a href="mailto:andbastidasfierro@gmail.com">andbastidasfierro@gmail.com</a></p>
+  <p>🔗 <a href="https://linkedin.com/in/andbastidasfierro" target="_blank">LinkedIn</a></p>
 
   <p>📧 <a href="mailto:andbastidasfierro@gmail.com">andbastidasfierro@gmail.com</a></p>
   <p>🔗 <a href="https://linkedin.com/in/andbastidasfierro" target="_blank">LinkedIn</a></p>

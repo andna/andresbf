@@ -11,7 +11,7 @@ const colors = {
   line: '#fff'
 }
 
-const sections = ['Intro', 'About', 'Portfolio', 'Contact', 'Blog', 'Resume']
+const sections = ['Welcome', 'I\'m', 'Portfolio', 'Contact', 'Blog', 'Resume']
 // --- keep your imports ---
 
 /* NEW: isolate every R3F hook inside this component */

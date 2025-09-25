@@ -1,7 +1,6 @@
 import BCard from './components/BCard'
 import {useState} from "react";
-import MarkdownViewer from "./markdowns/MarkdownViewer";
-import cvMd from "./markdowns/01-full.md?raw"; // Vite: import file as raw text
+import Cut01Full from "./cuts/Cut01Full";
 import { useData } from '../DataContext'
 import { cuts } from '../../constants'
 
@@ -13,9 +12,7 @@ const ComponentToRender = ({setIsCardActive, selectedCut}) => {
         return <BCard setIsCardActive={setIsCardActive}/>
     default:
         return      <div className="portfolios-container">
-        <h1>Portfolios</h1>
-
-        <MarkdownViewer markdown={cvMd} />
+        <Cut01Full />
       </div>
      
   }
