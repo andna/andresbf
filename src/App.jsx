@@ -1,6 +1,7 @@
 import Narrator from './components/Narrator/Narrator.jsx'
 import Portfolios from './components/Portfolios/Portfolios'
 import Navigator from "./components/Navigator/Navigator.jsx";
+import Background from "./components/Background.jsx";
 import { BreakpointProvider } from './components/BreakpointContext'
 import { DataProvider } from './components/DataContext'
 
@@ -11,7 +12,7 @@ export default function App() {
           <div className="app">
         <Narrator />
 
-        <Navigator />
+        <Background />
 
           <Portfolios />
         </div>
