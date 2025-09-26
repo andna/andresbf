@@ -8,7 +8,7 @@ import { cuts } from '../../constants'
 const ComponentToRender = ({setIsCardActive, selectedCut}) => {
 
   switch (selectedCut.id) {
-    case cuts[4].id:
+    case cuts[2].id:
         return <BCard setIsCardActive={setIsCardActive}/>
     default:
         return      <div className="portfolios-container">
