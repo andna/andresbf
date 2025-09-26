@@ -44,7 +44,9 @@ function CanvasScene({
   const helixContainerRef = useRef()
   const planeMatsRef = useRef([])
   const edgeMatsRef = useRef([])
-  const { size } = useThree()
+  const planeRefs = useRef([])
+  const raycasterRef = useRef(new THREE.Raycaster())
+  const { size, camera, pointer } = useThree()
   const tmpTarget = useRef(new THREE.Vector3())
   const userRotatingRef = useRef(false)
   const currentIndexRef = useRef(0)
@@ -128,10 +130,12 @@ function CanvasScene({
     const leftCount = Math.floor((planesPerCycle - 1) / 2)
     const rightCount = planesPerCycle - 1 - leftCount
     const currentSel = selectedIndexRef.current
+    const eligibleMeshes = []
     for (let i = 0; i < totalPlanes; i++) {
       const mat = planeMatsRef.current[i]
+      const mesh = planeRefs.current[i]
+      const visible = i >= currentSel - leftCount && i <= currentSel + rightCount
       if (mat) {
-        const visible = i >= currentSel - leftCount && i <= currentSel + rightCount
         const target = visible ? 1 : 0
         mat.opacity += (target - mat.opacity) * 0.15
         mat.transparent = true
@@ -139,12 +143,22 @@ function CanvasScene({
       }
       const edgeMat = edgeMatsRef.current[i]
       if (edgeMat) {
-        const visible = i >= currentSel - leftCount && i <= currentSel + rightCount
         const target = visible ? 1 : 0
         edgeMat.opacity += (target - edgeMat.opacity) * 0.15
         edgeMat.transparent = true
         edgeMat.depthWrite = false
       }
+      if (mesh && visible) eligibleMeshes.push(mesh)
+    }
+
+    const rc = raycasterRef.current
+    rc.setFromCamera(pointer, camera)
+    const hits = rc.intersectObjects(eligibleMeshes, false)
+    if (hits && hits.length) {
+      const idx = hits[0].object.userData.index
+      if (hoveredPlaneIdx !== idx) setHoveredPlaneIdx(idx)
+    } else {
+      if (hoveredPlaneIdx !== -1) setHoveredPlaneIdx(-1)
     }
   })
 
@@ -194,28 +208,26 @@ function CanvasScene({
           const meshRaycast = function(raycaster, intersects) {
             const currentSel = selectedIndexRef.current
             const visible = index >= currentSel - leftCount && index <= currentSel + rightCount
+            console.log('raycast:mesh', { index, visible })
             if (!visible) return
             THREE.Mesh.prototype.raycast.call(this, raycaster, intersects)
+            if (intersects.length) console.log('raycast:mesh:hit', { index, hits: intersects.length })
           }
-          const edgesRaycast = function(raycaster, intersects) {
-            const currentSel = selectedIndexRef.current
-            const visible = index >= currentSel - leftCount && index <= currentSel + rightCount
-            if (!visible) return
-            THREE.LineSegments.prototype.raycast.call(this, raycaster, intersects)
-          }
+          
 
           return (
             <group
               key={index}
               rotation={[0, planeRotation, 0]}
               position={[x, y, z]}
-              onPointerOver={(e) => { setHoveredPlaneIdx(index); e.stopPropagation() }}
-              onPointerOut={() => setHoveredPlaneIdx(-1)}
             >
               <mesh
                 geometry={skewedPlaneGeometry}
-                onClick={(e) => { setSelectedIndex(index); e.stopPropagation() }}
+                onPointerOver={(e) => { console.log('pointerOver', { index }); setHoveredPlaneIdx(index); e.stopPropagation() }}
+                onPointerOut={() => { console.log('pointerOut', { index }); setHoveredPlaneIdx(-1) }}
+                onClick={(e) => { console.log('click', { index }); setSelectedIndex(index); e.stopPropagation() }}
                 raycast={meshRaycast}
+                ref={(ref) => { if (ref) { planeRefs.current[index] = ref; ref.userData.index = index } }}
               >
                 <meshBasicMaterial
                   color={isSel ? '#ffffff' : (isHover ? '#555555' : '#1e1d1e')}
@@ -242,7 +254,7 @@ function CanvasScene({
               </mesh>
               <mesh geometry={skewedPlaneGeometry} frustumCulled raycast={() => null}>
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-                <Edges color="#fff" raycast={edgesRaycast} ref={(edges) => {
+                <Edges color="#fff" raycast={() => null} ref={(edges) => {
                   const mat = edges ? edges.material : undefined
                   edgeMatsRef.current[index] = mat
                   if (mat && !mat.userData._init) {
@@ -282,8 +294,8 @@ function CanvasScene({
 /* Your outer component stays R3F-hook free */
 export default function Navigator() {
     // DOM/state stuff (no useThree/useFrame here)
-    const [skewValue] = useState(-0.34)
-    const [planesPerCycle] = useState(3)
+    const [skewValue] = useState(-0.2)
+    const [planesPerCycle] = useState(5)
     const [selectedIndex, setSelectedIndex] = useState(0)
     const { isMobile, isMid } = useBreakpoint()
 
