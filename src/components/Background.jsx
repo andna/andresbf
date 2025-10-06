@@ -46,22 +46,28 @@ function CanvasScene({
   const edgeMatsRef = useRef([])
   const planeRefs = useRef([])
   const raycasterRef = useRef(new THREE.Raycaster())
-  const { size, camera, pointer } = useThree()
+  const { size, camera, pointer, gl } = useThree()
   const tmpTarget = useRef(new THREE.Vector3())
   const userRotatingRef = useRef(false)
   const currentIndexRef = useRef(0)
   const targetAngleRef = useRef(0)
   const selectedIndexRef = useRef(selectedIndex)
+  const baseAngleRef = useRef(0)
+  const scrollOffsetRef = useRef(0)
+  const prevScrollYRef = useRef(0)
+  const indexAnimatingRef = useRef(false)
 
   useEffect(() => {
     let vh = Math.max(1, window.innerHeight)
+    prevScrollYRef.current = window.scrollY
     const onResize = () => { vh = Math.max(1, window.innerHeight) }
     const onScroll = () => {
-      const ratio = window.scrollY / vh
+      const dy = window.scrollY - prevScrollYRef.current
+      prevScrollYRef.current = window.scrollY
       const SCROLL_TO_ROTATE = 0.1
-      targetAngleRef.current = ratio * Math.PI * SCROLL_TO_ROTATE
+      const perVh = Math.PI * SCROLL_TO_ROTATE
+      scrollOffsetRef.current += (dy / vh) * perVh
     }
-    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
     return () => {
@@ -81,7 +87,8 @@ function CanvasScene({
     if (delta > half) delta -= planesPerCycle
     if (delta < -half) delta += planesPerCycle
     currentIndexRef.current += delta
-    targetAngleRef.current = currentIndexRef.current * baseRotation
+    baseAngleRef.current = currentIndexRef.current * baseRotation
+    indexAnimatingRef.current = true
   }, [selectedIndex, planesPerCycle, baseRotation])
 
   // Keep OrbitControls target pinned
@@ -103,6 +110,7 @@ function CanvasScene({
     pivot.getWorldPosition(tmpTarget.current)
 
     if (!userRotatingRef.current) {
+      targetAngleRef.current = baseAngleRef.current + scrollOffsetRef.current
       cam.userData.angle ??= targetAngleRef.current
       cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
       const a = cam.userData.angle
@@ -160,9 +168,23 @@ function CanvasScene({
     } else {
       if (hoveredPlaneIdx !== -1) setHoveredPlaneIdx(-1)
     }
+
+    const controls = controlsRef.current
+    if (controls && cam.userData && typeof cam.userData.angle === 'number') {
+      const target = baseAngleRef.current + scrollOffsetRef.current
+      const d = target - cam.userData.angle
+      const norm = Math.atan2(Math.sin(d), Math.cos(d))
+      if (!userRotatingRef.current && indexAnimatingRef.current && Math.abs(norm) < 0.005) indexAnimatingRef.current = false
+      controls.enabled = !indexAnimatingRef.current
+    }
   })
 
-  const onControlStart = () => { userRotatingRef.current = true }
+  const onControlStart = () => {
+    userRotatingRef.current = true
+    const controls = controlsRef.current
+    if (controls) controls.enabled = true
+    indexAnimatingRef.current = false
+  }
   const onControlEnd = () => {
     userRotatingRef.current = false
     const cam = camRef.current
@@ -173,18 +195,26 @@ function CanvasScene({
     const dz = cam.position.z - tmpTarget.current.z
     const azimuth = Math.atan2(dx, dz)
     cam.userData.angle = azimuth
-    targetAngleRef.current = azimuth
+    baseAngleRef.current = azimuth
+    scrollOffsetRef.current = 0
     currentIndexRef.current = azimuth / baseRotation
+    indexAnimatingRef.current = false
   }
 
   // local hover state (kept inside Canvas subtree)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
 
+  useEffect(() => {
+    if (!gl) return
+    gl.domElement.style.cursor = hoveredPlaneIdx !== -1 ? 'pointer' : 'default'
+    return () => { if (gl) gl.domElement.style.cursor = 'default' }
+  }, [hoveredPlaneIdx, gl])
+
 
   return (
     <>
     {!isMobile && (
-      <Stars radius={1} depth={20} rayleigh={2} count={3000} factor={1} saturation={3} fade speed={0} color="blue" />
+      <Stars radius={1} depth={20} rayleigh={2} count={10000} factor={1} saturation={3} fade speed={3} />
     )}
 
       <group ref={helixPivot} position={[0, 0, 0]} scale={scale}>
