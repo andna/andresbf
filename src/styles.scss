@@ -26,7 +26,8 @@
 
     --portfolio-width: 35rem; // 560px
 
-    --font-family: 'Outfit', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    --font-family: "Chivo Mono", monospace;
+
 }
 
 * {
@@ -34,10 +35,11 @@
 }
 
 body {
-    background: var(--color-primary);
+  background: var(--color-primary);
   margin: 0;
   font-family: var(--font-family);
   overflow-y: scroll;
+  font-weight: 200;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -72,8 +74,6 @@ button {
         filter: brightness(1);
     }
 }
-
-
 
 
 .cut-selector {
@@ -253,7 +253,7 @@ button {
         text-align: center;
         font-weight: 100;
         margin-bottom: 2rem;
-        opacity: 0.5;
+        color: rgba(255, 255, 255, 0.5)
     }
 
     .narrator-gradient-container {
@@ -325,18 +325,6 @@ button {
     justify-content: center;
     align-items: center;
 
-    .abf-name{
-        font-size: 1.3rem;
-        font-weight: 900;
-        color: var(--color-secondary);
-        width: 10rem;
-        line-height: 1.75rem;
-        text-align: center;
-        span{
-            white-space: pre;
-            font-weight: 200;
-        }
-    }
 
     img{
         height: 6rem;
@@ -363,7 +351,7 @@ button {
     top: 0;
 
     margin: 5rem 6rem;
-    font-size: 3.5rem;
+    font-size: var(--font-size-m);
     font-weight: 900;
     transform-origin: 0 0;
 
@@ -398,12 +386,44 @@ button {
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    height: 88vh;
     box-shadow: 0 1rem 2rem #0000006b;
     border-radius: 3rem;
-    padding: 3rem 2rem;
+    padding: 3rem;
+    line-height: 1.75rem;
+
+    h3{
+        margin: 2rem 0;
+    }
 }
 
+
+.portfolio {
+
+    hr{
+        margin: 3rem -3rem;
+        opacity: 0.25;
+    }
+
+    .port-title-lined {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+
+        span{
+            white-space: nowrap;
+        }
+        &:after{
+            content: " ";
+            display: block;
+            width: 100%;
+            height: 1px;
+            background: #fff;
+            opacity: 0.25;
+        }
+    }
+}
 
 .port-avatar{
     width: 6rem;
@@ -413,9 +433,50 @@ button {
 }
 
 .port-hi{
-    line-height: 2.25rem;
+    line-height: 2.5rem;
     small{
         font-weight: 200;
+    }
+}
+
+.port-title{
+    span{
+        font-weight: 200;
+        margin: 0 0.5rem;
+    }
+}
+
+.port-extras{
+    list-style: none;
+    font-weight: 300;
+    li{
+        margin: 1rem;
+        position: relative;
+
+        span{
+            position: absolute;
+            left: -2.75rem;
+            font-size: 150%;
+        }
+        small {
+            opacity: 0.5;
+            font-weight: 200;
+        }
+    }
+
+}
+
+.port-skills{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+
+    .port-skill{
+        
+        border-radius: 1rem;
+        padding: 0.5rem 1.5rem;
+        background: #ffffff0d;
     }
 }
 
@@ -494,7 +555,7 @@ button {
         .cut-duration{
             margin: 0;
             text-align: center;
-            font-size: 1em;
+            font-size: var(--font-size-m);
         }
         &:hover{
             background: var(--button-color);
@@ -542,7 +603,7 @@ button {
                 position: absolute;
                 top: 7.5rem;
                 left: calc(50% - 2rem);
-                font-size: 1.5rem;
+                font-size: var(--font-size-l);
             }
 
             .cut-name{
@@ -556,7 +617,7 @@ button {
             .cut-percent{
                 top: initial !important;
                 margin: 0;
-                font-size: 1rem;
+                font-size: var(--font-size-m);
                 width: 2.5rem !important;
                 height: 2.5rem !important;
                 font-weight: 500;

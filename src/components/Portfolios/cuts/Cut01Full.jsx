@@ -1,86 +1,147 @@
 // MarkdownViewer.tsx
 import React from "react";
+import ExtrasList from "../../ExtrasList";
 
 export default function Cut01Full({ markdown }) {
+  const extrasData = [
+    {
+      icon: "🇨🇴",
+      title: "Based in Bogotá, Colombia"
+    },
+    {
+      icon: "🚴‍♂️",
+      title: "Bike rider",
+      description: "Best inspiration and stress relief."
+    },
+    {
+      icon: "🎸",
+      title: "Bass player",
+      description: "And I feel that talks about my role as a team member."
+    },
+    {
+      icon: "🎮",
+      title: "Gamer",
+      description: "Big fan of Nintendo's polish philosophy."
+    }
+  ];
+
   return (
-    <div className="prose max-w-none">
+    <div className="portfolio portfolio-FUL">
   
 
   <div className="flex-evenly">
     <div className="port-avatar"></div>
 
     <h1 className="port-hi">
-      <small>Hi! I'm </small>
+      <small>Hello! My name is </small>
       <br />
       Andrés
       <br />
       <small>Bastidas Fierro</small>
     </h1>
+    <div className="port-links">
+      <a href="mailto:andresbf@gmail.com">📧</a>
+      <a href="https://www.linkedin.com/in/andresbf/">💼</a>
+      <a href="https://github.com/andresbf">😸</a>
+    </div>
   </div>
-
-  <p>� <a href="mailto:andbastidasfierro@gmail.com">andbastidasfierro@gmail.com</a></p>
-  <p>🔗 <a href="https://linkedin.com/in/andbastidasfierro" target="_blank">LinkedIn</a></p>
-
-  <p>📧 <a href="mailto:andbastidasfierro@gmail.com">andbastidasfierro@gmail.com</a></p>
-  <p>🔗 <a href="https://linkedin.com/in/andbastidasfierro" target="_blank">LinkedIn</a></p>
 
   <hr />
 
-  <h2>🧑‍💼 About Me</h2>
+  <h2 className="port-title"> 🎨 Product Head  <span>&</span>  💻 Web Dev </h2>
   <p>
-    Frontend developer with proven experience at communicating business and team necessities, 
-    delivering functional and attractive experiences from concept to launch.
+   I'm a software engineer with an obsession to innovate and build enjoyable experiences.
   </p>
   <p>
-    Eager to face more complex problems, even dwelling on new experiences for our interactions 
+    Due to it, I see software as a translator of ideas, which I require to be properly planned as a first step.
+    </p>
+  <p>
+    I focus on the user's final experience, therefore, I start by creating communicative designs and descriptions to be used as a reference for the development team.
+  </p>
+  <p>
+While I'm sketching these UX/UIs, I'm already structuring the code architecture that will be needed to implement them.
+  </p>
+  <p>
+    I'm eager to face more complex problems, even dwelling on new experiences for our interactions 
     through digital mediums such as extended realities.
   </p>
 
-  <hr />
+  <h3 className="port-title-lined"><span>🔍 Extras about me</span></h3>
 
-  <h2>🛠 Skills</h2>
+  <ExtrasList items={extrasData} />
 
-  <h3>👨‍💻 Frontend Development</h3>
-  <ul>
-    <li>React.js ⚛️</li>
-    <li>Angular 2+</li>
-  </ul>
-
-  <h3>🎨 UX / UI</h3>
-  <ul>
-    <li>Figma 🎨</li>
-    <li>Photoshop 🖼️</li>
-  </ul>
-
-  <h3>🕶️ VR / AR</h3>
-  <ul>
-    <li>Unity</li>
-    <li>Blender</li>
-  </ul>
-
-  <h3>📊 Product Management</h3>
-  <ul>
-    <li>Jira</li>
-    <li>Confluence</li>
-  </ul>
-
-  <h3>🧑‍💻 Other Tech</h3>
-  <ul>
-    <li>HTML5, TypeScript, Sass</li>
-    <li>C#, UnityScript, Blueprints</li>
-    <li>Node.js, PHP, SQL</li>
-  </ul>
 
   <hr />
 
-  <h2>🌍 Languages</h2>
-  <ul>
-    <li>🇪🇸 Spanish (Native)</li>
-    <li>🇬🇧 English</li>
-    <li>🇩🇪 German (Basic)</li>
-  </ul>
+<h2>📂 Portfolio</h2>
 
+Proffesional:
+Monks: Walmart Bed Bath & Beyond
+Monks GreatWolf
+quiena.com
+Halliburton / Átiko7
+
+Passion projects:
+lorebites.com
+https://woxrlds.vercel.app/
+Aisle Scroller
+Movie Cube / Smatchups / Pokeitdex
+
+Games:
+https://vibes-style.vercel.app/
+Reach Infinity
+SpaceO2
+LavaSurf
+
+<hr />
+
+<h2>🛠 Other Skills</h2>
+<div className="port-skills">
+  <div className="port-skill">
+<h3>👨‍💻 Frontend Development</h3>
+<ul>
+  <li>React.js ⚛️</li>
+  <li>Angular 2+</li>
+</ul>
+</div>
+  <div className="port-skill">
+
+<h3>🎨 UX / UI</h3>
+<ul>
+  <li>Figma 🎨</li>
+  <li>Photoshop 🖼️</li>
+</ul>
+</div>
+  <div className="port-skill">
+
+<h3>🕶️ VR / AR</h3>
+<ul>
+  <li>Unity</li>
+  <li>Blender</li>
+</ul>
+
+</div>
+  <div className="port-skill">
+
+<h3>📊 Product Management</h3>
+<ul>
+  <li>Jira</li>
+  <li>Confluence</li>
+</ul>
+</div>
+  <div className="port-skill">
+
+
+<h3>🧑‍💻 Other Tech</h3>
+<ul>
+  <li>HTML5, TypeScript, Sass</li>
+  <li>C#, UnityScript, Blueprints</li>
+  <li>Node.js, PHP, SQL</li>
+</ul>
+</div>
+</div>
   <hr />
+  
 
   <h2>💼 Experience</h2>
 
@@ -128,31 +189,7 @@ export default function Cut01Full({ markdown }) {
     </li>
   </ul>
 
-  <hr />
 
-  <h2>📂 Portfolio</h2>
-  <ul>
-    <li><a href="https://quiena.com" target="_blank">Quiena.com</a> – Lead Front, UX/UI &amp; Product (React, JS, Native &amp; Angular)</li>
-    <li><a href="https://spaceo2.com" target="_blank">Space O2</a> – Meta Quest VR, Unity3D incremental game</li>
-    <li><a href="https://user/andzofficial" target="_blank">/user/andzofficial</a></li>
-    <li><a href="https://behance.net/andbastf" target="_blank">Behance</a></li>
-  </ul>
-
-  <hr />
-
-  <h2>📞 References</h2>
-
-  <h3>👤 Personal</h3>
-  <ul>
-    <li>Mirta Stefanac – Frontend Developer<br />📱 +385 95 115 4822</li>
-    <li>Francisco Salazar – Marketing Manager<br />📱 +593 9 9529 9029</li>
-  </ul>
-
-  <h3>👔 Professional</h3>
-  <ul>
-    <li>Estéfano Valdez – Backend Development Leader, Quiena Inversiones S.A.<br />📱 +54 9 11 2746 8875</li>
-    <li>Vicente Sebastián – CCO, Industrias Seblan<br />📱 +593 98 425 4974</li>
-  </ul>
 
     </div>
   );
