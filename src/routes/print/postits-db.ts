@@ -232,7 +232,7 @@ export let postItsDB = [
                     overwriteScrollText: 'Quiena Cont.',
                     x:  1365 , y:  1160 ,
                     customStyle : 'left: -2em;',
-                    imgId: 'quiena1',
+                    imgId: 'quiena-1',
                     subtext: 'Fintech Solution',
                     tools: 'Angular, React, Native & +',
                     otherLinks: [
@@ -331,7 +331,7 @@ export let postItsDB = [
                     postType: t.polaroid,
                     overwriteScrollText: 'Smatchups',
                     x:  2610  , y:  792 ,
-                    imgId: 'smatchups',
+                    imgId: 'smatchups-1',
                     otherLinks: [
                         {label: 'Live', href: 'https://smatchups.vercel.app/'},
                         {label: 'Repo', href: 'https://github.com/andna/smatchups'},

@@ -280,6 +280,28 @@
 
 	let canvasId = 'this_web_canvas';
 
+	// Reactive statement to set up iframe loading after Svelte is mounted
+	$: if (isMounted && typeof window !== 'undefined') {
+		console.log('reff-2');
+		const arIframe = document.getElementById('ar-iframe');
+		if (arIframe && arIframe.dataset.src) {
+			// Use Intersection Observer for viewport-based loading
+			const observer = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						arIframe.src = arIframe.dataset.src;
+						arIframe.removeAttribute('data-src');
+						observer.unobserve(arIframe);
+					}
+				});
+			}, {
+				rootMargin: '50px' // Start loading 50px before it comes into view
+			});
+			
+			observer.observe(arIframe);
+		}
+	}
+
 	onMount(() => {
 		html2canvas(document.getElementById('wrapper')).then(function(canvas) {
 			// language=CSS prefix=*{ suffix=}
@@ -345,6 +367,7 @@
 			var posArr = isMobile() ? scrollPositionsMobile : scrollPositionsDesktop
 			scrollTo(posArr[0].x, posArr[0].y)
 		}
+		
 		isMounted = true;
 	});
 
@@ -466,7 +489,7 @@
 				<span class="arrow blink_5s">⬆</span>
 
 				<iframe title="ar-iframe" id="ar-iframe"
-						src="https://app.vectary.com/viewer/v1/?model=4f7b7d5a-0875-4293-bbb6-1157a34bd36a&env=studio3&turntable=-3"
+						data-src="https://app.vectary.com/viewer/v1/?model=4f7b7d5a-0875-4293-bbb6-1157a34bd36a&env=studio3&turntable=-3"
 						frameborder="0" width="100%" height="480"></iframe>
 
 			</div>

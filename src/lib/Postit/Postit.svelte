@@ -179,7 +179,7 @@
             {#if postData.hasCustomHTML}
 
                 {#if postData.id == 'me'}
-                    <img class="avatar" alt="avatar" src="/avatar.png"/>
+                    <img class="avatar" alt="avatar" src="/abf-avatar.png"/>
                 {/if}
                 {#if postData.id == 'more'}
                     <div class="else-subtext">
@@ -210,9 +210,14 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
             {#if postData.videoUrl}
                 <iframe title={postData.id} class="video-iframe"
                         width={(svgSize - 92) * 1.25} height={(svgSize - 92) * 1.25}
-                        src="//www.youtube.com/embed/{postData.videoUrl}?showinfo=0&loop=1&rel=0&controls=1&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+                          loading="lazy"
+  referrerpolicy="strict-origin-when-cross-origin" frameborder="0" allowfullscreen></iframe>
             {:else if postData.imgId }
-                <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}/>
+                <img class="polaroid-image" alt={postData.id} src={'/portfolio/' + postData.imgId + '.png'}
+                loading="lazy"
+                decoding="async"
+                fetchpriority="low"
+                />
             {:else if postData.id === 'this_web' }
                 <div id="this_web_canvas">
                     <div id="canvas_loading"></div>
