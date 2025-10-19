@@ -94,6 +94,7 @@
     let containerSize = `height: ${svgSize}px; width: ${svgSize}px;`
 
 
+    let isAM = true
     let hours = "0"
     let minutes = "00"
     if(postData.id == 'more'){
@@ -103,7 +104,11 @@
             if(hours < 0){
                 hours = 24 + hours
             }
+            if(hours > 12){
+                hours = hours - 12
+            }
             minutes = d.getUTCMinutes().toString().padStart(2, '0');
+            isAM = d.getUTCHours() < 12
         },1000)
     }
 
@@ -180,9 +185,9 @@
                     <div class="else-subtext">
 I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.<br>
 I feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization that we are going through.
-<br>I'm currently based in
-Bogotá, Colombia, GMT-5
-(For me, it's {hours}<span class="blink_1s hour-separator">:</span>{minutes} right now)
+<br>Currently based in
+<span>Bogotá, Colombia 🇨🇴</span>
+<br><small>It's {hours}<span class="blink_1s hour-separator">:</span>{minutes}{isAM ? 'AM' : 'PM'} here.</small>
                     </div>
                 {/if}
             {/if}
@@ -514,6 +519,9 @@ Bogotá, Colombia, GMT-5
         justify-content: center;
         align-items: center;
         margin-bottom: 0.6em;
+    }
+    .postit-size-small .postit-wide-icon{
+        min-height: 3.5em;
     }
     .postit-small-icon{
 

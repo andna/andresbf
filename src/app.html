@@ -7,8 +7,19 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no" />
 		%svelte.head%
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/iamdustan-smoothscroll/0.4.0/smoothscroll.min.js"></script>
+		<script>
+			window.addEventListener('load', function() {
+				const spinner = document.getElementById('loading-spinner');
+				if (spinner) {
+					spinner.classList.add('hidden');
+				}
+			});
+		</script>
 	</head>
 	<body>
+		<div id="loading-spinner">
+			<div class="spinner"></div>
+		</div>
 		<div>%svelte.body%</div>
 	</body>
 </html>

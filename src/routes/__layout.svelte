@@ -2,7 +2,7 @@
 	import '../app.css';
 </script>
 
-<title>Andrés Bastidas Fierro | Software Engineer</title>
+<title>Andrés BF | Web Engineer</title>
 
 <main>
 	<slot />

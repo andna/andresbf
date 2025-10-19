@@ -31,7 +31,7 @@ export let postItsDB = [
                     id: 'mail',
                     icon: true,
                     text: 'andbastidasfierro@gmail.com',
-                    href: 'mailto:andbastidasfierro@gmail.com',
+                    href: 'https://mail.google.com/mail/?view=cm&fs=1&to=andbastidasfierro@gmail.com&su=Contact%20from%20Andres%20BF%20website',
                     colour: c.blue,
                     postType: t.bentL,
                     size: s.small,
@@ -52,10 +52,10 @@ export let postItsDB = [
                     customStyle: 'left: -3em; top: -2em;'
                 },
                 {
-                    id: 'instagram',
+                    id: 's',
                     icon: true,
-                    text: '@andbastf',
-                    href: 'https://www.instagram.com/andbastf/',
+                    text: 'github.com/\nandna',
+                    href: 'https://www.github.com/andna',
                     colour: c.blue,
                     postType: t.bentR,
                     size: s.small,
@@ -66,9 +66,9 @@ export let postItsDB = [
             [{
                 id: 'me',
                 text: 'Andrés\nBastidas Fierro',
-                subtext: 'Software Engineer\n' +
-                    'Algorithmic Designer\n' +
-                    'XR Evangelist',
+                subtext: 'Web Engineer\n' +
+                    'Head of Product\n' +
+                    'AI, XR, Games Hobbist',
 
                 hasCustomHTML:true,
                 postType: t.bentR,
@@ -97,7 +97,7 @@ export let postItsDB = [
                 text: 'Frontend\nDevelopment',
                 bigIcons: [
                     {id:'react', tooltip: 'ReactJS &\nReact Native'},
-                    {id:'threejs', tooltip: 'Three.js'},
+                    {id:'angular', tooltip: 'Angular'},
                     {id:'svelte', tooltip: 'Svelte'},],
                 postType: t.bentL,
                 colour: c.green,
@@ -108,9 +108,10 @@ export let postItsDB = [
                 id: 'vrar',
                 text: 'VR/AR\nDevelopment',
                 bigIcons: [
-                    {id:'unity', tooltip: 'Unity'},
+                    {id:'threejs', tooltip: 'Three.js'},
                     {id:'blender', tooltip: 'Blender'},
-                    {id:'unreal', tooltip: 'Unreal\nEngine 4/5'},],
+                    {id:'unity', tooltip: 'Unity'},
+                ],
                 postType: t.bentR,
                 colour: c.blue,
                 overwriteScrollText: 'VR/AR',
@@ -143,7 +144,7 @@ export let postItsDB = [
         ]
     },
     {
-        id: "education",
+        id: "edu.",
         x:  778 , y:  1214 ,
         joinWithNextGroup: true,
         boxCollider: {x1: 0, y1: 800, x2: 1642, y2: 1642},
@@ -152,29 +153,29 @@ export let postItsDB = [
             [
                 {
                     id: 'master',
-                    text: 'Master in Interactive\nDesign',
-                    href: 'http://maedi.com.ar/',
-                    subtext: 'Mar 2020 ➡ On thesis',
+                    text: 'Master in\nInteractive Design',
+                    href: 'https://campus.fadu.uba.ar/course/index.php?categoryid=254',
+                    subtext: 'Mar 2020 ➡ Dropped',
                     wideIcon : true,
                     postType: t.stickU,
                     colour: c.green,
-                    size: s.medium,
+                    size: s.small,
                     overwriteScrollText: 'Tech & Art',
                     x:  160 , y:  1060 ,
-                    customStyle : 'left: 5em;',
+                    customStyle : 'left: 2em;',
                     hasExtraBox: true
                 },
                 {
                     id: 'university',
-                    text: 'System & Computer Engineering',
-                    href: 'https://www.puce.edu.ec/ingenieria-en-sistemas-de-informacion/',
+                    text: 'Systems\n& Computer\nEngineering',
+                    href: 'https://www.puce.edu.ec/landing-ingenieria-en-sistemas-de-informacion',
                     subtext: 'Ago 2010 ➡ Dec 2016',
                     wideIcon : true,
                     postType: t.bentL,
                     colour: c.yellow,
-                    size: s.medium,
+                    size: s.small,
                     notScrollable: true,
-                    customStyle : 'top: -4em; padding-top: 1em;',
+                    customStyle : 'top: -2.5em; padding-top: 1em;',
                 }
             ],
 
@@ -189,7 +190,7 @@ export let postItsDB = [
                     id: 'quiena',
                     text: 'Qienna Wealth\nManagement Inc.',
                     href: 'https://www.quiena.com/',
-                    subtext: 'Co-founder',
+                    subtext: 'Co-Founder\nCo-CTO',
                     overwriteScrollText: 'Quiena',
                     wideIcon : true,
 
@@ -201,8 +202,8 @@ export let postItsDB = [
                     hasExtraBox: true
                 },
                 {
-                    id: 'productmanager',
-                    text: 'Product\nManager',
+                    id: 'headofproduct',
+                    text: 'Head of Product',
                     subtext: 'Jun 2021 ➡ Apr 2022',
 
                     postType: t.stickU,
@@ -213,26 +214,15 @@ export let postItsDB = [
                 },
                 {
                     id: 'uxuileader',
-                    text: 'UX/UI\nLeader',
-                    subtext: 'Nov 2020 ➡ Jun 2021',
+                    text: 'Frontend & UX/UI\nLeader',
+                    subtext: 'Jan 2016 ➡ Jun 2021',
 
                     postType: t.stickD,
                     colour: c.red,
                     size: s.small,
                     notScrollable: true,
-                    customStyle : 'top: -12em; padding-top: 5em; left: -5.4em;'
-                },
-                {
-                    id: 'frontenddev',
-                    text: 'Frontend\nDev',
-                    subtext: 'Jan 2016 ➡ Nov 2020',
-
-                    postType: t.stickU,
-                    colour: c.green,
-                    size: s.small,
-                    notScrollable: true,
-                    customStyle : 'top: -17em; left: -7em; padding-top: 4em;'
-                },
+                    customStyle : 'top: -11em; padding-top: 5em; left: -5.4em;'
+                }
             ],
             [
                 {
@@ -250,14 +240,6 @@ export let postItsDB = [
                         {label: 'App', href: 'https://www.quiena.com/#connect'},
                     ],
                     hasExtraBox: true
-                },
-                {
-                    id: 'quiena2',
-                    text: '',
-                    postType: t.polaroid,
-                    notScrollable: true,
-                    customStyle : 'left: -7em; top: 1em;',
-                    imgId: 'quiena2'
                 }
             ],
             [
@@ -289,7 +271,7 @@ export let postItsDB = [
             [
                 {
                     id: 'themoviecube',
-                    subtext: '3D Web',
+                    subtext: 'LoreBites/Tiktok',
                     tools: 'React, Three.js, Jest, TS.',
                     overwriteScrollText: 'The Movie ◱',
                     x:  1886 , y:  742 ,
@@ -304,7 +286,7 @@ export let postItsDB = [
                 {
                     id: 'pokitdex',
                     overwriteScrollText: 'Pok\'it Dex',
-                    subtext: '2D Web',
+                    subtext: 'ReachInfi/ AislesScroll',
                     tools: 'React, Redux, Next.js, MUI, Formik, TS.',
                     videoUrl: 'TC-ZUk__xWY',
                     postType: t.polaroid,
@@ -319,7 +301,7 @@ export let postItsDB = [
                 {
                     id: 'space_o2',
                     overwriteScrollText: 'Space O²',
-                    subtext: '6DoF VR Game',
+                    subtext: 'Woxrlds / Aixstorias',
                     tools: 'Unity, C#, Meta Quest 2.',
                     videoUrl: 'VKvfS5y1mG4',
                     postType: t.polaroid,
@@ -331,7 +313,7 @@ export let postItsDB = [
                 {
                     id: 'lava_surf',
                     overwriteScrollText: 'Lava Surf VR',
-                    subtext: '3DoF VR Game',
+                    subtext: 'SpaceO²/Lava Surf',
                     tools: 'Unity, Blender, Cardboard.',
                     postType: t.polaroid,
                     x:  2250  , y:  1132 ,
@@ -344,7 +326,7 @@ export let postItsDB = [
             [
                 {
                     id: 'smatchups',
-                    subtext: 'Web',
+                    subtext: 'MovCube/Pokex/Smatchups',
                     tools: 'JQuery, Sass, Fullstack PHP practice.',
                     postType: t.polaroid,
                     overwriteScrollText: 'Smatchups',
@@ -356,38 +338,12 @@ export let postItsDB = [
                     ]
                 },
                 {
-                    id: 'modera_game',
-                    subtext: '2D Game',
-                    tools: 'Unityscript, GameMaker.',
-                    overwriteScrollText: 'ModeraGame',
-                    videoUrl: 'bKNcZ4yMe40',
-                    postType: t.polaroid,
-                    x:  2610   , y:  1132,
-                    otherLinks: [
-                        {label: 'APK', href: 'https://andbf.itch.io/modera-game'},
-                    ]
-                },
-            ],
-            [
-                {
-                    id: 'this_web',
-                    subtext: 'This Web',
-                    tools: 'SvelteKit, Next.js, Figma.',
-                    overwriteScrollText: 'This Web',
-                    postType: t.polaroid,
-                    x:  2970   , y:  792,
-                    otherLinks: [
-                        {label: 'Repo', href: 'https://github.com/andna/andresbf'},
-                        {label: 'Figma', href: 'https://www.figma.com/file/yAaTAFz5Mq7IEo7mgKz68U/Confluence-Variable?node-id=0%3A1'},
-                        {label: 'Live', href: '#'},
-                    ]
-                },
-                {
-                    id: 'youtube',
+
+                    id: 'instagram',
                     icon: true,
-                    text: 'youtube.com/user/andzofficial',
-                    href: 'https://www.youtube.com/user/andzofficial/videos',
-                    postType: t.bentR,
+                    text: '@andbastf',
+                    href: 'https://www.instagram.com/andbastf/',
+                    postType: t.stickD,
                     colour: c.red,
                     size: s.small,
                     overwriteScrollText: 'Else...',
@@ -395,17 +351,20 @@ export let postItsDB = [
                     customStyle: 'top: 1em; left: 1em',
                     hasExtraBox: true
                 },
+
                 {
-                    id: 'behance',
+                    id: 'x',
                     icon: true,
-                    text: 'be.net/andbastf',
-                    href: 'https://www.behance.net/andbastf',
-                    postType: t.stickD,
-                    colour: c.green,
+                    text: '@andbastf',
+                    href: 'https://www.x.com/andbastf',
+                    postType: t.bentR,
+                    colour: c.black,
                     size: s.small,
                     notScrollable: true,
-                    customStyle: 'top: -2em; left: 8em;'
-                },
+                    x:  2970 , y:  1132  ,
+                    customStyle: 'top: -2em; left: 8em;',
+                    hasExtraBox: true
+                }
             ],
         ]
     }

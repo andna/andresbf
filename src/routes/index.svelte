@@ -773,7 +773,6 @@
 	#wrapper {
 		width: 3366px;
 		height: 1700px;
-		user-select: none;
 		padding: 50vh 42vw 42vh 50vw;
 		transition: ease-in 0.2s;
 	}
