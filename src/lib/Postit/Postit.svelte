@@ -179,7 +179,7 @@
             {#if postData.hasCustomHTML}
 
                 {#if postData.id == 'me'}
-                    <img class="avatar" alt="avatar" src="/abf-avatar.png"/>
+                    <img class="avatar" alt="avatar" src="/abf-avatar.png" width="200" height="200" loading="lazy" decoding="async"/>
                 {/if}
                 {#if postData.id == 'more'}
                     <div class="else-subtext">
@@ -217,6 +217,8 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
                 loading="lazy"
                 decoding="async"
                 fetchpriority="low"
+                width="268"
+                height="268"
                 />
             {:else if postData.id === 'this_web' }
                 <div id="this_web_canvas">
@@ -405,10 +407,14 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
     }
     .polaroid-image{
         max-width: 268px;
+        width: 268px;
+        height: 268px;
         left: 30px;
         position: relative;
         top: 20px;
         border: 1px solid #dedede;
+        object-fit: cover;
+        image-rendering: -webkit-optimize-contrast;
     }
     .container-postit-content{
         white-space: break-spaces;
@@ -441,8 +447,6 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
         filter:none;
     }
 
-    .container-postit.is-link a:hover{
-    }
     .container-postit.is-link:hover svg{
         filter: drop-shadow(1px 9px 5px rgba(50,50,50,0.1)) drop-shadow(0px 4px 1px rgba(50,50,50,0.3));
     }
@@ -649,8 +653,11 @@ I feel enthusiastic to apply my knowledge in planning, developing and launching 
     .avatar{
         position: absolute;
         width: 200px;
+        height: 200px;
         left: calc(50% - 103px);
         top: -102px;
+        object-fit: cover;
+        image-rendering: -webkit-optimize-contrast;
     }
     .links-container{
         display: flex;

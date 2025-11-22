@@ -1,8 +1,21 @@
 <svelte:head>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin>
-	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;800&display=swap" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"> </script>
+	<script>
+		// Load html2canvas asynchronously when needed
+		window.loadHtml2Canvas = function() {
+			return new Promise((resolve, reject) => {
+				if (window.html2canvas) {
+					resolve(window.html2canvas);
+					return;
+				}
+				const script = document.createElement('script');
+				script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js';
+				script.async = true;
+				script.onload = () => resolve(window.html2canvas);
+				script.onerror = reject;
+				document.head.appendChild(script);
+			});
+		};
+	</script>
 </svelte:head>
 
 <script>
@@ -60,45 +73,60 @@
 
 	let currentCanvasTick = 0;
 	let initCanvas;
-
+	let animationFrameId = null;
+	let pendingCanvasUpdate = false;
 
 	function handleMouseMove(event) {
+		// Batch DOM reads to avoid forced reflows
+		const clientX = event.clientX;
+		const clientY = event.clientY;
+		const scrollX = window.scrollX;
+		const scrollY = window.scrollY;
 
 		currentCanvasTick++;
 		if(currentCanvasTick >= 10){
 			currentCanvasTick = 0;
-			let canvas = document.getElementById(canvasId);
-			if(canvas && !isDragging){
-				canvas = canvas.firstChild;
-				if(canvas && !canvas.id){
-					const x = Math.round(event.clientX + window.scrollX);
-					const y = Math.round(event.clientY + window.scrollY);
-
-
-					var ctx = canvas.getContext("2d");
-
-					if(!initCanvas){
-						initCanvas = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-					}
-
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
-					ctx.putImageData(initCanvas, 0, 0);
-					ctx.beginPath();
-					ctx.strokeStyle = '#6f2eaf';
-					ctx.lineWidth = 30;
-					ctx.arc(x, y, 100, 0, 2 * Math.PI);
-					ctx.stroke();
-				}
+			if(!pendingCanvasUpdate && !isDragging){
+				pendingCanvasUpdate = true;
+				requestAnimationFrame(() => {
+					updateCanvas(clientX, clientY, scrollX, scrollY);
+					pendingCanvasUpdate = false;
+				});
 			}
-
 		}
+		
 		if (isDragging) {
-			const dx = event.clientX - pos.x;
-			const dy = event.clientY - pos.y;
+			const dx = clientX - pos.x;
+			const dy = clientY - pos.y;
 
 			const left = pos.left - dx;
 			const top = pos.top - dy;
 			window.scrollTo(left, top);
+		}
+	}
+
+	function updateCanvas(clientX, clientY, scrollX, scrollY) {
+		let canvas = document.getElementById(canvasId);
+		if(canvas && !isDragging){
+			canvas = canvas.firstChild;
+			if(canvas && !canvas.id){
+				const x = Math.round(clientX + scrollX);
+				const y = Math.round(clientY + scrollY);
+
+				var ctx = canvas.getContext("2d");
+
+				if(!initCanvas){
+					initCanvas = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+				}
+
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.putImageData(initCanvas, 0, 0);
+				ctx.beginPath();
+				ctx.strokeStyle = '#6f2eaf';
+				ctx.lineWidth = 30;
+				ctx.arc(x, y, 100, 0, 2 * Math.PI);
+				ctx.stroke();
+			}
 		}
 	}
 
@@ -276,7 +304,6 @@
 	}
 
 
-	import html2canvas from 'html2canvas';
 
 	let canvasId = 'this_web_canvas';
 
@@ -303,19 +330,24 @@
 	}
 
 	onMount(() => {
-		html2canvas(document.getElementById('wrapper')).then(function(canvas) {
-			// language=CSS prefix=*{ suffix=}
-			canvas.style = `
-				width: 385px;
-				height: auto;
-				left: -60px;
-				position: relative;
-				top: -2px;
-			`;
-			const container = document.getElementById(canvasId);
-			container.innerHTML = '';
-			container.appendChild(canvas);
-		});
+		// Defer html2canvas loading to improve initial page load
+		setTimeout(() => {
+			window.loadHtml2Canvas().then(html2canvas => {
+				html2canvas(document.getElementById('wrapper')).then(function(canvas) {
+					// language=CSS prefix=*{ suffix=}
+					canvas.style = `
+						width: 385px;
+						height: auto;
+						left: -60px;
+						position: relative;
+						top: -2px;
+					`;
+					const container = document.getElementById(canvasId);
+					container.innerHTML = '';
+					container.appendChild(canvas);
+				});
+			});
+		}, 1000); // Load after 1 second to prioritize critical content
 		currentUrl = window.location.href;
 		var currentHash = window.location.hash.substring(1)
 		var foundHash = false
