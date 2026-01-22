@@ -205,13 +205,6 @@
 		pointer-events: none;
 	}
 
-	#group-experience{
-		margin-left: -4em;
-		padding-right: 10em;
-	}
-	#group-portfolio {
-		top: -18em;
-	}
 
 	.wip {
 		visibility: hidden;

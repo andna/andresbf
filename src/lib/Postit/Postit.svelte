@@ -34,13 +34,16 @@
     }
 
     let currentDetailColors = []
-    if(svgColors[currentPostType]){
-        svgColors[currentPostType][currentColor].forEach((detail, i) => {
-            currentDetailColors.push([])
-            detail.forEach((gradientColor, j) => {
-                currentDetailColors[i].push(returnColor(currentPostType, currentColor, i, j))
+    $: {
+        currentDetailColors = []
+        if(svgColors[currentPostType] && svgColors[currentPostType][currentColor]){
+            svgColors[currentPostType][currentColor].forEach((detail, i) => {
+                currentDetailColors.push([])
+                detail.forEach((gradientColor, j) => {
+                    currentDetailColors[i].push(returnColor(currentPostType, currentColor, i, j))
+                })
             })
-        })
+        }
     }
 
 
@@ -314,9 +317,9 @@ Bogotá, Colombia, GMT-5
                     </defs>
                 {:else}
                     <rect width="330" height="360" fill="white"/>
-                    <rect x="31" y="20" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404)"/>
+                    <rect x="31" y="20" width="267.073" height="267.073" fill="url(#paint0_linear_216_2404_{postData.id})"/>
                     <defs>
-                        <linearGradient id="paint0_linear_216_2404" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
+                        <linearGradient id="paint0_linear_216_2404_{postData.id}" x1="151.83" y1="14.6338" x2="151.83" y2="281.707" gradientUnits="userSpaceOnUse">
                             <stop stop-color="#B3C1CD"/>
                             <stop offset="1" stop-color="#F3F5FA"/>
                         </linearGradient>
@@ -359,6 +362,7 @@ Bogotá, Colombia, GMT-5
         position: relative;
         margin: 0 8px 8px 0;
         box-sizing: border-box;
+        z-index: 1;
     }
     .container-postit.container-postit-4{
         margin: 0 0 24px 0;
