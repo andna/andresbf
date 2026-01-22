@@ -133,7 +133,7 @@
     container-postit-{currentPostType}
     container-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}
     {postData.href ? 'is-link' : ''}"
-        style={containerSize + ' ' + (postData.customStyle ? postData.customStyle : '')}>
+        style={containerSize}>
     <a href={postData.href || void(0)} target="_blank" style="color: {textColors[currentColor]}">
         <div class="container-postit-content  postit-size-{sizes[postData.size] ? sizes[postData.size].id : 'big'}">
 
