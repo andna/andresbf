@@ -1,0 +1,251 @@
+[
+  {
+    "id": "about",
+    "postItGroups": [
+      [
+        {
+          "id": "mail",
+          "text": "andbastidasfierro@gmail.com",
+          "href": "mailto:andbastidasfierro@gmail.com"
+        },
+        {
+          "id": "linkedin",
+          "text": "linkedin.com/in/\nandbastidasfierro",
+          "href": "https://www.linkedin.com/in/andbastidasfierro/"
+        },
+        {
+          "id": "instagram",
+          "text": "@andbastf",
+          "href": "https://www.instagram.com/andbastf/"
+        }
+      ],
+      [
+        {
+          "id": "me",
+          "text": "Andrés\nBastidas Fierro",
+          "subtext": "Software Engineer\nAlgorithmic Designer\nXR Evangelist",
+          "avatar": "/avatar.png"
+        }
+      ],
+      [
+        {
+          "id": "more",
+          "text": "",
+          "subtext": "I'm an engineer with a huge interest in mixing together the worlds of art and technology in attractive ways.\nI feel enthusiastic to apply my knowledge in planning, developing and launching experiences and interfaces whether in Frontend or 3D technologies, solving complex problems in the growing context of digitalization that we are going through.\nCurrently based in Bogotá, Colombia (GMT-5)."
+        }
+      ]
+    ]
+  },
+  {
+    "id": "skills",
+    "postItGroups": [
+      [
+        {
+          "id": "frontend",
+          "text": "Frontend\nDevelopment",
+          "bigIcons": [
+            { "id": "react", "tooltip": "ReactJS &\nReact Native" },
+            { "id": "threejs", "tooltip": "Three.js" },
+            { "id": "svelte", "tooltip": "Svelte" }
+          ]
+        }
+      ],
+      [
+        {
+          "id": "vrar",
+          "text": "VR/AR\nDevelopment",
+          "bigIcons": [
+            { "id": "unity", "tooltip": "Unity" },
+            { "id": "blender", "tooltip": "Blender" },
+            { "id": "unreal", "tooltip": "Unreal\nEngine 4/5" }
+          ]
+        }
+      ],
+      [
+        {
+          "id": "uxui",
+          "text": "UX/UI\nDesign",
+          "bigIcons": [
+            { "id": "figma", "tooltip": "Figma" },
+            { "id": "photoshop", "tooltip": "Photoshop" },
+            { "id": "aftereffects", "tooltip": "After Effects" }
+          ]
+        }
+      ],
+      [
+        {
+          "id": "product",
+          "text": "Product\nManagement",
+          "bigIcons": [
+            { "id": "jira", "tooltip": "Jira" },
+            { "id": "bitbucket", "tooltip": "Bitbucket\n<small>(and other VCS)</small>" },
+            { "id": "confluence", "tooltip": "Confluence\n<small>(and other\ncollab. tools)</small>" }
+          ]
+        }
+      ]
+    ]
+  },
+  {
+    "id": "education",
+    "postItGroups": [
+      [
+        {
+          "id": "master",
+          "text": "Master in Interactive\nDesign",
+          "href": "http://maedi.com.ar/",
+          "subtext": "Mar 2020 ➡ On thesis"
+        },
+        {
+          "id": "university",
+          "text": "System & Computer Engineering",
+          "href": "https://www.puce.edu.ec/ingenieria-en-sistemas-de-informacion/",
+          "subtext": "Ago 2010 ➡ Dec 2016"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "experience",
+    "postItGroups": [
+      [
+        {
+          "id": "quiena",
+          "text": "Qienna Wealth\nManagement Inc.",
+          "href": "https://www.quiena.com/",
+          "subtext": "Co-founder"
+        },
+        {
+          "id": "productmanager",
+          "text": "Product\nManager",
+          "subtext": "Jun 2021 ➡ Apr 2022"
+        },
+        {
+          "id": "uxuileader",
+          "text": "UX/UI\nLeader",
+          "subtext": "Nov 2020 ➡ Jun 2021"
+        },
+        {
+          "id": "frontenddev",
+          "text": "Frontend\nDev",
+          "subtext": "Jan 2016 ➡ Nov 2020"
+        }
+      ],
+      [
+        {
+          "id": "quiena1",
+          "text": "",
+          "imgId": "quiena1",
+          "subtext": "Fintech Solution",
+          "tools": "Angular, React, Native & +",
+          "otherLinks": [
+            { "label": "Web", "href": "https://www.quiena.com" },
+            { "label": "App", "href": "https://www.quiena.com/#connect" }
+          ]
+        },
+        {
+          "id": "quiena2",
+          "text": "",
+          "imgId": "quiena2"
+        }
+      ],
+      [
+        {
+          "id": "zemoga",
+          "text": "Senior FE Dev",
+          "href": "https://www.zemoga.com/",
+          "subtext": "May 2022 ➡ Today"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "portfolio",
+    "postItGroups": [
+      [
+        {
+          "id": "themoviecube",
+          "subtext": "3D Web",
+          "tools": "React, Three.js, Jest, TS.",
+          "videoUrl": "ow2xQUg1NXg",
+          "otherLinks": [
+            { "label": "Live", "href": "https://themoviecube.vercel.app/" },
+            { "label": "Repo", "href": "https://github.com/andna/themoviecube" }
+          ]
+        },
+        {
+          "id": "pokitdex",
+          "subtext": "2D Web",
+          "tools": "React, Redux, Next.js, MUI, Formik, TS.",
+          "videoUrl": "TC-ZUk__xWY",
+          "otherLinks": [
+            { "label": "Live", "href": "https://pokitdex.vercel.app/" },
+            { "label": "Repo", "href": "https://github.com/andna/pokitdex" }
+          ]
+        }
+      ],
+      [
+        {
+          "id": "space_o2",
+          "subtext": "6DoF VR Game",
+          "tools": "Unity, C#, Meta Quest 2.",
+          "videoUrl": "VKvfS5y1mG4",
+          "otherLinks": [
+            { "label": "APK", "href": "https://andbf.itch.io/space-o2" }
+          ]
+        },
+        {
+          "id": "lava_surf",
+          "subtext": "3DoF VR Game",
+          "tools": "Unity, Blender, Cardboard.",
+          "videoUrl": "CocjtK3EBuA",
+          "otherLinks": [
+            { "label": "APK", "href": "https://andbf.itch.io/lava-surf-vr" }
+          ]
+        }
+      ],
+      [
+        {
+          "id": "smatchups",
+          "subtext": "Web",
+          "tools": "JQuery, Sass, Fullstack PHP practice.",
+          "imgId": "smatchups",
+          "otherLinks": [
+            { "label": "Live", "href": "https://smatchups.vercel.app/" },
+            { "label": "Repo", "href": "https://github.com/andna/smatchups" }
+          ]
+        },
+        {
+          "id": "modera_game",
+          "subtext": "2D Game",
+          "tools": "Unityscript, GameMaker.",
+          "videoUrl": "bKNcZ4yMe40",
+          "otherLinks": [
+            { "label": "APK", "href": "https://andbf.itch.io/modera-game" }
+          ]
+        }
+      ],
+      [
+        {
+          "id": "this_web",
+          "subtext": "This Web",
+          "tools": "SvelteKit, Next.js, Figma.",
+          "otherLinks": [
+            { "label": "Repo", "href": "https://github.com/andna/andresbf" },
+            { "label": "Figma", "href": "https://www.figma.com/file/yAaTAFz5Mq7IEo7mgKz68U/Confluence-Variable?node-id=0%3A1" },
+            { "label": "Live", "href": "#" }
+          ]
+        },
+        {
+          "id": "youtube",
+          "text": "youtube.com/user/andzofficial",
+          "href": "https://www.youtube.com/user/andzofficial/videos"
+        },
+        {
+          "id": "behance",
+          "text": "be.net/andbastf",
+          "href": "https://www.behance.net/andbastf"
+        }
+      ]
+    ]
+  }
+]
