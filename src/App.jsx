@@ -1,10 +1,9 @@
-import postits from './data/postits.json'
+import Navigator from './components/Navigator'
 
 function App() {
   return (
     <main className="app">
-      <h1>Hello World</h1>
-      <p>Sections in JSON: {postits.length}</p>
+      <Navigator />
     </main>
   )
 }
