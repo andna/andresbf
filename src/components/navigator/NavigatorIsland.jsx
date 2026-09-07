@@ -14,8 +14,8 @@ export default function NavigatorIsland({ sections }) {
     return (
       <div className="navigator-placeholder">
         <ul>
-          {sections.map((name) => (
-            <li key={name}>{name}</li>
+          {sections.map((section) => (
+            <li key={section.id}>{section.label}</li>
           ))}
         </ul>
       </div>
@@ -27,8 +27,8 @@ export default function NavigatorIsland({ sections }) {
       fallback={
         <div className="navigator-placeholder">
           <ul>
-            {sections.map((name) => (
-              <li key={name}>{name}</li>
+            {sections.map((section) => (
+              <li key={section.id}>{section.label}</li>
             ))}
           </ul>
         </div>

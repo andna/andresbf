@@ -1,37 +1,38 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
+import NavigatorNav from './NavigatorNav.jsx'
 import './navigator.css'
 
+const valueSkewDesktop = -0.6
+const valueSkewMobile = -0.9
+const planesPerCycle = 5
+
 const breakpoints = {
-  mobile: 58 * 16,
   mid: 64 * 16,
   large: 100 * 16,
-  mobileHeight: 800,
 }
 
-const getBreakpoint = (width, height) => {
-  if (height < breakpoints.mobileHeight) return 'mobile'
+const getBreakpoint = (width) => {
   if (width < breakpoints.mid) return 'mobile'
   if (width < breakpoints.large) return 'mid'
   return 'large'
 }
 
-const helixCenter = { scale: 0.6, offsetPx: [0, -350] }
-const helixMobile = { scale: 0.4, offsetPx: [0, -200] }
+const helixCenter = { scale: 0.55, offsetPx: [0, 0] }
+const helixMobile = { scale: 0.32, offsetPx: [0, 0] }
 
 export default function Navigator({ sections }) {
-  const [skewValue] = useState(-0.65)
-  const [planesPerCycle] = useState(3)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
   const [breakpoint, setBreakpoint] = useState(() =>
-    getBreakpoint(window.innerWidth, window.innerHeight)
+    getBreakpoint(window.innerWidth)
   )
 
   useEffect(() => {
     const handleResize = () => {
       setBreakpoint((prev) => {
-        const next = getBreakpoint(window.innerWidth, window.innerHeight)
+        const next = getBreakpoint(window.innerWidth)
         return next === prev ? prev : next
       })
     }
@@ -40,32 +41,54 @@ export default function Navigator({ sections }) {
   }, [])
 
   const isMobile = breakpoint === 'mobile'
+  const valueSkew = isMobile ? valueSkewMobile : valueSkewDesktop
   const orthoZoom = 200
   const pose = isMobile ? helixMobile : helixCenter
   const scale = pose.scale
   const offsetPx = pose.offsetPx
+  const helixScale = 0.6
+  const skewAngle = Math.atan(Math.abs(valueSkew))
+  const stepWorld = Math.sin(skewAngle) + Math.pow(Math.abs(valueSkew), 2.5) * 0.1
+  const lineHeightPx = orthoZoom * helixScale * stepWorld * 1.85
+  const navigatorListStyle = isMobile
+    ? undefined
+    : { lineHeight: `${lineHeightPx}px`, transform: `scale(${scale})` }
+
+  const setSelectedIndexAndScroll = (index) => {
+    setSelectedIndex(index)
+    const id = sections[index]?.id
+    if (!id) return
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
-    <div className="navigator">
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <div className="canvas">
-          <Canvas>
-            <Suspense fallback={null}>
-              <CanvasScene
-                orthoZoom={orthoZoom}
-                scale={scale}
-                offsetPx={offsetPx}
-                sections={sections}
-                planesPerCycle={planesPerCycle}
-                skewValue={skewValue}
-                selectedIndex={selectedIndex}
-                setSelectedIndex={setSelectedIndex}
-                isMobile={isMobile}
-              />
-            </Suspense>
-          </Canvas>
-        </div>
+    <div className={`navigator${isMobile ? ' is-mobile' : ''}`}>
+      <div className="canvas">
+        <Canvas gl={{ alpha: true }} style={{ background: 'transparent' }}>
+          <Suspense fallback={null}>
+            <CanvasScene
+              orthoZoom={orthoZoom}
+              scale={scale}
+              offsetPx={offsetPx}
+              sections={sections}
+              planesPerCycle={planesPerCycle}
+              skewValue={valueSkew}
+              selectedIndex={selectedIndex}
+              setSelectedIndex={setSelectedIndexAndScroll}
+              isMobile={isMobile}
+              hoveredPlaneIdx={hoveredPlaneIdx}
+              setHoveredPlaneIdx={setHoveredPlaneIdx}
+            />
+          </Suspense>
+        </Canvas>
       </div>
+      <NavigatorNav
+        sections={sections}
+        selectedIndex={selectedIndex}
+        setSelectedIndex={setSelectedIndexAndScroll}
+        setHoveredPlaneIdx={setHoveredPlaneIdx}
+        navigatorListStyle={navigatorListStyle}
+      />
     </div>
   )
 }

@@ -1,5 +1,17 @@
-import * as THREE from 'three'
-import { Edges } from '@react-three/drei'
+import IndividualHelix from './IndividualHelix.jsx'
+
+export function helixPlaneY(index, skewValue, planeWidth, planeHeight) {
+  const absSkew = Math.abs(skewValue)
+  const t = Math.min(1, Math.max(0, (absSkew - 0.6) / 0.3))
+  const stepTighten = 0.89 + (0.8 - 0.89) * t
+  const skewAngle = Math.atan(absSkew)
+  const baseY = -index * planeWidth * Math.sin(skewAngle) * stepTighten
+  const scalingFactor = Math.pow(absSkew, 1.5) * 0.29
+  const skewCompensationY = skewValue * (
+    index === 0 ? planeHeight : planeHeight + scalingFactor * index * stepTighten
+  )
+  return baseY + skewCompensationY
+}
 
 export default function Helix({
   totalPlanes,
@@ -7,6 +19,8 @@ export default function Helix({
   skewValue,
   baseRotation,
   radius,
+  planeWidth = 0.7,
+  planeHeight = 0.5,
   selectedIndex,
   setSelectedIndex,
   hoveredPlaneIdx,
@@ -15,48 +29,22 @@ export default function Helix({
   return (
     <>
       {Array.from({ length: totalPlanes }).map((_, index) => {
-        const skewAngle = Math.atan(Math.abs(skewValue))
-        const distance = 1
-        const baseY = -index * distance * Math.sin(skewAngle)
-        const normalizedSkew = Math.abs(skewValue)
-        const scalingFactor = Math.pow(normalizedSkew, 1.5) * 0.29
-        const skewCompensationY = skewValue * (index === 0 ? 0.5 : 0.5 + scalingFactor * index)
-        const y = baseY + skewCompensationY
+        const y = helixPlaneY(index, skewValue, planeWidth, planeHeight)
         const planeRotation = baseRotation * index
-        const x = radius * Math.sin(planeRotation)
-        const z = radius * Math.cos(planeRotation)
-
-        const isSel = selectedIndex === index
-        const isHover = hoveredPlaneIdx === index
 
         return (
-          <group
+          <IndividualHelix
             key={index}
-            rotation={[0, planeRotation, 0]}
-            position={[x, y, z]}
-            onPointerOver={(e) => { setHoveredPlaneIdx(index); e.stopPropagation() }}
-            onPointerOut={() => setHoveredPlaneIdx(-1)}
-          >
-            <mesh
-              geometry={skewedPlaneGeometry}
-              onClick={(e) => { setSelectedIndex(index); e.stopPropagation() }}
-            >
-              <meshBasicMaterial
-                color={isSel ? '#ffffff' : (isHover ? '#555555' : '#1e1d1e')}
-                toneMapped={false}
-                side={THREE.DoubleSide}
-                polygonOffset
-                polygonOffsetFactor={1}
-                polygonOffsetUnits={1}
-                depthTest
-                depthWrite
-              />
-            </mesh>
-            <mesh geometry={skewedPlaneGeometry} frustumCulled>
-              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-              <Edges color="#fff" />
-            </mesh>
-          </group>
+            index={index}
+            y={y}
+            radius={radius}
+            skewedPlaneGeometry={skewedPlaneGeometry}
+            selectedIndex={selectedIndex}
+            setSelectedIndex={setSelectedIndex}
+            hoveredPlaneIdx={hoveredPlaneIdx}
+            setHoveredPlaneIdx={setHoveredPlaneIdx}
+            planeRotation={planeRotation}
+          />
         )
       })}
     </>

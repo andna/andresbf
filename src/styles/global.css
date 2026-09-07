@@ -1,22 +1,100 @@
+:root {
+  --chrome-header: 14.5rem;
+  --chrome-sidebar: 18rem;
+}
+
+html,
 body {
   margin: 0;
+  background: #fff;
+  color: #111;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-.app {
+.shell {
   min-height: 100vh;
-  display: grid;
-  gap: 8px;
-  text-align: center;
 }
 
-.app > h1,
-.app > p {
-  margin: 0;
-  padding: 1rem;
+.chrome {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--chrome-header);
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  background: #fff;
+  overflow: visible;
+  border-bottom: 1px solid #eee;
 }
 
-h1,
-p {
-  margin: 0;
+.logo {
+  flex: 0 0 auto;
+  align-self: center;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  color: inherit;
+  font-size: 1.125rem;
+}
+
+.chrome-nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+}
+
+.content {
+  margin-top: var(--chrome-header);
+}
+
+.content section {
+  min-height: calc(100vh - var(--chrome-header));
+  box-sizing: border-box;
+  padding: 2rem 1.25rem 4rem;
+  max-width: 42rem;
+  scroll-margin-top: var(--chrome-header);
+}
+
+.content h1 {
+  font-size: 2rem;
+  margin: 0 0 1rem;
+}
+
+.content p {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 64rem) {
+  .chrome {
+    right: auto;
+    bottom: 0;
+    width: var(--chrome-sidebar);
+    height: auto;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    border-bottom: none;
+    border-right: 1px solid #eee;
+  }
+
+  .logo {
+    align-self: flex-start;
+  }
+
+  .content {
+    margin-top: 0;
+    margin-left: var(--chrome-sidebar);
+  }
+
+  .content section {
+    min-height: 100vh;
+    padding: 3rem 2.5rem 5rem;
+  }
 }
