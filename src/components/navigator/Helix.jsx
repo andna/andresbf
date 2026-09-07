@@ -14,7 +14,7 @@ export function helixPlaneY(index, skewValue, planeWidth, planeHeight) {
 }
 
 export default function Helix({
-  totalPlanes,
+  sections,
   skewedPlaneGeometry,
   skewValue,
   baseRotation,
@@ -28,13 +28,13 @@ export default function Helix({
 }) {
   return (
     <>
-      {Array.from({ length: totalPlanes }).map((_, index) => {
+      {sections.map((section, index) => {
         const y = helixPlaneY(index, skewValue, planeWidth, planeHeight)
         const planeRotation = baseRotation * index
 
         return (
           <IndividualHelix
-            key={index}
+            key={`${section.id}-${index}`}
             index={index}
             y={y}
             radius={radius}
@@ -44,6 +44,7 @@ export default function Helix({
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
             planeRotation={planeRotation}
+            label={section.label}
           />
         )
       })}

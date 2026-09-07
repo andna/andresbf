@@ -1,12 +1,11 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
-import NavigatorNav from './NavigatorNav.jsx'
 import './navigator.css'
 
-const valueSkewDesktop = -0.6
+const valueSkewDesktop = -0.67
 const valueSkewMobile = -0.9
-const planesPerCycle = 5
+const planesPerCycle = 6
 
 const breakpoints = {
   mid: 64 * 16,
@@ -19,7 +18,7 @@ const getBreakpoint = (width) => {
   return 'large'
 }
 
-const helixCenter = { scale: 0.55, offsetPx: [0, 0] }
+const helixCenter = { scale: 0.95, offsetPx: [0, 0] }
 const helixMobile = { scale: 0.32, offsetPx: [0, 0] }
 
 export default function Navigator({ sections }) {
@@ -46,14 +45,6 @@ export default function Navigator({ sections }) {
   const pose = isMobile ? helixMobile : helixCenter
   const scale = pose.scale
   const offsetPx = pose.offsetPx
-  const helixScale = 0.6
-  const skewAngle = Math.atan(Math.abs(valueSkew))
-  const stepWorld = Math.sin(skewAngle) + Math.pow(Math.abs(valueSkew), 2.5) * 0.1
-  const lineHeightPx = orthoZoom * helixScale * stepWorld * 1.85
-  const navigatorListStyle = isMobile
-    ? undefined
-    : { lineHeight: `${lineHeightPx}px`, transform: `scale(${scale})` }
-
   const setSelectedIndexAndScroll = (index) => {
     setSelectedIndex(index)
     const id = sections[index]?.id
@@ -82,13 +73,6 @@ export default function Navigator({ sections }) {
           </Suspense>
         </Canvas>
       </div>
-      <NavigatorNav
-        sections={sections}
-        selectedIndex={selectedIndex}
-        setSelectedIndex={setSelectedIndexAndScroll}
-        setHoveredPlaneIdx={setHoveredPlaneIdx}
-        navigatorListStyle={navigatorListStyle}
-      />
     </div>
   )
 }

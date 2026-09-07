@@ -167,7 +167,7 @@ export default function CanvasScene({
       >
         <group position={[0, -helixCenterY, 0]}>
           <Helix
-            totalPlanes={totalPlanes}
+            sections={sections}
             skewedPlaneGeometry={skewedPlaneGeometry}
             skewValue={skewValue}
             baseRotation={baseRotation}
