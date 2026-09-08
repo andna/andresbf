@@ -83,13 +83,14 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.2;
+  font-weight: 900;
   white-space: nowrap;
 }
 
 .navigator-list .selected {
   opacity: 1;
-  font-weight: 700;
+  color: var(--accent-color);
 }
 
 @media (min-width: 64rem) {

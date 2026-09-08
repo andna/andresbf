@@ -8,6 +8,10 @@ const labelLines = {
   Education: ['Edu', 'cation'],
 }
 
+const accentColor = '#1a5564'
+const bgColor = '#ebebe5'
+const hoverColor = '#c1cdcb'
+
 const textSkewX = 0
 const textSkewYFront = -0.2
 const textSkewYBack = 0.2
@@ -18,11 +22,7 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel) => {
   const w = canvas.width
   const h = canvas.height
   ctx.clearRect(0, 0, w, h)
-  ctx.fillStyle = isSel
-    ? '#ffffff'
-    : isHover
-      ? (isBack ? '#9a9a9a' : '#555555')
-      : (isBack ? '#8a8a8a' : '#1e1d1e')
+  ctx.fillStyle = isSel ? accentColor : isHover ? hoverColor : bgColor
   ctx.fillRect(0, 0, w, h)
 
   if (!showLabel) return
@@ -40,8 +40,8 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel) => {
     ctx.font = `500 ${size}px system-ui, -apple-system, sans-serif`
   }
 
-  ctx.globalAlpha = isSel ? 1 : 0.5
-  ctx.fillStyle = isSel ? '#111111' : '#ffffff'
+  ctx.globalAlpha = isBack ? 0.3 : 1
+  ctx.fillStyle = isSel ? bgColor : accentColor
   const gap = size * 1.15
   const startY = h / 2 - ((lines.length - 1) * gap) / 2
   ctx.save()
@@ -102,14 +102,22 @@ export default function IndividualHelix({
   useEffect(() => () => {
     texture.dispose()
     backTexture.dispose()
+    document.body.style.cursor = ''
   }, [texture, backTexture])
 
   return (
     <group
       rotation={[0, planeRotation, 0]}
       position={[x, y, z]}
-      onPointerOver={(e) => { setHoveredPlaneIdx(index); e.stopPropagation() }}
-      onPointerOut={() => setHoveredPlaneIdx(-1)}
+      onPointerOver={(e) => {
+        setHoveredPlaneIdx(index)
+        document.body.style.cursor = 'pointer'
+        e.stopPropagation()
+      }}
+      onPointerOut={() => {
+        setHoveredPlaneIdx(-1)
+        document.body.style.cursor = ''
+      }}
       onClick={(e) => { setSelectedIndex(index); e.stopPropagation() }}
     >
       <mesh geometry={skewedPlaneGeometry}>
@@ -138,7 +146,7 @@ export default function IndividualHelix({
       </mesh>
       <mesh geometry={skewedPlaneGeometry} frustumCulled>
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-        <Edges color="#fff" />
+        <Edges color={accentColor} />
       </mesh>
     </group>
   )

@@ -1,4 +1,7 @@
 :root {
+  --accent-color: #1a5564;
+  --bg-color: #ebebe5;
+  --text-color: #232620;
   --chrome-header: 14rem;
   --chrome-sidebar: 18rem;
   --chrome-pad-x: 1rem;
@@ -7,8 +10,8 @@
 html,
 body {
   margin: 0;
-  background: #fff;
-  color: #111;
+  background: var(--bg-color);
+  color: var(--text-color);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -29,9 +32,9 @@ body {
   gap: 0.5rem;
   padding: 0.75rem var(--chrome-pad-x);
   box-sizing: border-box;
-  background: #fff;
+  background: var(--bg-color);
   overflow: visible;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
 }
 
 .logo {
@@ -82,7 +85,7 @@ body {
     flex-direction: column;
     padding: 1.5rem var(--chrome-pad-x);
     border-bottom: none;
-    border-right: 1px solid #eee;
+    border-right: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   }
 
   .chrome-nav {
