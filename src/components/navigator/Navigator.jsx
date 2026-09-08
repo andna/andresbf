@@ -4,8 +4,11 @@ import CanvasScene from './CanvasScene.jsx'
 import './navigator.css'
 
 const valueSkewDesktop = -0.67
-const valueSkewMobile = -0.9
-const planesPerCycle = 6
+const valueSkewMobile = -1.3
+const planesPerCycleDesktop = 6
+const planesPerCycleMobile = 3
+const planeHeightDesktop = 0.5
+const planeHeightMobile = 0.75
 
 const breakpoints = {
   mid: 64 * 16,
@@ -19,7 +22,7 @@ const getBreakpoint = (width) => {
 }
 
 const helixCenter = { scale: 0.95, offsetPx: [0, 0] }
-const helixMobile = { scale: 0.32, offsetPx: [0, 0] }
+const helixMobile = { scale: 0.25, offsetPx: [0, 0] }
 
 export default function Navigator({ sections }) {
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -41,6 +44,8 @@ export default function Navigator({ sections }) {
 
   const isMobile = breakpoint === 'mobile'
   const valueSkew = isMobile ? valueSkewMobile : valueSkewDesktop
+  const planesPerCycle = isMobile ? planesPerCycleMobile : planesPerCycleDesktop
+  const planeHeight = isMobile ? planeHeightMobile : planeHeightDesktop
   const orthoZoom = 200
   const pose = isMobile ? helixMobile : helixCenter
   const scale = pose.scale
@@ -55,7 +60,11 @@ export default function Navigator({ sections }) {
   return (
     <div className={`navigator${isMobile ? ' is-mobile' : ''}`}>
       <div className="canvas">
-        <Canvas gl={{ alpha: true }} style={{ background: 'transparent' }}>
+        <Canvas
+          gl={{ alpha: true, antialias: true }}
+          dpr={[1, 2]}
+          style={{ background: 'transparent' }}
+        >
           <Suspense fallback={null}>
             <CanvasScene
               orthoZoom={orthoZoom}
@@ -63,6 +72,7 @@ export default function Navigator({ sections }) {
               offsetPx={offsetPx}
               sections={sections}
               planesPerCycle={planesPerCycle}
+              planeHeight={planeHeight}
               skewValue={valueSkew}
               selectedIndex={selectedIndex}
               setSelectedIndex={setSelectedIndexAndScroll}
@@ -73,6 +83,21 @@ export default function Navigator({ sections }) {
           </Suspense>
         </Canvas>
       </div>
+      {isMobile && (
+        <ul className="navigator-list">
+          {sections.map((section, index) => (
+            <li key={`${section.id}-${index}`}>
+              <button
+                type="button"
+                className={selectedIndex === index ? 'selected' : ''}
+                onClick={() => setSelectedIndexAndScroll(index)}
+              >
+                {section.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

@@ -10,6 +10,7 @@ export default function CanvasScene({
   offsetPx,
   sections,
   planesPerCycle,
+  planeHeight = 0.5,
   skewValue,
   selectedIndex,
   setSelectedIndex,
@@ -20,7 +21,6 @@ export default function CanvasScene({
   const totalPlanes = sections.length
 
   const planeWidth = 0.5
-  const planeHeight = 0.5
   const baseRotation = useMemo(() => (Math.PI * 2) / planesPerCycle, [planesPerCycle])
   const radius = useMemo(
     () => planeWidth / (2 * Math.tan(Math.PI / planesPerCycle)),
@@ -82,7 +82,7 @@ export default function CanvasScene({
     }
     const onMove = (event) => {
       if (!dragging) return
-      targetAngleRef.current += (event.clientY - lastY) * 0.01
+      targetAngleRef.current -= (event.clientY - lastY) * 0.01
       lastY = event.clientY
       currentIndexRef.current = targetAngleRef.current / baseRotation
     }
@@ -178,6 +178,7 @@ export default function CanvasScene({
             setSelectedIndex={setSelectedIndex}
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
+            showLabel={!isMobile}
           />
         </group>
       </group>
