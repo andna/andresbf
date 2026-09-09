@@ -140,7 +140,7 @@ export default function CanvasScene({
     cam.lookAt(tmpTarget.current)
 
     const [ox, oy] = offsetPx
-    if ((ox | oy) !== 0) cam.setViewOffset(size.width, size.height, -ox, -oy, size.width, size.height)
+    if (Math.abs(ox) > 0.01 || Math.abs(oy) > 0.01) cam.setViewOffset(size.width, size.height, -ox, -oy, size.width, size.height)
     else cam.clearViewOffset()
     cam.updateProjectionMatrix()
   })

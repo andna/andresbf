@@ -3,18 +3,28 @@ import Layout from '../layouts/Layout.astro';
 import NavigatorIsland from '../components/navigator/NavigatorIsland.jsx';
 import ThemeToggle from '../components/theme/ThemeToggle.jsx';
 import { sections } from '../data/sections.js';
+import { Content as Header } from '../content/header.md';
 import { Content as Me } from '../content/me.md';
 import { Content as Experience } from '../content/experience.md';
 import { Content as Skills } from '../content/skills.md';
-import { Content as Portfolio } from '../content/portfolio.md';
+import { Content as Portfolio1 } from '../content/portfolio.md';
+import { Content as Portfolio2 } from '../content/portfolio-2.md';
+import { Content as Portfolio3 } from '../content/portfolio-3.md';
+import { Content as Portfolio4 } from '../content/portfolio-4.md';
 import { Content as Education } from '../content/education.md';
+import { Content as Footer } from '../content/footer.md';
 
 const articles = [
+  { id: 'header', Content: Header },
   { id: 'me', Content: Me },
   { id: 'experience', Content: Experience },
   { id: 'skills', Content: Skills },
-  { id: 'portfolio', Content: Portfolio },
+  { id: 'portfolio-1', Content: Portfolio1 },
+  { id: 'portfolio-2', Content: Portfolio2 },
+  { id: 'portfolio-3', Content: Portfolio3 },
+  { id: 'portfolio-4', Content: Portfolio4 },
   { id: 'education', Content: Education },
+  { id: 'footer', Content: Footer },
 ];
 ---
 
@@ -25,16 +35,18 @@ const articles = [
         <a class="logo" href="/" aria-label="andbastf"></a>
         <ThemeToggle client:load />
       </div>
-      <div class="chrome-nav">
+    </header>
+    <div class="stage">
+      <div class="stage-helix">
         <NavigatorIsland client:load sections={sections} />
       </div>
-    </header>
-    <main class="content">
-      {articles.map(({ id, Content }) => (
-        <section id={id}>
-          <Content />
-        </section>
-      ))}
-    </main>
+      <main class="content">
+        {articles.map(({ id, Content }) => (
+          <section id={id}>
+            <Content />
+          </section>
+        ))}
+      </main>
+    </div>
   </div>
 </Layout>

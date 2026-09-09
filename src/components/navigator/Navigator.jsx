@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
@@ -48,11 +48,7 @@ const helixCenter = { scale: 0.95, offsetPx: [0, 0] }
 const helixMobile = { scale: 0.25, offsetPx: [0, 0] }
 
 export default function Navigator({ sections }) {
-  const helixSections = useMemo(() => [
-    { id: 'header', label: '', blank: true },
-    ...sections,
-    { id: 'footer', label: '', blank: true },
-  ], [sections])
+  const helixSections = sections
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < window.innerHeight)
@@ -61,11 +57,34 @@ export default function Navigator({ sections }) {
     h: window.innerHeight,
   }))
   const [textFront, setTextFront] = useState({ skewX: -0.07, skewY: -0.17, rotDeg: 8 })
-  const [textBack, setTextBack] = useState({ skewX: -0.18, skewY: 0.05, rotDeg: 85 })
-  const [scaleFit, setScaleFit] = useState(0.6)
-  const [screenRotDeg, setScreenRotDeg] = useState(45)
+  const [textBack, setTextBack] = useState({ skewX: 0.01, skewY: 0.08, rotDeg: 13 })
+  const [scaleFit, setScaleFit] = useState(0.67)
+  const [screenRotDeg, setScreenRotDeg] = useState(50)
   const [gizmoScale, setGizmoScale] = useState(0.5)
   const [showDebug, setShowDebug] = useState(false)
+  const restScaleFit = 0.42
+  const restScreenRotDeg = 0.5
+  const restOffsetXFrac = 0.3
+  const heroOffsetYFrac = 0.04
+  const restOffsetYFrac = 0.055
+  const targetScaleFit = selectedIndex === 0 ? scaleFit : restScaleFit
+  const targetScreenRotDeg = selectedIndex === 0 ? screenRotDeg : restScreenRotDeg
+  const targetOffsetX = selectedIndex === 0 ? 0 : -Math.round(view.w * restOffsetXFrac)
+  const targetOffsetY = Math.round(view.h * (selectedIndex === 0 ? heroOffsetYFrac : restOffsetYFrac))
+  const targetContentRot = selectedIndex === 0 ? -20 : 0
+  const targetContentY = selectedIndex === 0 ? 3 : 0
+  const [liveScaleFit, setLiveScaleFit] = useState(scaleFit)
+  const [liveScreenRotDeg, setLiveScreenRotDeg] = useState(screenRotDeg)
+  const [liveOffsetX, setLiveOffsetX] = useState(0)
+  const [liveOffsetY, setLiveOffsetY] = useState(() => Math.round(window.innerHeight * heroOffsetYFrac))
+  const livePoseRef = useRef({
+    scaleFit: 0.67,
+    screenRotDeg: 50,
+    offsetX: 0,
+    offsetY: Math.round(window.innerHeight * heroOffsetYFrac),
+    contentRot: -20,
+    contentY: 3,
+  })
   const canvasRef = useRef(null)
   const valueSkew = isMobile ? valueSkewMobile : valueSkewDesktop
   const planesPerCycle = isMobile ? planesPerCycleMobile : planesPerCycleDesktop
@@ -79,8 +98,8 @@ export default function Navigator({ sections }) {
       helixPlaneY(0, valueSkew, planeWidth, planeHeight)
     ) + planeHeight
   const diagonal = Math.hypot(view.w, view.h)
-  const scale = isMobile ? pose.scale : (diagonal * scaleFit) / (worldSpan * orthoZoom)
-  const screenRoll = (screenRotDeg * Math.PI) / 180
+  const scale = isMobile ? pose.scale : (diagonal * liveScaleFit) / (worldSpan * orthoZoom)
+  const screenRoll = (liveScreenRotDeg * Math.PI) / 180
   const textFrontRad = {
     skewX: textFront.skewX,
     skewY: textFront.skewY,
@@ -95,7 +114,90 @@ export default function Navigator({ sections }) {
   const hitBoxNarrowness = 0.28
   const bandClip = isMobile
     ? undefined
-    : diagonalBandClip(view.w, view.h, screenRotDeg, hitBoxNarrowness)
+    : diagonalBandClip(view.w, view.h, liveScreenRotDeg, hitBoxNarrowness)
+  const contentLeft = (window.innerWidth - view.w) / 2
+    + view.w / 2
+    + Math.min(view.w, view.h) * hitBoxNarrowness
+
+  const applyLayoutPose = (offsetX, offsetY, contentRot, contentY) => {
+    const stage = document.querySelector('.stage')
+    const content = document.querySelector('.content')
+    if (!(stage instanceof HTMLElement) || !(content instanceof HTMLElement)) return
+    if (isMobile) {
+      stage.style.removeProperty('transform')
+      stage.style.removeProperty('--content-left')
+      content.style.removeProperty('transform')
+      return
+    }
+    stage.style.transform = `translate(${offsetX}px, ${offsetY}px)`
+    stage.style.setProperty('--content-left', `${contentLeft}px`)
+    content.style.transform = `rotate(${contentRot}deg) translateY(${contentY}vh)`
+  }
+
+  useEffect(() => {
+    let rafId = 0
+    const step = () => {
+      const cur = livePoseRef.current
+      const nextScale = cur.scaleFit + (targetScaleFit - cur.scaleFit) * 0.06
+      const nextRot = cur.screenRotDeg + (targetScreenRotDeg - cur.screenRotDeg) * 0.06
+      const nextOffsetX = cur.offsetX + (targetOffsetX - cur.offsetX) * 0.06
+      const nextOffsetY = cur.offsetY + (targetOffsetY - cur.offsetY) * 0.06
+      const nextContentRot = cur.contentRot + (targetContentRot - cur.contentRot) * 0.06
+      const nextContentY = cur.contentY + (targetContentY - cur.contentY) * 0.06
+      const done =
+        Math.abs(targetScaleFit - nextScale) < 0.0004 &&
+        Math.abs(targetScreenRotDeg - nextRot) < 0.0004 &&
+        Math.abs(targetOffsetX - nextOffsetX) < 0.2 &&
+        Math.abs(targetOffsetY - nextOffsetY) < 0.2 &&
+        Math.abs(targetContentRot - nextContentRot) < 0.0004 &&
+        Math.abs(targetContentY - nextContentY) < 0.0004
+      const scaleFitOut = done ? targetScaleFit : nextScale
+      const screenRotOut = done ? targetScreenRotDeg : nextRot
+      const offsetXOut = done ? targetOffsetX : nextOffsetX
+      const offsetYOut = done ? targetOffsetY : nextOffsetY
+      const contentRotOut = done ? targetContentRot : nextContentRot
+      const contentYOut = done ? targetContentY : nextContentY
+      livePoseRef.current = {
+        scaleFit: scaleFitOut,
+        screenRotDeg: screenRotOut,
+        offsetX: offsetXOut,
+        offsetY: offsetYOut,
+        contentRot: contentRotOut,
+        contentY: contentYOut,
+      }
+      setLiveScaleFit(scaleFitOut)
+      setLiveScreenRotDeg(screenRotOut)
+      setLiveOffsetX(offsetXOut)
+      setLiveOffsetY(offsetYOut)
+      applyLayoutPose(offsetXOut, offsetYOut, contentRotOut, contentYOut)
+      if (!done) rafId = requestAnimationFrame(step)
+    }
+    rafId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafId)
+  }, [
+    targetScaleFit,
+    targetScreenRotDeg,
+    targetOffsetX,
+    targetOffsetY,
+    targetContentRot,
+    targetContentY,
+    contentLeft,
+    isMobile,
+  ])
+
+  useEffect(() => {
+    const cur = livePoseRef.current
+    applyLayoutPose(cur.offsetX, cur.offsetY, cur.contentRot, cur.contentY)
+    return () => {
+      const stage = document.querySelector('.stage')
+      const content = document.querySelector('.content')
+      if (stage instanceof HTMLElement) {
+        stage.style.removeProperty('transform')
+        stage.style.removeProperty('--content-left')
+      }
+      if (content instanceof HTMLElement) content.style.removeProperty('transform')
+    }
+  }, [isMobile, contentLeft])
 
   useEffect(() => {
     const onKey = (event) => {
@@ -127,13 +229,24 @@ export default function Navigator({ sections }) {
   const setSelectedIndexAndScroll = (index) => {
     setSelectedIndex(index)
     const id = helixSections[index]?.id
-    if (!id || helixSections[index]?.blank) return
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    if (!id) return
+    const section = document.getElementById(id)
+    const content = document.querySelector('.content')
+    if (!section) return
+    if (content instanceof HTMLElement && !isMobile) {
+      content.scrollTo({ top: section.offsetTop, behavior: 'smooth' })
+      return
+    }
+    section.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
     <div className={`navigator${isMobile ? ' is-mobile' : ' is-desktop'}`}>
-      <div className="canvas" ref={canvasRef} style={bandClip ? { clipPath: bandClip } : undefined}>
+      <div
+        className="canvas"
+        ref={canvasRef}
+        style={bandClip ? { clipPath: bandClip } : undefined}
+      >
         <Canvas
           gl={{ alpha: true, antialias: true }}
           dpr={[1, 2]}
@@ -273,10 +386,10 @@ export default function Navigator({ sections }) {
       </aside>
       {isMobile && (
         <ul className="navigator-list">
-          {sections.map((section, index) => {
-            const helixIndex = index + 1
+          {sections.filter((section) => !section.blank).map((section) => {
+            const helixIndex = sections.findIndex((entry) => entry.id === section.id)
             return (
-            <li key={`${section.id}-${index}`}>
+            <li key={section.id}>
               <button
                 type="button"
                 className={[

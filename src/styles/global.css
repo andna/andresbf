@@ -82,17 +82,19 @@ body {
   cursor: pointer;
 }
 
-.chrome-nav {
-  flex: 0 0 auto;
-  width: 100%;
-  min-width: 0;
-  overflow: visible;
+.stage {
+  position: relative;
+  padding-top: 3.25rem;
+}
+
+.stage-helix {
+  position: relative;
+  z-index: 1;
 }
 
 .content {
   position: relative;
   z-index: 2;
-  margin-top: var(--chrome-header);
 }
 
 .content section {
@@ -131,24 +133,42 @@ body {
     background: transparent;
   }
 
-  .chrome-nav {
-    width: 0;
-    height: 0;
-    min-height: 0;
-    flex: 0 0 0;
-    overflow: visible;
+  .stage {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    padding-top: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  .stage-helix {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
   }
 
   .content {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    left: var(--content-left, 50vw);
     margin-top: 0;
     margin-left: 0;
-    pointer-events: none;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    transform-origin: 0 0;
+    will-change: transform;
   }
 
   .content section {
     min-height: 100vh;
     padding: 3rem 2.5rem 5rem;
-    pointer-events: none;
+    max-width: min(42rem, 100%);
   }
 
   .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, blockquote, pre, code, strong, em) {
