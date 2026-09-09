@@ -89,7 +89,12 @@ export default function Navigator({ sections }) {
             <li key={`${section.id}-${index}`}>
               <button
                 type="button"
-                className={selectedIndex === index ? 'selected' : ''}
+                className={[
+                  selectedIndex === index ? 'selected' : '',
+                  hoveredPlaneIdx === index ? 'hovered' : '',
+                ].filter(Boolean).join(' ')}
+                onPointerEnter={() => setHoveredPlaneIdx(index)}
+                onPointerLeave={() => setHoveredPlaneIdx(-1)}
                 onClick={() => setSelectedIndexAndScroll(index)}
               >
                 {section.label}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { OrbitControls, OrthographicCamera, Stars } from '@react-three/drei'
+import { OrbitControls, OrthographicCamera } from '@react-three/drei'
 import Helix, { helixPlaneY } from './Helix.jsx'
 
 export default function CanvasScene({
@@ -155,10 +155,6 @@ export default function CanvasScene({
 
   return (
     <>
-      {!isMobile && (
-        <Stars radius={1} depth={20} rayleigh={2} count={3000} factor={1} saturation={3} fade speed={0} color="blue" />
-      )}
-
       <group
         ref={helixPivot}
         position={[0, 0, 0]}

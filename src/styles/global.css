@@ -1,7 +1,19 @@
-:root {
+:root,
+html[data-theme="light"] {
   --accent-color: #1a5564;
   --bg-color: #ebebe5;
   --text-color: #232620;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --accent-color: #34dd8b;
+  --bg-color: #212d2c;
+  --text-color: #ffffff;
+  color-scheme: dark;
+}
+
+:root {
   --chrome-header: 14rem;
   --chrome-sidebar: 18rem;
   --chrome-pad-x: 1rem;
@@ -37,14 +49,35 @@ body {
   border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
 }
 
+.chrome-bar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
 .logo {
   flex: 0 0 auto;
-  align-self: flex-start;
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: var(--accent-color);
+  -webkit-mask: url("/logo-a.svg") center / contain no-repeat;
+  mask: url("/logo-a.svg") center / contain no-repeat;
+}
+
+.theme-toggle-button {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  text-decoration: none;
-  color: inherit;
-  font-size: 1.125rem;
+  color: var(--accent-color);
+  cursor: pointer;
 }
 
 .chrome-nav {
@@ -91,10 +124,6 @@ body {
   .chrome-nav {
     flex: 1 1 auto;
     min-height: 0;
-  }
-
-  .logo {
-    align-self: flex-start;
   }
 
   .content {

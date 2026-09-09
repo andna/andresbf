@@ -1,6 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Edges } from '@react-three/drei'
+import { readThemeColors } from '../../theme.js'
+import { useFrame } from '@react-three/fiber'
 
 const labelLines = {
   Experience: ['Expe', 'rience'],
@@ -8,21 +10,18 @@ const labelLines = {
   Education: ['Edu', 'cation'],
 }
 
-const accentColor = '#1a5564'
-const bgColor = '#ebebe5'
-const hoverColor = '#c1cdcb'
-
 const textSkewX = 0
 const textSkewYFront = -0.2
 const textSkewYBack = 0.2
 const labelMapSize = 1024
 
-const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel) => {
+const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors) => {
+  const { accent, bg, hover } = colors
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
   ctx.clearRect(0, 0, w, h)
-  ctx.fillStyle = isSel ? accentColor : isHover ? hoverColor : bgColor
+  ctx.fillStyle = isSel ? accent : isHover ? hover : bg
   ctx.fillRect(0, 0, w, h)
 
   if (!showLabel) return
@@ -41,7 +40,7 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel) => {
   }
 
   ctx.globalAlpha = isBack ? 0.3 : 1
-  ctx.fillStyle = isSel ? bgColor : accentColor
+  ctx.fillStyle = isSel ? bg : accent
   const gap = size * 1.15
   const startY = h / 2 - ((lines.length - 1) * gap) / 2
   ctx.save()
@@ -72,6 +71,36 @@ export default function IndividualHelix({
   const z = radius * Math.cos(planeRotation)
   const isSel = selectedIndex === index
   const isHover = hoveredPlaneIdx === index
+  const [colors, setColors] = useState(() => ({
+    accent: '#1a5564',
+    bg: '#ebebe5',
+    hover: '#c1cdcb',
+  }))
+  const groupRef = useRef()
+  const edgesRef = useRef()
+  const worldNormal = useRef(new THREE.Vector3())
+  const viewDir = useRef(new THREE.Vector3())
+  const worldPos = useRef(new THREE.Vector3())
+
+  useFrame(({ camera }) => {
+    const group = groupRef.current
+    const material = edgesRef.current?.material
+    if (!group || !material) return
+    group.getWorldPosition(worldPos.current)
+    viewDir.current.copy(camera.position).sub(worldPos.current).normalize()
+    worldNormal.current.set(0, 0, 1).transformDirection(group.matrixWorld)
+    const front = worldNormal.current.dot(viewDir.current) > 0
+    material.transparent = true
+    material.opacity = front ? 1 : 0.3
+  })
+
+  useEffect(() => {
+    const sync = () => setColors(readThemeColors())
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
 
   const { texture, backTexture } = useMemo(() => {
     const make = () => {
@@ -90,14 +119,14 @@ export default function IndividualHelix({
   }, [])
 
   useEffect(() => {
-    drawLabel(texture.image, label, isSel, isHover, false, showLabel)
+    drawLabel(texture.image, label, isSel, isHover, false, showLabel, colors)
     const backCtx = backTexture.image.getContext('2d')
     backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-    drawLabel(backTexture.image, label, isSel, isHover, true, showLabel)
+    drawLabel(backTexture.image, label, isSel, isHover, true, showLabel, colors)
     backCtx.setTransform(1, 0, 0, 1, 0, 0)
     texture.needsUpdate = true
     backTexture.needsUpdate = true
-  }, [texture, backTexture, label, isSel, isHover, showLabel])
+  }, [texture, backTexture, label, isSel, isHover, showLabel, colors])
 
   useEffect(() => () => {
     texture.dispose()
@@ -107,6 +136,7 @@ export default function IndividualHelix({
 
   return (
     <group
+      ref={groupRef}
       rotation={[0, planeRotation, 0]}
       position={[x, y, z]}
       onPointerOver={(e) => {
@@ -146,7 +176,7 @@ export default function IndividualHelix({
       </mesh>
       <mesh geometry={skewedPlaneGeometry} frustumCulled>
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-        <Edges color={accentColor} />
+        <Edges ref={edgesRef} color={colors.accent} transparent opacity={1} />
       </mesh>
     </group>
   )

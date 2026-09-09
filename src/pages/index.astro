@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import NavigatorIsland from '../components/navigator/NavigatorIsland.jsx';
+import ThemeToggle from '../components/theme/ThemeToggle.jsx';
 import { sections } from '../data/sections.js';
 import { Content as Me } from '../content/me.md';
 import { Content as Experience } from '../content/experience.md';
@@ -20,7 +21,10 @@ const articles = [
 <Layout>
   <div class="shell">
     <header class="chrome">
-      <a class="logo" href="/">andbastf</a>
+      <div class="chrome-bar">
+        <a class="logo" href="/" aria-label="andbastf"></a>
+        <ThemeToggle client:load />
+      </div>
       <div class="chrome-nav">
         <NavigatorIsland client:visible sections={sections} />
       </div>

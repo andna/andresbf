@@ -81,11 +81,15 @@
   width: 100%;
   text-align: left;
   font: inherit;
-  color: inherit;
+  color: var(--accent-color);
   cursor: pointer;
   opacity: 0.2;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.navigator-list .hovered {
+  opacity: 0.8;
 }
 
 .navigator-list .selected {
