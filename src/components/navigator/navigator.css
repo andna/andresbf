@@ -116,7 +116,7 @@
 }
 
 .debug-sliders {
-  display: flex;
+  display: none;
   position: fixed;
   z-index: 30;
   right: 0.75rem;

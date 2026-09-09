@@ -71,22 +71,26 @@ export default function CanvasScene({
   }, [selectedIndex, planesPerCycle, baseRotation])
 
   useEffect(() => {
-    if (!isMobile) {
-      camRef.current?.up.set(0, 1, 0)
-      return
-    }
+    camRef.current?.up.set(0, 1, 0)
     const el = gl.domElement
     let dragging = false
+    let lastX = 0
     let lastY = 0
     const onDown = (event) => {
       dragging = true
+      lastX = event.clientX
       lastY = event.clientY
       userRotatingRef.current = true
     }
     const onMove = (event) => {
       if (!dragging) return
-      targetAngleRef.current -= (event.clientY - lastY) * 0.01
-      lastY = event.clientY
+      if (isMobile) {
+        targetAngleRef.current -= (event.clientY - lastY) * 0.01
+        lastY = event.clientY
+      } else {
+        targetAngleRef.current -= (event.clientX - lastX) * 0.01
+        lastX = event.clientX
+      }
       currentIndexRef.current = targetAngleRef.current / baseRotation
     }
     const onUp = () => {
@@ -109,7 +113,6 @@ export default function CanvasScene({
     if (!pivot || !controls) return
     pivot.getWorldPosition(tmpTarget.current)
     controls.target.copy(tmpTarget.current)
-    if (!isMobile) controls.update()
   })
 
   useFrame(() => {
@@ -118,28 +121,22 @@ export default function CanvasScene({
     if (!cam || !pivot) return
     pivot.getWorldPosition(tmpTarget.current)
 
-    if (isMobile || !userRotatingRef.current) {
-      cam.userData.angle ??= targetAngleRef.current
-      if (isMobile && userRotatingRef.current) cam.userData.angle = targetAngleRef.current
-      else cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
-      const a = cam.userData.angle
-      if (isMobile) orbitOffset.current.set(0, Math.sin(a) * 10, Math.cos(a) * 10)
-      else orbitOffset.current.set(Math.sin(a) * 10, 0, Math.cos(a) * 10)
-      cam.position.copy(tmpTarget.current).add(orbitOffset.current)
-      if (isMobile) {
-        orbitForward.current.copy(tmpTarget.current).sub(cam.position)
-        cam.up.crossVectors(orbitRight.current, orbitForward.current).normalize()
-      }
-      cam.lookAt(tmpTarget.current)
-    }
-    if (!isMobile) {
+    cam.userData.angle ??= targetAngleRef.current
+    if (userRotatingRef.current) cam.userData.angle = targetAngleRef.current
+    else cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
+    const a = cam.userData.angle
+    if (isMobile) orbitOffset.current.set(0, Math.sin(a) * 10, Math.cos(a) * 10)
+    else orbitOffset.current.set(Math.sin(a) * 10, 0, Math.cos(a) * 10)
+    cam.position.copy(tmpTarget.current).add(orbitOffset.current)
+    cam.up.set(0, 1, 0)
+    if (isMobile) {
+      orbitForward.current.copy(tmpTarget.current).sub(cam.position)
+      cam.up.crossVectors(orbitRight.current, orbitForward.current).normalize()
+    } else {
       orbitForward.current.copy(tmpTarget.current).sub(cam.position).normalize()
-      cam.up.set(0, 1, 0).applyAxisAngle(
-        orbitForward.current,
-        screenRoll
-      )
-      cam.lookAt(tmpTarget.current)
+      cam.up.applyAxisAngle(orbitForward.current, screenRoll)
     }
+    cam.lookAt(tmpTarget.current)
 
     const [ox, oy] = offsetPx
     if ((ox | oy) !== 0) cam.setViewOffset(size.width, size.height, -ox, -oy, size.width, size.height)
@@ -196,7 +193,7 @@ export default function CanvasScene({
       <OrbitControls
         ref={controlsRef}
         makeDefault
-        enableRotate={!isMobile}
+        enableRotate={false}
         enablePan={false}
         enableZoom={false}
         enableDamping

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Edges } from '@react-three/drei'
 import { readThemeColors } from '../../theme.js'
 import { useFrame } from '@react-three/fiber'
 
@@ -79,13 +78,29 @@ export default function IndividualHelix({
   }))
   const groupRef = useRef()
   const edgesRef = useRef()
+  const corners = useMemo(() => {
+    const pos = skewedPlaneGeometry.attributes.position
+    const pts = []
+    for (let i = 0; i < pos.count; i += 1) {
+      const next = [pos.getX(i), pos.getY(i), pos.getZ(i)]
+      if (!pts.some((pt) => Math.hypot(pt[0] - next[0], pt[1] - next[1], pt[2] - next[2]) < 1e-5)) {
+        pts.push(next)
+      }
+    }
+    return pts
+  }, [skewedPlaneGeometry])
+  const outlineGeom = useMemo(() => {
+    if (corners.length < 4) return null
+    const [bl, br, tl, tr] = corners.map((p) => new THREE.Vector3(...p))
+    return new THREE.BufferGeometry().setFromPoints([bl, br, tr, tl, bl])
+  }, [corners])
   const worldNormal = useRef(new THREE.Vector3())
   const viewDir = useRef(new THREE.Vector3())
   const worldPos = useRef(new THREE.Vector3())
 
   useFrame(({ camera }) => {
     const group = groupRef.current
-    const material = edgesRef.current?.material
+    const material = edgesRef.current
     if (!group || !material) return
     group.getWorldPosition(worldPos.current)
     viewDir.current.copy(camera.position).sub(worldPos.current).normalize()
@@ -136,6 +151,8 @@ export default function IndividualHelix({
     document.body.style.cursor = ''
   }, [texture, backTexture])
 
+  useEffect(() => () => outlineGeom?.dispose(), [outlineGeom])
+
   return (
     <group
       ref={groupRef}
@@ -176,10 +193,50 @@ export default function IndividualHelix({
           depthWrite
         />
       </mesh>
-      <mesh geometry={skewedPlaneGeometry} frustumCulled>
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-        <Edges ref={edgesRef} color={colors.accent} transparent opacity={1} />
-      </mesh>
+      {outlineGeom && (
+        <line geometry={outlineGeom} raycast={() => null}>
+          <lineBasicMaterial ref={edgesRef} color={colors.accent} transparent opacity={1} />
+        </line>
+      )}
+      {corners.map((pt, i) => (
+        <group key={i} position={pt} raycast={() => null}>
+          <mesh>
+            <sphereGeometry args={[isSel ? 0.0055 : 0.004, 12, 12]} />
+            <meshBasicMaterial
+              color={colors.accent}
+              transparent
+              opacity={isSel ? 1 : 0.45}
+              depthWrite={false}
+            />
+          </mesh>
+          {isSel && (
+            <>
+              <mesh>
+                <torusGeometry args={[0.012, 0.00115, 8, 28]} />
+                <meshBasicMaterial color={colors.accent} depthWrite={false} />
+              </mesh>
+              <mesh>
+                <ringGeometry args={[0.0165, 0.0182, 28]} />
+                <meshBasicMaterial
+                  color={colors.accent}
+                  transparent
+                  opacity={0.7}
+                  side={THREE.DoubleSide}
+                  depthWrite={false}
+                />
+              </mesh>
+              <mesh>
+                <boxGeometry args={[0.024, 0.00085, 0.00085]} />
+                <meshBasicMaterial color={colors.accent} transparent opacity={0.85} depthWrite={false} />
+              </mesh>
+              <mesh>
+                <boxGeometry args={[0.00085, 0.024, 0.00085]} />
+                <meshBasicMaterial color={colors.accent} transparent opacity={0.85} depthWrite={false} />
+              </mesh>
+            </>
+          )}
+        </group>
+      ))}
     </group>
   )
 }
