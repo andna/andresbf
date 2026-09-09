@@ -75,23 +75,34 @@ export default function Helix({
         oz - p.x * s + p.z * c,
       )
     }
-    const makeContacts = (step, corners) => {
+    const isOmitted = (index, corner) => {
+      if (!sections[index]?.blank) return false
+      const omit = index === 0
+        ? localCorners.reduce((best, c) => (c.x < best.x || (c.x === best.x && c.y < best.y) ? c : best))
+        : index === sections.length - 1
+          ? localCorners.reduce((best, c) => (c.y < best.y || (c.y === best.y && c.x > best.x) ? c : best))
+          : null
+      return omit ? corner.distanceTo(omit) < 1e-5 : false
+    }
+    const makeContacts = (step, corners, dashed) => {
       const geoms = []
       for (let i = 0; i < sections.length - step; i += 1) {
         for (let k = 0; k < corners.length; k += 1) {
+          if (isOmitted(i, corners[k]) || isOmitted(i + step, corners[k])) continue
           const p0 = toWorld(i, corners[k])
           const p1 = toWorld(i + step, corners[k])
-          geoms.push(withDash(new THREE.BufferGeometry().setFromPoints([p0, p1])))
+          const geom = new THREE.BufferGeometry().setFromPoints([p0, p1])
+          geoms.push(dashed ? withDash(geom) : geom)
         }
       }
       return geoms
     }
     const outerCorners = localCorners.filter((corner) => corner.x > 0)
     return {
-      contactClose: makeContacts(2, outerCorners),
-      contactFar: makeContacts(3, localCorners.slice(-1)),
+      contactClose: makeContacts(2, outerCorners, true),
+      contactFar: makeContacts(3, localCorners.slice(-1), true),
     }
-  }, [sections.length, localCorners, radius, baseRotation, skewValue, planeWidth, planeHeight])
+  }, [sections, localCorners, radius, baseRotation, skewValue, planeWidth, planeHeight])
 
   const contactsRef = useRef([...contactClose, ...contactFar])
   contactsRef.current = [...contactClose, ...contactFar]
@@ -112,12 +123,12 @@ export default function Helix({
     <>
       {contactClose.map((geom, index) => (
         <line key={`contact-close-${index}`} geometry={geom} raycast={() => null}>
-          <lineDashedMaterial color={accent} transparent opacity={1} dashSize={0.042} gapSize={0.022} depthWrite={false} />
+          <lineDashedMaterial color={accent} transparent opacity={0.5} dashSize={0.042} gapSize={0.022} depthWrite={false} />
         </line>
       ))}
       {contactFar.map((geom, index) => (
         <line key={`contact-far-${index}`} geometry={geom} raycast={() => null}>
-          <lineDashedMaterial color={accent} transparent opacity={1} dashSize={0.042} gapSize={0.055} depthWrite={false} />
+          <lineDashedMaterial color={accent} transparent opacity={0.35} dashSize={0.008} gapSize={0.02} depthWrite={false} />
         </line>
       ))}
       {sections.map((section, index) => {
@@ -137,7 +148,9 @@ export default function Helix({
             setHoveredPlaneIdx={setHoveredPlaneIdx}
             planeRotation={planeRotation}
             label={section.label}
-            showLabel={showLabel}
+            showLabel={showLabel && !section.blank}
+            blank={!!section.blank}
+            cap={section.blank ? (index === 0 ? 'start' : 'end') : null}
             textFront={textFront}
             textBack={textBack}
           />

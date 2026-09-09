@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
@@ -48,6 +48,11 @@ const helixCenter = { scale: 0.95, offsetPx: [0, 0] }
 const helixMobile = { scale: 0.25, offsetPx: [0, 0] }
 
 export default function Navigator({ sections }) {
+  const helixSections = useMemo(() => [
+    { id: 'header', label: '', blank: true },
+    ...sections,
+    { id: 'footer', label: '', blank: true },
+  ], [sections])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < window.innerHeight)
@@ -68,7 +73,7 @@ export default function Navigator({ sections }) {
   const planeWidth = 0.5
   const worldSpan =
     Math.abs(
-      helixPlaneY(Math.max(0, sections.length - 1), valueSkew, planeWidth, planeHeight) -
+      helixPlaneY(Math.max(0, helixSections.length - 1), valueSkew, planeWidth, planeHeight) -
       helixPlaneY(0, valueSkew, planeWidth, planeHeight)
     ) + planeHeight
   const diagonal = Math.hypot(view.w, view.h)
@@ -110,8 +115,8 @@ export default function Navigator({ sections }) {
   }, [isMobile])
   const setSelectedIndexAndScroll = (index) => {
     setSelectedIndex(index)
-    const id = sections[index]?.id
-    if (!id) return
+    const id = helixSections[index]?.id
+    if (!id || helixSections[index]?.blank) return
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -128,7 +133,7 @@ export default function Navigator({ sections }) {
               orthoZoom={orthoZoom}
               scale={scale}
               offsetPx={offsetPx}
-              sections={sections}
+              sections={helixSections}
               planesPerCycle={planesPerCycle}
               planeHeight={planeHeight}
               skewValue={valueSkew}
@@ -245,22 +250,25 @@ export default function Navigator({ sections }) {
       </aside>
       {isMobile && (
         <ul className="navigator-list">
-          {sections.map((section, index) => (
+          {sections.map((section, index) => {
+            const helixIndex = index + 1
+            return (
             <li key={`${section.id}-${index}`}>
               <button
                 type="button"
                 className={[
-                  selectedIndex === index ? 'selected' : '',
-                  hoveredPlaneIdx === index ? 'hovered' : '',
+                  selectedIndex === helixIndex ? 'selected' : '',
+                  hoveredPlaneIdx === helixIndex ? 'hovered' : '',
                 ].filter(Boolean).join(' ')}
-                onPointerEnter={() => setHoveredPlaneIdx(index)}
+                onPointerEnter={() => setHoveredPlaneIdx(helixIndex)}
                 onPointerLeave={() => setHoveredPlaneIdx(-1)}
-                onClick={() => setSelectedIndexAndScroll(index)}
+                onClick={() => setSelectedIndexAndScroll(helixIndex)}
               >
                 {section.label}
               </button>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </div>

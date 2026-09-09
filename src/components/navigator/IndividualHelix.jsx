@@ -52,6 +52,37 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, ske
   ctx.globalAlpha = 1
 }
 
+const uniqueCorners = (geometry) => {
+  const pos = geometry.attributes.position
+  const pts = []
+  for (let i = 0; i < pos.count; i += 1) {
+    const next = [pos.getX(i), pos.getY(i), pos.getZ(i)]
+    if (!pts.some((pt) => Math.hypot(pt[0] - next[0], pt[1] - next[1], pt[2] - next[2]) < 1e-5)) {
+      pts.push(next)
+    }
+  }
+  return pts
+}
+
+const omitCapCorner = (pts, cap) => {
+  if (!cap || pts.length < 4) return pts
+  let omit = 0
+  for (let i = 1; i < pts.length; i += 1) {
+    if (cap === 'start') {
+      if (pts[i][0] < pts[omit][0] || (pts[i][0] === pts[omit][0] && pts[i][1] < pts[omit][1])) omit = i
+    } else if (pts[i][1] < pts[omit][1] || (pts[i][1] === pts[omit][1] && pts[i][0] > pts[omit][0])) {
+      omit = i
+    }
+  }
+  return pts.filter((_, i) => i !== omit)
+}
+
+const ringOrder = (pts) => {
+  const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length
+  const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length
+  return [...pts].sort((a, b) => Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx))
+}
+
 export default function IndividualHelix({
   index,
   y,
@@ -64,6 +95,8 @@ export default function IndividualHelix({
   setHoveredPlaneIdx,
   label,
   showLabel,
+  blank = false,
+  cap = null,
   textFront,
   textBack,
 }) {
@@ -78,21 +111,31 @@ export default function IndividualHelix({
   }))
   const groupRef = useRef()
   const edgesRef = useRef()
-  const corners = useMemo(() => {
-    const pos = skewedPlaneGeometry.attributes.position
-    const pts = []
-    for (let i = 0; i < pos.count; i += 1) {
-      const next = [pos.getX(i), pos.getY(i), pos.getZ(i)]
-      if (!pts.some((pt) => Math.hypot(pt[0] - next[0], pt[1] - next[1], pt[2] - next[2]) < 1e-5)) {
-        pts.push(next)
-      }
-    }
-    return pts
-  }, [skewedPlaneGeometry])
+  const corners = useMemo(
+    () => omitCapCorner(uniqueCorners(skewedPlaneGeometry), blank ? cap : null),
+    [skewedPlaneGeometry, blank, cap]
+  )
+  const faceGeom = useMemo(() => {
+    if (!blank || corners.length < 3) return skewedPlaneGeometry
+    const ordered = ringOrder(corners)
+    const geom = new THREE.BufferGeometry()
+    const positions = new Float32Array(9)
+    const uvs = new Float32Array([0, 0, 1, 0, 0.5, 1])
+    ordered.slice(0, 3).forEach((p, i) => {
+      positions[i * 3] = p[0]
+      positions[i * 3 + 1] = p[1]
+      positions[i * 3 + 2] = p[2]
+    })
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
+    geom.setIndex([0, 1, 2])
+    geom.computeVertexNormals()
+    return geom
+  }, [blank, corners, skewedPlaneGeometry])
   const outlineGeom = useMemo(() => {
-    if (corners.length < 4) return null
-    const [bl, br, tl, tr] = corners.map((p) => new THREE.Vector3(...p))
-    return new THREE.BufferGeometry().setFromPoints([bl, br, tr, tl, bl])
+    if (corners.length < 3) return null
+    const ordered = ringOrder(corners).map((p) => new THREE.Vector3(...p))
+    return new THREE.BufferGeometry().setFromPoints([...ordered, ordered[0]])
   }, [corners])
   const worldNormal = useRef(new THREE.Vector3())
   const viewDir = useRef(new THREE.Vector3())
@@ -151,7 +194,10 @@ export default function IndividualHelix({
     document.body.style.cursor = ''
   }, [texture, backTexture])
 
-  useEffect(() => () => outlineGeom?.dispose(), [outlineGeom])
+  useEffect(() => () => {
+    outlineGeom?.dispose()
+    if (faceGeom !== skewedPlaneGeometry) faceGeom.dispose()
+  }, [outlineGeom, faceGeom, skewedPlaneGeometry])
 
   return (
     <group
@@ -167,9 +213,12 @@ export default function IndividualHelix({
         setHoveredPlaneIdx(-1)
         document.body.style.cursor = ''
       }}
-      onClick={(e) => { setSelectedIndex(index); e.stopPropagation() }}
+      onClick={(e) => {
+        setSelectedIndex(index)
+        e.stopPropagation()
+      }}
     >
-      <mesh geometry={skewedPlaneGeometry}>
+      <mesh geometry={faceGeom}>
         <meshBasicMaterial
           map={texture}
           toneMapped={false}
@@ -181,7 +230,7 @@ export default function IndividualHelix({
           depthWrite
         />
       </mesh>
-      <mesh geometry={skewedPlaneGeometry}>
+      <mesh geometry={faceGeom}>
         <meshBasicMaterial
           map={backTexture}
           toneMapped={false}
