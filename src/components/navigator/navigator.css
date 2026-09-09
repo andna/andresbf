@@ -119,8 +119,8 @@
   display: none;
   position: fixed;
   z-index: 30;
+  top: 0.75rem;
   right: 0.75rem;
-  bottom: 0.75rem;
   flex-direction: column;
   gap: 0.35rem;
   width: 12rem;
@@ -129,6 +129,10 @@
   background: var(--bg-color);
   border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
   pointer-events: auto;
+}
+
+.debug-sliders.is-open {
+  display: flex;
 }
 
 .debug-group {

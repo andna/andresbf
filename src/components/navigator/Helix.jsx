@@ -1,4 +1,5 @@
 import IndividualHelix from './IndividualHelix.jsx'
+import HelixGizmo from './HelixGizmo.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
@@ -48,6 +49,7 @@ export default function Helix({
   showLabel,
   textFront,
   textBack,
+  gizmoScale = 0.5,
 }) {
   const [accent, setAccent] = useState(() => readThemeColors().accent)
 
@@ -119,8 +121,23 @@ export default function Helix({
     contactsRef.current.forEach((geom) => geom.dispose())
   }, [])
 
+  const gizmoMove = 0.365
+  const gizmoStart = 0.9
+  const gizmoNewY = -0.5
+  const y0 = helixPlaneY(0, skewValue, planeWidth, planeHeight)
+  const yN = helixPlaneY(Math.max(0, sections.length - 1), skewValue, planeWidth, planeHeight)
+  const gizmoMidY = (y0 + yN) / 2
+  const last = sections.length - 1
+  const gizmoYOffset = selectedIndex === last - 1
+    ? gizmoNewY
+    : selectedIndex === last
+      ? gizmoNewY - gizmoMove
+      : gizmoStart - selectedIndex * gizmoMove
+  const gizmoSize = Math.min(radius * 0.55, planeWidth * 0.48) * gizmoScale
+
   return (
     <>
+      <HelixGizmo midY={gizmoMidY} yOffset={gizmoYOffset} size={gizmoSize} />
       {contactClose.map((geom, index) => (
         <line key={`contact-close-${index}`} geometry={geom} raycast={() => null}>
           <lineDashedMaterial color={accent} transparent opacity={0.5} dashSize={0.042} gapSize={0.022} depthWrite={false} />

@@ -64,6 +64,8 @@ export default function Navigator({ sections }) {
   const [textBack, setTextBack] = useState({ skewX: -0.18, skewY: 0.05, rotDeg: 85 })
   const [scaleFit, setScaleFit] = useState(0.6)
   const [screenRotDeg, setScreenRotDeg] = useState(45)
+  const [gizmoScale, setGizmoScale] = useState(0.5)
+  const [showDebug, setShowDebug] = useState(false)
   const canvasRef = useRef(null)
   const valueSkew = isMobile ? valueSkewMobile : valueSkewDesktop
   const planesPerCycle = isMobile ? planesPerCycleMobile : planesPerCycleDesktop
@@ -94,6 +96,15 @@ export default function Navigator({ sections }) {
   const bandClip = isMobile
     ? undefined
     : diagonalBandClip(view.w, view.h, screenRotDeg, hitBoxNarrowness)
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      if (event.key === 'd' || event.key === 'D') setShowDebug((prev) => !prev)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   useEffect(() => {
     const onResize = () => {
@@ -145,11 +156,12 @@ export default function Navigator({ sections }) {
               screenRoll={screenRoll}
               textFront={textFrontRad}
               textBack={textBackRad}
+              gizmoScale={gizmoScale}
             />
           </Suspense>
         </Canvas>
       </div>
-      <aside className="debug-sliders">
+      <aside className={`debug-sliders${showDebug ? ' is-open' : ''}`}>
         <div className="debug-group">
           <p>front text</p>
           <label>
@@ -244,6 +256,17 @@ export default function Navigator({ sections }) {
               step="0.01"
               value={scaleFit}
               onChange={(event) => setScaleFit(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            <span>gizmo scale {gizmoScale.toFixed(2)}</span>
+            <input
+              type="range"
+              min="0.3"
+              max="2.5"
+              step="0.01"
+              value={gizmoScale}
+              onChange={(event) => setGizmoScale(Number(event.target.value))}
             />
           </label>
         </div>

@@ -20,6 +20,7 @@ export default function CanvasScene({
   screenRoll,
   textFront,
   textBack,
+  gizmoScale = 0.5,
 }) {
   const totalPlanes = sections.length
 
@@ -185,6 +186,7 @@ export default function CanvasScene({
             showLabel={!isMobile}
             textFront={textFront}
             textBack={textBack}
+            gizmoScale={gizmoScale}
           />
         </group>
       </group>
