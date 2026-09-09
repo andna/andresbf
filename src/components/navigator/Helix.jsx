@@ -51,7 +51,7 @@ export default function Helix({
   textBack,
   gizmoScale = 0.5,
 }) {
-  const [accent, setAccent] = useState(() => readThemeColors().accent)
+  const [secondary, setSecondary] = useState(() => readThemeColors().secondary)
 
   const localCorners = useMemo(() => {
     const pos = skewedPlaneGeometry.attributes.position
@@ -110,7 +110,7 @@ export default function Helix({
   contactsRef.current = [...contactClose, ...contactFar]
 
   useEffect(() => {
-    const sync = () => setAccent(readThemeColors().accent)
+    const sync = () => setSecondary(readThemeColors().secondary)
     sync()
     const observer = new MutationObserver(sync)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
@@ -140,12 +140,12 @@ export default function Helix({
       <HelixGizmo midY={gizmoMidY} yOffset={gizmoYOffset} size={gizmoSize} />
       {contactClose.map((geom, index) => (
         <line key={`contact-close-${index}`} geometry={geom} raycast={() => null}>
-          <lineDashedMaterial color={accent} transparent opacity={0.5} dashSize={0.042} gapSize={0.022} depthWrite={false} />
+          <lineDashedMaterial color={secondary} transparent opacity={0.5} dashSize={0.042} gapSize={0.022} depthWrite={false} />
         </line>
       ))}
       {contactFar.map((geom, index) => (
         <line key={`contact-far-${index}`} geometry={geom} raycast={() => null}>
-          <lineDashedMaterial color={accent} transparent opacity={0.35} dashSize={0.008} gapSize={0.02} depthWrite={false} />
+          <lineDashedMaterial color={secondary} transparent opacity={0.35} dashSize={0.008} gapSize={0.02} depthWrite={false} />
         </line>
       ))}
       {sections.map((section, index) => {

@@ -1,6 +1,7 @@
 :root,
 html[data-theme="light"] {
   --accent-color: #1a5564;
+  --secondary-color: #1a4878;
   --bg-color: #ebebe5;
   --text-color: #232620;
   color-scheme: light;
@@ -8,6 +9,7 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
   --accent-color: #34dd8b;
+  --secondary-color: #34c4dd;
   --bg-color: #212d2c;
   --text-color: #ffffff;
   color-scheme: dark;

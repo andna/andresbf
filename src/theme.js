@@ -44,9 +44,11 @@ export function mixHex(a, b, amountB) {
 export function readThemeColors() {
   const styles = getComputedStyle(document.documentElement)
   const accent = styles.getPropertyValue('--accent-color').trim() || '#1a5564'
+  const secondary = styles.getPropertyValue('--secondary-color').trim() || '#1a4878'
   const bg = styles.getPropertyValue('--bg-color').trim() || '#ebebe5'
   return {
     accent,
+    secondary,
     bg,
     hover: mixHex(accent, bg, 0.8),
   }

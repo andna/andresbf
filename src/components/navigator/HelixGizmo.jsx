@@ -79,7 +79,7 @@ function AxisArm({ dir, rot, label, ink, bg, length, thickness, labelSize }) {
 
 export default function HelixGizmo({ position = [0, 0, 0], midY = 0, yOffset = -0.25, size = 0.22 }) {
   const [colors, setColors] = useState(() => readThemeColors())
-  const ink = useMemo(() => mixHex(colors.accent, colors.bg, 0.5), [colors.accent, colors.bg])
+  const ink = useMemo(() => mixHex(colors.secondary, colors.bg, 0.7), [colors.secondary, colors.bg])
   const groupRef = useRef()
   const offsetRef = useRef(yOffset)
   const length = size
