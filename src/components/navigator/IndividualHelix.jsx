@@ -10,13 +10,11 @@ const labelLines = {
   Education: ['Edu', 'cation'],
 }
 
-const textSkewX = 0
-const textSkewYFront = -0.2
-const textSkewYBack = 0.2
 const labelMapSize = 1024
 
-const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors) => {
+const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, skew) => {
   const { accent, bg, hover } = colors
+  const face = isBack ? skew.back : skew.front
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
@@ -45,7 +43,8 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors) => 
   const startY = h / 2 - ((lines.length - 1) * gap) / 2
   ctx.save()
   ctx.translate(w / 2, h / 2)
-  ctx.transform(1, isBack ? textSkewYBack : textSkewYFront, textSkewX, 1, 0, 0)
+  ctx.rotate(face.rot)
+  ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
   ctx.translate(-w / 2, -h / 2)
   lines.forEach((line, i) => {
     ctx.fillText(line, w / 2, startY + i * gap)
@@ -66,6 +65,8 @@ export default function IndividualHelix({
   setHoveredPlaneIdx,
   label,
   showLabel,
+  textFront,
+  textBack,
 }) {
   const x = radius * Math.sin(planeRotation)
   const z = radius * Math.cos(planeRotation)
@@ -119,14 +120,15 @@ export default function IndividualHelix({
   }, [])
 
   useEffect(() => {
-    drawLabel(texture.image, label, isSel, isHover, false, showLabel, colors)
+    const skew = { front: textFront, back: textBack }
+    drawLabel(texture.image, label, isSel, isHover, false, showLabel, colors, skew)
     const backCtx = backTexture.image.getContext('2d')
     backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-    drawLabel(backTexture.image, label, isSel, isHover, true, showLabel, colors)
+    drawLabel(backTexture.image, label, isSel, isHover, true, showLabel, colors, skew)
     backCtx.setTransform(1, 0, 0, 1, 0, 0)
     texture.needsUpdate = true
     backTexture.needsUpdate = true
-  }, [texture, backTexture, label, isSel, isHover, showLabel, colors])
+  }, [texture, backTexture, label, isSel, isHover, showLabel, colors, textFront, textBack])
 
   useEffect(() => () => {
     texture.dispose()

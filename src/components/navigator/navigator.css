@@ -5,6 +5,24 @@
   min-height: 0;
 }
 
+.navigator.is-desktop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.navigator.is-desktop .canvas {
+  width: 100vw;
+  height: 100vh;
+  max-width: calc(100vh * 16 / 9);
+  pointer-events: auto;
+}
+
 .canvas {
   position: relative;
   width: 100%;
@@ -95,6 +113,53 @@
 .navigator-list .selected {
   opacity: 1;
   color: var(--accent-color);
+}
+
+.debug-sliders {
+  display: flex;
+  position: fixed;
+  z-index: 30;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 12rem;
+  padding: 0.65rem 0.75rem;
+  box-sizing: border-box;
+  background: var(--bg-color);
+  border: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+  pointer-events: auto;
+}
+
+.debug-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.debug-group + .debug-group {
+  padding-top: 0.4rem;
+  border-top: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+}
+
+.debug-group p {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.debug-sliders label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.7rem;
+  color: var(--text-color);
+}
+
+.debug-sliders input {
+  width: 100%;
+  margin: 0;
 }
 
 @media (min-width: 64rem) {

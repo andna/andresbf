@@ -17,6 +17,9 @@ export default function CanvasScene({
   isMobile,
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
+  screenRoll,
+  textFront,
+  textBack,
 }) {
   const totalPlanes = sections.length
 
@@ -129,6 +132,14 @@ export default function CanvasScene({
       }
       cam.lookAt(tmpTarget.current)
     }
+    if (!isMobile) {
+      orbitForward.current.copy(tmpTarget.current).sub(cam.position).normalize()
+      cam.up.set(0, 1, 0).applyAxisAngle(
+        orbitForward.current,
+        screenRoll
+      )
+      cam.lookAt(tmpTarget.current)
+    }
 
     const [ox, oy] = offsetPx
     if ((ox | oy) !== 0) cam.setViewOffset(size.width, size.height, -ox, -oy, size.width, size.height)
@@ -175,6 +186,8 @@ export default function CanvasScene({
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
             showLabel={!isMobile}
+            textFront={textFront}
+            textBack={textBack}
           />
         </group>
       </group>

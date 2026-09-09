@@ -29,6 +29,8 @@ export default function Helix({
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
   showLabel,
+  textFront,
+  textBack,
 }) {
   return (
     <>
@@ -50,6 +52,8 @@ export default function Helix({
             planeRotation={planeRotation}
             label={section.label}
             showLabel={showLabel}
+            textFront={textFront}
+            textBack={textBack}
           />
         )
       })}
