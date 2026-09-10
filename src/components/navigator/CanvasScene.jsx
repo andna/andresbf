@@ -20,7 +20,11 @@ export default function CanvasScene({
   screenRoll,
   textFront,
   textBack,
-  gizmoScale = 0.5,
+  gizmoScale = 0.6,
+  gizmoOpacity = 0.75,
+  contactCloseOpacity = 0.6,
+  contactFarOpacity = 0.7,
+  secondaryColor,
 }) {
   const totalPlanes = sections.length
 
@@ -187,6 +191,10 @@ export default function CanvasScene({
             textFront={textFront}
             textBack={textBack}
             gizmoScale={gizmoScale}
+            gizmoOpacity={gizmoOpacity}
+            contactCloseOpacity={contactCloseOpacity}
+            contactFarOpacity={contactFarOpacity}
+            secondaryColor={secondaryColor}
           />
         </group>
       </group>

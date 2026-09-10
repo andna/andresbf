@@ -77,9 +77,20 @@ function AxisArm({ dir, rot, label, ink, bg, length, thickness, labelSize }) {
   )
 }
 
-export default function HelixGizmo({ position = [0, 0, 0], midY = 0, yOffset = -0.25, size = 0.22 }) {
+export default function HelixGizmo({
+  position = [0, 0, 0],
+  midY = 0,
+  yOffset = -0.25,
+  size = 0.22,
+  opacity = 0.75,
+  secondary,
+}) {
   const [colors, setColors] = useState(() => readThemeColors())
-  const ink = useMemo(() => mixHex(colors.secondary, colors.bg, 0.7), [colors.secondary, colors.bg])
+  const secondaryColor = secondary || colors.secondary
+  const ink = useMemo(
+    () => mixHex(secondaryColor, colors.bg, 1 - opacity),
+    [secondaryColor, colors.bg, opacity],
+  )
   const groupRef = useRef()
   const offsetRef = useRef(yOffset)
   const length = size
@@ -115,7 +126,7 @@ export default function HelixGizmo({ position = [0, 0, 0], midY = 0, yOffset = -
   return (
     <group ref={groupRef} position={[position[0], midY + yOffset, position[2]]} raycast={() => null}>
       <lineSegments geometry={shellEdges}>
-        <lineBasicMaterial color={ink} transparent opacity={0.45} toneMapped={false} depthWrite={false} />
+        <lineBasicMaterial color={ink} transparent opacity={1} toneMapped={false} depthWrite={false} />
       </lineSegments>
       <mesh>
         <sphereGeometry args={[thickness * 2.2, 10, 10]} />

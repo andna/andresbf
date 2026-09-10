@@ -2,14 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
 import { useFrame } from '@react-three/fiber'
-
-const labelLines = {
-  Experience: ['Expe', 'rience'],
-  Portfolio: ['Port', 'folio'],
-  Education: ['Edu', 'cation'],
-}
+import { Line } from '@react-three/drei'
 
 const labelMapSize = 1024
+
+const labelFont = '"Black Ops One", system-ui, sans-serif'
 
 const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, skew) => {
   const { accent, bg, hover } = colors
@@ -23,17 +20,17 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, ske
 
   if (!showLabel) return
 
-  const lines = labelLines[label] ?? [label]
+  const lines = [label]
   const pad = w * 0.1
   const maxW = w - pad * 2
-  let size = Math.floor(h * (lines.length > 1 ? 0.18 : 0.22))
+  let size = Math.floor(h * 0.22)
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.font = `500 ${size}px system-ui, -apple-system, sans-serif`
+  ctx.font = `${size}px ${labelFont}`
   const widest = () => Math.max(...lines.map((line) => ctx.measureText(line).width))
   while (size > 10 && widest() > maxW) {
     size -= 1
-    ctx.font = `500 ${size}px system-ui, -apple-system, sans-serif`
+    ctx.font = `${size}px ${labelFont}`
   }
 
   ctx.globalAlpha = isBack ? 0.3 : 1
@@ -110,7 +107,7 @@ export default function IndividualHelix({
     hover: '#c1cdcb',
   }))
   const groupRef = useRef()
-  const edgesRef = useRef()
+  const outlineRef = useRef()
   const corners = useMemo(
     () => omitCapCorner(uniqueCorners(skewedPlaneGeometry), blank ? cap : null),
     [skewedPlaneGeometry, blank, cap]
@@ -132,10 +129,10 @@ export default function IndividualHelix({
     geom.computeVertexNormals()
     return geom
   }, [blank, corners, skewedPlaneGeometry])
-  const outlineGeom = useMemo(() => {
+  const outlinePoints = useMemo(() => {
     if (corners.length < 3) return null
     const ordered = ringOrder(corners).map((p) => new THREE.Vector3(...p))
-    return new THREE.BufferGeometry().setFromPoints([...ordered, ordered[0]])
+    return [...ordered, ordered[0]]
   }, [corners])
   const worldNormal = useRef(new THREE.Vector3())
   const viewDir = useRef(new THREE.Vector3())
@@ -143,14 +140,14 @@ export default function IndividualHelix({
 
   useFrame(({ camera }) => {
     const group = groupRef.current
-    const material = edgesRef.current
-    if (!group || !material) return
+    const outline = outlineRef.current
+    if (!group || !outline?.material) return
     group.getWorldPosition(worldPos.current)
     viewDir.current.copy(camera.position).sub(worldPos.current).normalize()
     worldNormal.current.set(0, 0, 1).transformDirection(group.matrixWorld)
     const front = worldNormal.current.dot(viewDir.current) > 0
-    material.transparent = true
-    material.opacity = front ? 1 : 0.3
+    outline.material.transparent = true
+    outline.material.opacity = front ? 1 : 0.3
   })
 
   useEffect(() => {
@@ -178,14 +175,23 @@ export default function IndividualHelix({
   }, [])
 
   useEffect(() => {
+    let cancelled = false
     const skew = { front: textFront, back: textBack }
-    drawLabel(texture.image, label, isSel, isHover, false, showLabel, colors, skew)
-    const backCtx = backTexture.image.getContext('2d')
-    backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-    drawLabel(backTexture.image, label, isSel, isHover, true, showLabel, colors, skew)
-    backCtx.setTransform(1, 0, 0, 1, 0, 0)
-    texture.needsUpdate = true
-    backTexture.needsUpdate = true
+    const paint = () => {
+      if (cancelled) return
+      drawLabel(texture.image, label, isSel, isHover, false, showLabel, colors, skew)
+      const backCtx = backTexture.image.getContext('2d')
+      backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
+      drawLabel(backTexture.image, label, isSel, isHover, true, showLabel, colors, skew)
+      backCtx.setTransform(1, 0, 0, 1, 0, 0)
+      texture.needsUpdate = true
+      backTexture.needsUpdate = true
+    }
+    paint()
+    document.fonts.load(`64px ${labelFont}`).then(paint)
+    return () => {
+      cancelled = true
+    }
   }, [texture, backTexture, label, isSel, isHover, showLabel, colors, textFront, textBack])
 
   useEffect(() => () => {
@@ -195,9 +201,8 @@ export default function IndividualHelix({
   }, [texture, backTexture])
 
   useEffect(() => () => {
-    outlineGeom?.dispose()
     if (faceGeom !== skewedPlaneGeometry) faceGeom.dispose()
-  }, [outlineGeom, faceGeom, skewedPlaneGeometry])
+  }, [faceGeom, skewedPlaneGeometry])
 
   return (
     <group
@@ -242,10 +247,17 @@ export default function IndividualHelix({
           depthWrite
         />
       </mesh>
-      {outlineGeom && (
-        <line geometry={outlineGeom} raycast={() => null}>
-          <lineBasicMaterial ref={edgesRef} color={colors.accent} transparent opacity={1} />
-        </line>
+      {outlinePoints && (
+        <Line
+          ref={outlineRef}
+          points={outlinePoints}
+          color={colors.accent}
+          lineWidth={2.4}
+          transparent
+          opacity={1}
+          toneMapped={false}
+          raycast={() => null}
+        />
       )}
       {corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>

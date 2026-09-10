@@ -14,7 +14,7 @@ export function applyTheme(theme) {
   document.documentElement.dataset.theme = theme
 }
 
-const toRgb = (value) => {
+export const hexToRgb = (value) => {
   const v = value.trim()
   if (v.startsWith('#')) {
     const raw = v.slice(1)
@@ -27,14 +27,14 @@ const toRgb = (value) => {
   return [0, 0, 0]
 }
 
-const toHex = ([r, g, b]) =>
+export const rgbToHex = ([r, g, b]) =>
   `#${[r, g, b].map((n) => Math.round(n).toString(16).padStart(2, '0')).join('')}`
 
 export function mixHex(a, b, amountB) {
-  const [ar, ag, ab] = toRgb(a)
-  const [br, bg, bb] = toRgb(b)
+  const [ar, ag, ab] = hexToRgb(a)
+  const [br, bg, bb] = hexToRgb(b)
   const t = amountB
-  return toHex([
+  return rgbToHex([
     ar * (1 - t) + br * t,
     ag * (1 - t) + bg * t,
     ab * (1 - t) + bb * t,
@@ -44,7 +44,7 @@ export function mixHex(a, b, amountB) {
 export function readThemeColors() {
   const styles = getComputedStyle(document.documentElement)
   const accent = styles.getPropertyValue('--accent-color').trim() || '#1a5564'
-  const secondary = styles.getPropertyValue('--secondary-color').trim() || '#1a4878'
+  const secondary = styles.getPropertyValue('--secondary-color').trim() || '#34c4dd'
   const bg = styles.getPropertyValue('--bg-color').trim() || '#ebebe5'
   return {
     accent,

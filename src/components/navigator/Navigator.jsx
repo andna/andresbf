@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
+import { hexToRgb, rgbToHex, readThemeColors } from '../../theme.js'
 import './navigator.css'
 
 const valueSkewDesktop = -0.67
@@ -60,23 +61,30 @@ export default function Navigator({ sections }) {
   const [textBack, setTextBack] = useState({ skewX: 0.01, skewY: 0.08, rotDeg: 13 })
   const [scaleFit, setScaleFit] = useState(0.67)
   const [screenRotDeg, setScreenRotDeg] = useState(50)
-  const [gizmoScale, setGizmoScale] = useState(0.5)
+  const [gizmoScale, setGizmoScale] = useState(0.6)
+  const [gizmoOpacity, setGizmoOpacity] = useState(0.75)
+  const [contactCloseOpacity, setContactCloseOpacity] = useState(0.6)
+  const [contactFarOpacity, setContactFarOpacity] = useState(0.7)
+  const [secondaryRgb, setSecondaryRgb] = useState(() => hexToRgb(readThemeColors().secondary))
   const [showDebug, setShowDebug] = useState(false)
   const restScaleFit = 0.42
   const restScreenRotDeg = 0.5
   const restOffsetXFrac = 0.3
   const heroOffsetYFrac = 0.04
   const restOffsetYFrac = 0.055
+  const heroTextBack = { skewX: -0.61, skewY: -0.07, rotDeg: 57 }
   const targetScaleFit = selectedIndex === 0 ? scaleFit : restScaleFit
   const targetScreenRotDeg = selectedIndex === 0 ? screenRotDeg : restScreenRotDeg
   const targetOffsetX = selectedIndex === 0 ? 0 : -Math.round(view.w * restOffsetXFrac)
   const targetOffsetY = Math.round(view.h * (selectedIndex === 0 ? heroOffsetYFrac : restOffsetYFrac))
   const targetContentRot = selectedIndex === 0 ? -20 : 0
   const targetContentY = selectedIndex === 0 ? 3 : 0
+  const targetTextBack = selectedIndex === 0 ? heroTextBack : textBack
   const [liveScaleFit, setLiveScaleFit] = useState(scaleFit)
   const [liveScreenRotDeg, setLiveScreenRotDeg] = useState(screenRotDeg)
   const [liveOffsetX, setLiveOffsetX] = useState(0)
   const [liveOffsetY, setLiveOffsetY] = useState(() => Math.round(window.innerHeight * heroOffsetYFrac))
+  const [liveTextBack, setLiveTextBack] = useState(heroTextBack)
   const livePoseRef = useRef({
     scaleFit: 0.67,
     screenRotDeg: 50,
@@ -84,6 +92,7 @@ export default function Navigator({ sections }) {
     offsetY: Math.round(window.innerHeight * heroOffsetYFrac),
     contentRot: -20,
     contentY: 3,
+    textBack: { ...heroTextBack },
   })
   const canvasRef = useRef(null)
   const valueSkew = isMobile ? valueSkewMobile : valueSkewDesktop
@@ -106,9 +115,9 @@ export default function Navigator({ sections }) {
     rot: (textFront.rotDeg * Math.PI) / 180,
   }
   const textBackRad = {
-    skewX: textBack.skewX,
-    skewY: textBack.skewY,
-    rot: (textBack.rotDeg * Math.PI) / 180,
+    skewX: liveTextBack.skewX,
+    skewY: liveTextBack.skewY,
+    rot: (liveTextBack.rotDeg * Math.PI) / 180,
   }
   const offsetPx = pose.offsetPx
   const hitBoxNarrowness = 0.28
@@ -118,6 +127,22 @@ export default function Navigator({ sections }) {
   const contentLeft = (window.innerWidth - view.w) / 2
     + view.w / 2
     + Math.min(view.w, view.h) * hitBoxNarrowness
+
+  const secondaryColor = rgbToHex(secondaryRgb)
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor)
+  }, [secondaryColor])
+
+  useEffect(() => {
+    const sync = () => {
+      document.documentElement.style.removeProperty('--secondary-color')
+      setSecondaryRgb(hexToRgb(readThemeColors().secondary))
+    }
+    const observer = new MutationObserver(sync)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
 
   const applyLayoutPose = (offsetX, offsetY, contentRot, contentY) => {
     const stage = document.querySelector('.stage')
@@ -144,19 +169,28 @@ export default function Navigator({ sections }) {
       const nextOffsetY = cur.offsetY + (targetOffsetY - cur.offsetY) * 0.06
       const nextContentRot = cur.contentRot + (targetContentRot - cur.contentRot) * 0.06
       const nextContentY = cur.contentY + (targetContentY - cur.contentY) * 0.06
+      const nextTextBack = {
+        skewX: cur.textBack.skewX + (targetTextBack.skewX - cur.textBack.skewX) * 0.06,
+        skewY: cur.textBack.skewY + (targetTextBack.skewY - cur.textBack.skewY) * 0.06,
+        rotDeg: cur.textBack.rotDeg + (targetTextBack.rotDeg - cur.textBack.rotDeg) * 0.06,
+      }
       const done =
         Math.abs(targetScaleFit - nextScale) < 0.0004 &&
         Math.abs(targetScreenRotDeg - nextRot) < 0.0004 &&
         Math.abs(targetOffsetX - nextOffsetX) < 0.2 &&
         Math.abs(targetOffsetY - nextOffsetY) < 0.2 &&
         Math.abs(targetContentRot - nextContentRot) < 0.0004 &&
-        Math.abs(targetContentY - nextContentY) < 0.0004
+        Math.abs(targetContentY - nextContentY) < 0.0004 &&
+        Math.abs(targetTextBack.skewX - nextTextBack.skewX) < 0.0004 &&
+        Math.abs(targetTextBack.skewY - nextTextBack.skewY) < 0.0004 &&
+        Math.abs(targetTextBack.rotDeg - nextTextBack.rotDeg) < 0.0004
       const scaleFitOut = done ? targetScaleFit : nextScale
       const screenRotOut = done ? targetScreenRotDeg : nextRot
       const offsetXOut = done ? targetOffsetX : nextOffsetX
       const offsetYOut = done ? targetOffsetY : nextOffsetY
       const contentRotOut = done ? targetContentRot : nextContentRot
       const contentYOut = done ? targetContentY : nextContentY
+      const textBackOut = done ? { ...targetTextBack } : nextTextBack
       livePoseRef.current = {
         scaleFit: scaleFitOut,
         screenRotDeg: screenRotOut,
@@ -164,11 +198,13 @@ export default function Navigator({ sections }) {
         offsetY: offsetYOut,
         contentRot: contentRotOut,
         contentY: contentYOut,
+        textBack: textBackOut,
       }
       setLiveScaleFit(scaleFitOut)
       setLiveScreenRotDeg(screenRotOut)
       setLiveOffsetX(offsetXOut)
       setLiveOffsetY(offsetYOut)
+      setLiveTextBack(textBackOut)
       applyLayoutPose(offsetXOut, offsetYOut, contentRotOut, contentYOut)
       if (!done) rafId = requestAnimationFrame(step)
     }
@@ -181,6 +217,9 @@ export default function Navigator({ sections }) {
     targetOffsetY,
     targetContentRot,
     targetContentY,
+    targetTextBack.skewX,
+    targetTextBack.skewY,
+    targetTextBack.rotDeg,
     contentLeft,
     isMobile,
   ])
@@ -270,6 +309,10 @@ export default function Navigator({ sections }) {
               textFront={textFrontRad}
               textBack={textBackRad}
               gizmoScale={gizmoScale}
+              gizmoOpacity={gizmoOpacity}
+              contactCloseOpacity={contactCloseOpacity}
+              contactFarOpacity={contactFarOpacity}
+              secondaryColor={secondaryColor}
             />
           </Suspense>
         </Canvas>
@@ -380,6 +423,75 @@ export default function Navigator({ sections }) {
               step="0.01"
               value={gizmoScale}
               onChange={(event) => setGizmoScale(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            <span>gizmo opacity {gizmoOpacity.toFixed(2)}</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={gizmoOpacity}
+              onChange={(event) => setGizmoOpacity(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            <span>contact close {contactCloseOpacity.toFixed(2)}</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={contactCloseOpacity}
+              onChange={(event) => setContactCloseOpacity(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            <span>contact far {contactFarOpacity.toFixed(2)}</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={contactFarOpacity}
+              onChange={(event) => setContactFarOpacity(Number(event.target.value))}
+            />
+          </label>
+        </div>
+        <div className="debug-group">
+          <p>secondary {secondaryColor}</p>
+          <label>
+            <span>r {secondaryRgb[0]}</span>
+            <input
+              type="range"
+              min="0"
+              max="255"
+              step="1"
+              value={secondaryRgb[0]}
+              onChange={(event) => setSecondaryRgb((prev) => [Number(event.target.value), prev[1], prev[2]])}
+            />
+          </label>
+          <label>
+            <span>g {secondaryRgb[1]}</span>
+            <input
+              type="range"
+              min="0"
+              max="255"
+              step="1"
+              value={secondaryRgb[1]}
+              onChange={(event) => setSecondaryRgb((prev) => [prev[0], Number(event.target.value), prev[2]])}
+            />
+          </label>
+          <label>
+            <span>b {secondaryRgb[2]}</span>
+            <input
+              type="range"
+              min="0"
+              max="255"
+              step="1"
+              value={secondaryRgb[2]}
+              onChange={(event) => setSecondaryRgb((prev) => [prev[0], prev[1], Number(event.target.value)])}
             />
           </label>
         </div>

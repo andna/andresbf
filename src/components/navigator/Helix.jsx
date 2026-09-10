@@ -49,9 +49,14 @@ export default function Helix({
   showLabel,
   textFront,
   textBack,
-  gizmoScale = 0.5,
+  gizmoScale = 0.6,
+  gizmoOpacity = 0.75,
+  contactCloseOpacity = 0.6,
+  contactFarOpacity = 0.7,
+  secondaryColor,
 }) {
-  const [secondary, setSecondary] = useState(() => readThemeColors().secondary)
+  const [themeSecondary, setThemeSecondary] = useState(() => readThemeColors().secondary)
+  const secondary = secondaryColor || themeSecondary
 
   const localCorners = useMemo(() => {
     const pos = skewedPlaneGeometry.attributes.position
@@ -110,7 +115,7 @@ export default function Helix({
   contactsRef.current = [...contactClose, ...contactFar]
 
   useEffect(() => {
-    const sync = () => setSecondary(readThemeColors().secondary)
+    const sync = () => setThemeSecondary(readThemeColors().secondary)
     sync()
     const observer = new MutationObserver(sync)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
@@ -135,15 +140,21 @@ export default function Helix({
 
   return (
     <>
-      <HelixGizmo midY={gizmoMidY} yOffset={gizmoYOffset} size={gizmoSize} />
+      <HelixGizmo
+        midY={gizmoMidY}
+        yOffset={gizmoYOffset}
+        size={gizmoSize}
+        opacity={gizmoOpacity}
+        secondary={secondary}
+      />
       {contactClose.map((geom, index) => (
         <line key={`contact-close-${index}`} geometry={geom} raycast={() => null}>
-          <lineDashedMaterial color={secondary} transparent opacity={0.5} dashSize={0.042} gapSize={0.022} depthWrite={false} />
+          <lineDashedMaterial color={secondary} transparent opacity={contactCloseOpacity} dashSize={0.042} gapSize={0.022} depthWrite={false} />
         </line>
       ))}
       {contactFar.map((geom, index) => (
         <line key={`contact-far-${index}`} geometry={geom} raycast={() => null}>
-          <lineDashedMaterial color={secondary} transparent opacity={0.35} dashSize={0.008} gapSize={0.02} depthWrite={false} />
+          <lineDashedMaterial color={secondary} transparent opacity={contactFarOpacity} dashSize={0.008} gapSize={0.02} depthWrite={false} />
         </line>
       ))}
       {sections.map((section, index) => {

@@ -99,10 +99,11 @@
   width: 100%;
   text-align: left;
   font: inherit;
+  font-family: "Black Ops One", system-ui, sans-serif;
   color: var(--accent-color);
   cursor: pointer;
   opacity: 0.2;
-  font-weight: 900;
+  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -118,9 +119,9 @@
 .debug-sliders {
   display: none;
   position: fixed;
-  z-index: 30;
-  top: 0.75rem;
-  right: 0.75rem;
+  z-index: 9999;
+  left: 0.75rem;
+  bottom: 3.75rem;
   flex-direction: column;
   gap: 0.35rem;
   width: 12rem;
