@@ -18,6 +18,9 @@ export default function CanvasScene({
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
   screenRoll,
+  poseRef,
+  scrollIndexRef,
+  orbitModeRef,
   textFront,
   textBack,
   gizmoScale = 0.6,
@@ -65,6 +68,7 @@ export default function CanvasScene({
 
   useEffect(() => {
     if (userRotatingRef.current) return
+    if (!isMobile && orbitModeRef?.current === 'scroll') return
     const current = ((currentIndexRef.current % planesPerCycle) + planesPerCycle) % planesPerCycle
     const target = ((selectedIndex % planesPerCycle) + planesPerCycle) % planesPerCycle
     let delta = target - current
@@ -73,7 +77,7 @@ export default function CanvasScene({
     if (delta < -half) delta += planesPerCycle
     currentIndexRef.current += delta
     targetAngleRef.current = currentIndexRef.current * baseRotation
-  }, [selectedIndex, planesPerCycle, baseRotation])
+  }, [selectedIndex, planesPerCycle, baseRotation, isMobile, orbitModeRef])
 
   useEffect(() => {
     camRef.current?.up.set(0, 1, 0)
@@ -126,6 +130,15 @@ export default function CanvasScene({
     if (!cam || !pivot) return
     pivot.getWorldPosition(tmpTarget.current)
 
+    if (!userRotatingRef.current && !isMobile && orbitModeRef?.current === 'scroll' && scrollIndexRef) {
+      currentIndexRef.current = scrollIndexRef.current
+      const raw = scrollIndexRef.current * baseRotation
+      const from = cam.userData.angle ?? raw
+      let delta = (raw - from) % (Math.PI * 2)
+      if (delta > Math.PI) delta -= Math.PI * 2
+      if (delta < -Math.PI) delta += Math.PI * 2
+      targetAngleRef.current = from + delta
+    }
     cam.userData.angle ??= targetAngleRef.current
     if (userRotatingRef.current) cam.userData.angle = targetAngleRef.current
     else cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
@@ -134,12 +147,16 @@ export default function CanvasScene({
     else orbitOffset.current.set(Math.sin(a) * 10, 0, Math.cos(a) * 10)
     cam.position.copy(tmpTarget.current).add(orbitOffset.current)
     cam.up.set(0, 1, 0)
+    const live = poseRef?.current
+    const roll = live?.screenRoll ?? screenRoll
+    const liveScale = live?.scale
+    if (typeof liveScale === 'number' && liveScale > 0) pivot.scale.setScalar(liveScale)
     if (isMobile) {
       orbitForward.current.copy(tmpTarget.current).sub(cam.position)
       cam.up.crossVectors(orbitRight.current, orbitForward.current).normalize()
     } else {
       orbitForward.current.copy(tmpTarget.current).sub(cam.position).normalize()
-      cam.up.applyAxisAngle(orbitForward.current, screenRoll)
+      cam.up.applyAxisAngle(orbitForward.current, roll)
     }
     cam.lookAt(tmpTarget.current)
 

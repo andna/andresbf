@@ -14,18 +14,20 @@ import { Content as Portfolio4 } from '../content/portfolio-4.md';
 import { Content as Education } from '../content/education.md';
 import { Content as Footer } from '../content/footer.md';
 
-const articles = [
-  { id: 'header', Content: Header },
-  { id: 'me', Content: Me },
-  { id: 'experience', Content: Experience },
-  { id: 'skills', Content: Skills },
-  { id: 'portfolio-1', Content: Portfolio1 },
-  { id: 'portfolio-2', Content: Portfolio2 },
-  { id: 'portfolio-3', Content: Portfolio3 },
-  { id: 'portfolio-4', Content: Portfolio4 },
-  { id: 'education', Content: Education },
-  { id: 'footer', Content: Footer },
-];
+const contentById = {
+  header: Header,
+  me: Me,
+  skills: Skills,
+  experience: Experience,
+  'portfolio-1': Portfolio1,
+  'portfolio-2': Portfolio2,
+  'portfolio-3': Portfolio3,
+  'portfolio-4': Portfolio4,
+  education: Education,
+  footer: Footer,
+};
+
+const articles = sections.map(({ id }) => ({ id, Content: contentById[id] }));
 ---
 
 <Layout>
@@ -41,12 +43,15 @@ const articles = [
         <NavigatorIsland client:load sections={sections} />
       </div>
       <main class="content">
-        {articles.map(({ id, Content }) => (
-          <section id={id}>
-            <Content />
-          </section>
-        ))}
+        <div class="content-track">
+          {articles.map(({ id, Content }) => (
+            <section id={id}>
+              <Content />
+            </section>
+          ))}
+        </div>
       </main>
     </div>
+    <div class="scroll-spacer" aria-hidden="true"></div>
   </div>
 </Layout>

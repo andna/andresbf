@@ -97,6 +97,11 @@ body {
   z-index: 2;
 }
 
+.scroll-spacer {
+  display: none;
+  pointer-events: none;
+}
+
 .content section {
   min-height: calc(100vh - var(--chrome-header));
   box-sizing: border-box;
@@ -116,13 +121,22 @@ body {
 }
 
 @media (orientation: landscape) {
+  html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+
   html,
   body {
-    overflow: hidden;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
   }
 
   .chrome {
+    position: fixed;
+    z-index: 11;
+    top: 0;
+    left: 0;
     right: auto;
     bottom: auto;
     width: auto;
@@ -139,6 +153,7 @@ body {
     width: 100vw;
     height: 100vh;
     padding-top: 0;
+    transform: translate3d(0, 0, 0);
     transform-origin: 0 0;
     will-change: transform;
   }
@@ -159,10 +174,22 @@ body {
     margin-top: 0;
     margin-left: 0;
     height: 100vh;
-    overflow-y: auto;
+    overflow: hidden;
     box-sizing: border-box;
     transform-origin: 0 0;
     will-change: transform;
+    pointer-events: none;
+  }
+
+  .content-track {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .scroll-spacer {
+    display: block;
+    width: 1px;
+    visibility: hidden;
   }
 
   .content section {

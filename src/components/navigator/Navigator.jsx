@@ -4,6 +4,8 @@ import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
 import { hexToRgb, rgbToHex, readThemeColors } from '../../theme.js'
 import './navigator.css'
+import Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
 
 const valueSkewDesktop = -0.67
 const valueSkewMobile = -1.3
@@ -70,31 +72,45 @@ export default function Navigator({ sections }) {
   const restScaleFit = 0.42
   const restScreenRotDeg = 0.5
   const restOffsetXFrac = 0.3
-  const heroOffsetYFrac = 0.04
-  const restOffsetYFrac = 0.055
+  const scrollSpeed = 1.5
   const heroTextBack = { skewX: -0.61, skewY: -0.07, rotDeg: 57 }
-  const targetScaleFit = selectedIndex === 0 ? scaleFit : restScaleFit
-  const targetScreenRotDeg = selectedIndex === 0 ? screenRotDeg : restScreenRotDeg
-  const targetOffsetX = selectedIndex === 0 ? 0 : -Math.round(view.w * restOffsetXFrac)
-  const targetOffsetY = Math.round(view.h * (selectedIndex === 0 ? heroOffsetYFrac : restOffsetYFrac))
-  const targetContentRot = selectedIndex === 0 ? -20 : 0
-  const targetContentY = selectedIndex === 0 ? 3 : 0
-  const targetTextBack = selectedIndex === 0 ? heroTextBack : textBack
-  const [liveScaleFit, setLiveScaleFit] = useState(scaleFit)
-  const [liveScreenRotDeg, setLiveScreenRotDeg] = useState(screenRotDeg)
-  const [liveOffsetX, setLiveOffsetX] = useState(0)
-  const [liveOffsetY, setLiveOffsetY] = useState(() => Math.round(window.innerHeight * heroOffsetYFrac))
-  const [liveTextBack, setLiveTextBack] = useState(heroTextBack)
-  const livePoseRef = useRef({
-    scaleFit: 0.67,
-    screenRotDeg: 50,
-    offsetX: 0,
-    offsetY: Math.round(window.innerHeight * heroOffsetYFrac),
-    contentRot: -20,
-    contentY: 3,
-    textBack: { ...heroTextBack },
-  })
+  const [scrollPoseT, setScrollPoseT] = useState(0)
   const canvasRef = useRef(null)
+  const selectedIndexRef = useRef(0)
+  const scrollLockRef = useRef(false)
+  const scrollTargetRef = useRef(null)
+  const poseRef = useRef({ t: 0, scale: 0.01, screenRoll: (50 * Math.PI) / 180 })
+  const poseParamsRef = useRef(null)
+  const poseBucketRef = useRef(0)
+  const applyVisualPoseRef = useRef(() => {})
+  const applyScrollVisualsRef = useRef(() => {})
+  const kickVisualLerpRef = useRef(() => {})
+  const clampScrollRef = useRef((y) => Math.max(0, y))
+  const lenisRef = useRef(null)
+  const visualScrollRef = useRef(0)
+  const targetScrollRef = useRef(0)
+  const visualRafRef = useRef(0)
+  const visualLastTsRef = useRef(0)
+  const scrollIndexRef = useRef(0)
+  const orbitModeRef = useRef('scroll')
+  const clickAnimRef = useRef(null)
+  const clickPoseDuration = 0.85
+  const poseRange = () => {
+    const first = document.getElementById(helixSections[0]?.id)
+    const height = first instanceof HTMLElement ? first.offsetHeight : 0
+    return Math.max(1, height || window.innerHeight)
+  }
+  const poseT = isMobile ? 0 : Math.min(1, Math.max(0, scrollPoseT))
+  const liveScaleFit = scaleFit + (restScaleFit - scaleFit) * poseT
+  const liveScreenRotDeg = screenRotDeg + (restScreenRotDeg - screenRotDeg) * poseT
+  const liveOffsetX = -Math.round(view.w * restOffsetXFrac) * poseT
+  const liveContentRot = -screenRotDeg * (1 - poseT)
+  const liveContentY = 3 * (1 - poseT)
+  const liveTextBack = {
+    skewX: heroTextBack.skewX + (textBack.skewX - heroTextBack.skewX) * poseT,
+    skewY: heroTextBack.skewY + (textBack.skewY - heroTextBack.skewY) * poseT,
+    rotDeg: heroTextBack.rotDeg + (textBack.rotDeg - heroTextBack.rotDeg) * poseT,
+  }
   const valueSkew = isMobile ? valueSkewMobile : valueSkewDesktop
   const planesPerCycle = isMobile ? planesPerCycleMobile : planesPerCycleDesktop
   const planeHeight = isMobile ? planeHeightMobile : planeHeightDesktop
@@ -121,12 +137,25 @@ export default function Navigator({ sections }) {
   }
   const offsetPx = pose.offsetPx
   const hitBoxNarrowness = 0.28
-  const bandClip = isMobile
-    ? undefined
-    : diagonalBandClip(view.w, view.h, liveScreenRotDeg, hitBoxNarrowness)
-  const contentLeft = (window.innerWidth - view.w) / 2
-    + view.w / 2
-    + Math.min(view.w, view.h) * hitBoxNarrowness
+  const layoutW = document.documentElement.clientWidth
+  const layoutH = document.documentElement.clientHeight
+  const contentLeft = layoutW / 2 + Math.min(layoutW, layoutH) * hitBoxNarrowness
+
+  poseParamsRef.current = {
+    isMobile,
+    view: { w: layoutW, h: layoutH },
+    scaleFit,
+    restScaleFit,
+    screenRotDeg,
+    restScreenRotDeg,
+    restOffsetXFrac,
+    contentLeft,
+    hitBoxNarrowness,
+    worldSpan,
+    orthoZoom,
+    diagonal,
+    mobileScale: helixMobile.scale,
+  }
 
   const secondaryColor = rgbToHex(secondaryRgb)
 
@@ -144,7 +173,7 @@ export default function Navigator({ sections }) {
     return () => observer.disconnect()
   }, [])
 
-  const applyLayoutPose = (offsetX, offsetY, contentRot, contentY) => {
+  const applyLayoutPose = (offsetX, contentRot, contentY) => {
     const stage = document.querySelector('.stage')
     const content = document.querySelector('.content')
     if (!(stage instanceof HTMLElement) || !(content instanceof HTMLElement)) return
@@ -154,89 +183,83 @@ export default function Navigator({ sections }) {
       content.style.removeProperty('transform')
       return
     }
-    stage.style.transform = `translate(${offsetX}px, ${offsetY}px)`
-    stage.style.setProperty('--content-left', `${contentLeft}px`)
-    content.style.transform = `rotate(${contentRot}deg) translateY(${contentY}vh)`
+    const left = poseParamsRef.current?.contentLeft ?? contentLeft
+    stage.style.transform = `translate3d(${offsetX}px, 0, 0)`
+    stage.style.setProperty('--content-left', `${left}px`)
+    content.style.transform = `rotate(${contentRot}deg) translate3d(0, ${contentY}vh, 0)`
   }
 
-  useEffect(() => {
-    let rafId = 0
-    const step = () => {
-      const cur = livePoseRef.current
-      const nextScale = cur.scaleFit + (targetScaleFit - cur.scaleFit) * 0.06
-      const nextRot = cur.screenRotDeg + (targetScreenRotDeg - cur.screenRotDeg) * 0.06
-      const nextOffsetX = cur.offsetX + (targetOffsetX - cur.offsetX) * 0.06
-      const nextOffsetY = cur.offsetY + (targetOffsetY - cur.offsetY) * 0.06
-      const nextContentRot = cur.contentRot + (targetContentRot - cur.contentRot) * 0.06
-      const nextContentY = cur.contentY + (targetContentY - cur.contentY) * 0.06
-      const nextTextBack = {
-        skewX: cur.textBack.skewX + (targetTextBack.skewX - cur.textBack.skewX) * 0.06,
-        skewY: cur.textBack.skewY + (targetTextBack.skewY - cur.textBack.skewY) * 0.06,
-        rotDeg: cur.textBack.rotDeg + (targetTextBack.rotDeg - cur.textBack.rotDeg) * 0.06,
-      }
-      const done =
-        Math.abs(targetScaleFit - nextScale) < 0.0004 &&
-        Math.abs(targetScreenRotDeg - nextRot) < 0.0004 &&
-        Math.abs(targetOffsetX - nextOffsetX) < 0.2 &&
-        Math.abs(targetOffsetY - nextOffsetY) < 0.2 &&
-        Math.abs(targetContentRot - nextContentRot) < 0.0004 &&
-        Math.abs(targetContentY - nextContentY) < 0.0004 &&
-        Math.abs(targetTextBack.skewX - nextTextBack.skewX) < 0.0004 &&
-        Math.abs(targetTextBack.skewY - nextTextBack.skewY) < 0.0004 &&
-        Math.abs(targetTextBack.rotDeg - nextTextBack.rotDeg) < 0.0004
-      const scaleFitOut = done ? targetScaleFit : nextScale
-      const screenRotOut = done ? targetScreenRotDeg : nextRot
-      const offsetXOut = done ? targetOffsetX : nextOffsetX
-      const offsetYOut = done ? targetOffsetY : nextOffsetY
-      const contentRotOut = done ? targetContentRot : nextContentRot
-      const contentYOut = done ? targetContentY : nextContentY
-      const textBackOut = done ? { ...targetTextBack } : nextTextBack
-      livePoseRef.current = {
-        scaleFit: scaleFitOut,
-        screenRotDeg: screenRotOut,
-        offsetX: offsetXOut,
-        offsetY: offsetYOut,
-        contentRot: contentRotOut,
-        contentY: contentYOut,
-        textBack: textBackOut,
-      }
-      setLiveScaleFit(scaleFitOut)
-      setLiveScreenRotDeg(screenRotOut)
-      setLiveOffsetX(offsetXOut)
-      setLiveOffsetY(offsetYOut)
-      setLiveTextBack(textBackOut)
-      applyLayoutPose(offsetXOut, offsetYOut, contentRotOut, contentYOut)
-      if (!done) rafId = requestAnimationFrame(step)
+  const applyVisualPose = (t) => {
+    const p = poseParamsRef.current
+    if (!p) return
+    const clamped = Math.min(1, Math.max(0, t))
+    const liveScaleFitNow = p.scaleFit + (p.restScaleFit - p.scaleFit) * clamped
+    const liveScreenRotNow = p.screenRotDeg + (p.restScreenRotDeg - p.screenRotDeg) * clamped
+    const offsetX = -p.view.w * p.restOffsetXFrac * clamped
+    applyLayoutPose(offsetX, -p.screenRotDeg * (1 - clamped), 3 * (1 - clamped))
+    poseRef.current.t = clamped
+    poseRef.current.scale = p.isMobile
+      ? p.mobileScale
+      : (p.diagonal * liveScaleFitNow) / (p.worldSpan * p.orthoZoom)
+    poseRef.current.screenRoll = (liveScreenRotNow * Math.PI) / 180
+    if (canvasRef.current && !p.isMobile) {
+      canvasRef.current.style.clipPath = diagonalBandClip(
+        p.view.w,
+        p.view.h,
+        liveScreenRotNow,
+        p.hitBoxNarrowness
+      )
     }
-    rafId = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(rafId)
-  }, [
-    targetScaleFit,
-    targetScreenRotDeg,
-    targetOffsetX,
-    targetOffsetY,
-    targetContentRot,
-    targetContentY,
-    targetTextBack.skewX,
-    targetTextBack.skewY,
-    targetTextBack.rotDeg,
-    contentLeft,
-    isMobile,
-  ])
+  }
+
+  const applyScrollVisuals = (scrollY, poseOverride) => {
+    if (isMobile) return
+    const track = document.querySelector('.content-track')
+    if (track instanceof HTMLElement) {
+      track.style.transform = `translate3d(0, ${-scrollY * scrollSpeed}px, 0)`
+    }
+    const contentY = scrollY * scrollSpeed
+    let index = 0
+    let nextTop = Infinity
+    for (let i = 0; i < helixSections.length; i += 1) {
+      const section = document.getElementById(helixSections[i].id)
+      if (!(section instanceof HTMLElement)) continue
+      const top = section.offsetTop
+      if (top <= contentY) index = i
+      else if (nextTop === Infinity) nextTop = top
+    }
+    const current = document.getElementById(helixSections[index]?.id)
+    const start = current instanceof HTMLElement ? current.offsetTop : 0
+    const span = Math.max(1, nextTop - start)
+    scrollIndexRef.current = index + Math.min(1, Math.max(0, (contentY - start) / span))
+    const t = poseOverride == null
+      ? Math.min(1, Math.max(0, contentY / poseRange()))
+      : Math.min(1, Math.max(0, poseOverride))
+    applyVisualPose(t)
+    if ((t <= 0 && poseBucketRef.current !== 0) || (t >= 1 && poseBucketRef.current !== 6)) {
+      poseBucketRef.current = t >= 1 ? 6 : 0
+      setScrollPoseT(t)
+    }
+  }
+
+  applyVisualPoseRef.current = applyVisualPose
+  applyScrollVisualsRef.current = applyScrollVisuals
 
   useEffect(() => {
-    const cur = livePoseRef.current
-    applyLayoutPose(cur.offsetX, cur.offsetY, cur.contentRot, cur.contentY)
-    return () => {
-      const stage = document.querySelector('.stage')
-      const content = document.querySelector('.content')
-      if (stage instanceof HTMLElement) {
-        stage.style.removeProperty('transform')
-        stage.style.removeProperty('--content-left')
-      }
-      if (content instanceof HTMLElement) content.style.removeProperty('transform')
+    applyVisualPoseRef.current(poseRef.current.t)
+    const lenis = lenisRef.current
+    if (lenis) applyScrollVisualsRef.current(lenis.scroll)
+  }, [isMobile, contentLeft, scaleFit, screenRotDeg, view.w, view.h])
+
+  useEffect(() => () => {
+    const stage = document.querySelector('.stage')
+    const content = document.querySelector('.content')
+    if (stage instanceof HTMLElement) {
+      stage.style.removeProperty('transform')
+      stage.style.removeProperty('--content-left')
     }
-  }, [isMobile, contentLeft])
+    if (content instanceof HTMLElement) content.style.removeProperty('transform')
+  }, [])
 
   useEffect(() => {
     const onKey = (event) => {
@@ -265,27 +288,267 @@ export default function Navigator({ sections }) {
     ro.observe(el)
     return () => ro.disconnect()
   }, [isMobile])
+
+  useEffect(() => {
+    selectedIndexRef.current = selectedIndex
+  }, [selectedIndex])
+
+  useEffect(() => {
+    const spacer = document.querySelector('.scroll-spacer')
+    const content = document.querySelector('.content')
+    const stage = document.querySelector('.stage')
+    if (!(spacer instanceof HTMLElement) || !(content instanceof HTMLElement)) return
+
+    const unlockScroll = () => {
+      scrollLockRef.current = false
+      scrollTargetRef.current = null
+      if (orbitModeRef.current === 'click') orbitModeRef.current = 'scroll'
+    }
+
+    const indexFromScroll = (scrollY) => {
+      const viewport = window.innerHeight
+      const maxY = document.documentElement.scrollHeight - viewport
+      if (maxY > 0 && scrollY >= maxY - 2) return helixSections.length - 1
+      const probe = scrollY * scrollSpeed + viewport * 0.33
+      let best = 0
+      let bestTop = -Infinity
+      for (let i = 0; i < helixSections.length; i += 1) {
+        const section = document.getElementById(helixSections[i].id)
+        if (!(section instanceof HTMLElement)) continue
+        if (section.offsetTop <= probe && section.offsetTop >= bestTop) {
+          bestTop = section.offsetTop
+          best = i
+        }
+      }
+      return best
+    }
+
+    const scrollLimit = () => {
+      const track = document.querySelector('.content-track')
+      const trackH = track instanceof HTMLElement ? track.scrollHeight : content.scrollHeight
+      const viewport = window.innerHeight
+      return Math.max(0, trackH - viewport) / scrollSpeed
+    }
+
+    const clampScroll = (y) => Math.min(scrollLimit(), Math.max(0, y))
+
+    const syncSpacer = () => {
+      if (isMobile) {
+        spacer.style.removeProperty('height')
+        return
+      }
+      spacer.style.height = `${scrollLimit() + window.innerHeight}px`
+    }
+
+    const syncSelection = (scrollY) => {
+      if (orbitModeRef.current === 'click' || scrollLockRef.current) {
+        const target = scrollTargetRef.current
+        if (target != null && Math.abs(scrollY - target) < 4) unlockScroll()
+        return
+      }
+      const next = indexFromScroll(scrollY)
+      if (next === selectedIndexRef.current) return
+      selectedIndexRef.current = next
+      setSelectedIndex(next)
+    }
+
+    const kickVisualLerp = () => {
+      if (isMobile || visualRafRef.current) return
+      visualLastTsRef.current = 0
+      const step = (ts) => {
+        const anim = clickAnimRef.current
+        if (orbitModeRef.current === 'click' && anim) {
+          const u = Math.min(1, (ts - anim.start) / (anim.duration * 1000))
+          const eased = 1 - (1 - u) ** 3
+          const y = clampScroll(anim.scrollFrom + (anim.scrollTo - anim.scrollFrom) * eased)
+          const pose = anim.poseFrom + (anim.poseTo - anim.poseFrom) * eased
+          visualScrollRef.current = y
+          applyScrollVisualsRef.current(y, pose)
+          syncSelection(y)
+          if (u >= 1) {
+            clickAnimRef.current = null
+            visualRafRef.current = 0
+            unlockScroll()
+            return
+          }
+          visualRafRef.current = requestAnimationFrame(step)
+          return
+        }
+        const last = visualLastTsRef.current || ts
+        const dt = Math.min(0.048, (ts - last) / 1000)
+        visualLastTsRef.current = ts
+        const target = clampScroll(targetScrollRef.current)
+        targetScrollRef.current = target
+        const cur = visualScrollRef.current
+        const next = cur + (target - cur) * (1 - Math.exp(-5.2 * dt))
+        const done = Math.abs(target - next) < 0.2
+        const y = done ? target : next
+        visualScrollRef.current = y
+        applyScrollVisualsRef.current(y)
+        syncSelection(y)
+        if (done) {
+          visualRafRef.current = 0
+          return
+        }
+        visualRafRef.current = requestAnimationFrame(step)
+      }
+      visualRafRef.current = requestAnimationFrame(step)
+    }
+
+    kickVisualLerpRef.current = kickVisualLerp
+    clampScrollRef.current = clampScroll
+
+    const onLenisScroll = (lenis) => {
+      if (orbitModeRef.current === 'click') {
+        kickVisualLerp()
+        return
+      }
+      orbitModeRef.current = 'scroll'
+      targetScrollRef.current = clampScroll(lenis.targetScroll)
+      kickVisualLerp()
+    }
+
+    const takeOverWithWheel = (event) => {
+      if (event.ctrlKey) return
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      const interrupt = orbitModeRef.current === 'click' || clickAnimRef.current
+      orbitModeRef.current = 'scroll'
+      clickAnimRef.current = null
+      scrollLockRef.current = false
+      scrollTargetRef.current = null
+      if (isMobile) return
+      let delta = event.deltaY
+      if (event.deltaMode === 1) delta *= 100 / 6
+      else if (event.deltaMode === 2) delta *= window.innerHeight
+      if (interrupt) targetScrollRef.current = visualScrollRef.current
+      targetScrollRef.current = clampScroll(targetScrollRef.current + delta)
+      const lenis = lenisRef.current
+      if (lenis) lenis.scrollTo(targetScrollRef.current, { programmatic: false, force: true })
+      else window.scrollBy(0, delta)
+      kickVisualLerp()
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+
+    const onUserScrollIntent = () => {
+      unlockScroll()
+    }
+
+    const onPointerDown = (event) => {
+      if (event.target instanceof Element && event.target.closest('.navigator')) return
+      if (orbitModeRef.current === 'click') return
+      unlockScroll()
+    }
+
+    const onKeyedScroll = (event) => {
+      if (
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowUp' ||
+        event.key === 'PageDown' ||
+        event.key === 'PageUp' ||
+        event.key === 'Home' ||
+        event.key === 'End' ||
+        event.key === ' '
+      ) {
+        orbitModeRef.current = 'scroll'
+        unlockScroll()
+      }
+    }
+
+    syncSpacer()
+    if (!isMobile) {
+      const lenis = new Lenis({
+        autoRaf: true,
+        lerp: 0.075,
+        smoothWheel: true,
+      })
+      lenisRef.current = lenis
+      lenis.on('scroll', onLenisScroll)
+      applyScrollVisualsRef.current(lenis.scroll)
+    }
+
+    const onResize = () => {
+      syncSpacer()
+      lenisRef.current?.resize()
+    }
+
+    const onScrollEnd = () => {
+      if (orbitModeRef.current === 'click') return
+      unlockScroll()
+    }
+
+    window.addEventListener('scrollend', onScrollEnd)
+    window.addEventListener('resize', onResize)
+    window.addEventListener('wheel', takeOverWithWheel, { capture: true, passive: false })
+    window.addEventListener('touchmove', onUserScrollIntent, { passive: true })
+    window.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('keydown', onKeyedScroll)
+    const ro = new ResizeObserver(syncSpacer)
+    const track = document.querySelector('.content-track')
+    ro.observe(track instanceof HTMLElement ? track : content)
+
+    return () => {
+      window.removeEventListener('scrollend', onScrollEnd)
+      window.removeEventListener('resize', onResize)
+      if (visualRafRef.current) cancelAnimationFrame(visualRafRef.current)
+      visualRafRef.current = 0
+      if (lenisRef.current) {
+        lenisRef.current.destroy()
+        lenisRef.current = null
+      }
+      window.removeEventListener('wheel', takeOverWithWheel, { capture: true })
+      window.removeEventListener('touchmove', onUserScrollIntent)
+      window.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('keydown', onKeyedScroll)
+      ro.disconnect()
+      spacer.style.removeProperty('height')
+    }
+  }, [isMobile, helixSections])
+
   const setSelectedIndexAndScroll = (index) => {
+    orbitModeRef.current = 'click'
+    selectedIndexRef.current = index
     setSelectedIndex(index)
     const id = helixSections[index]?.id
     if (!id) return
     const section = document.getElementById(id)
-    const content = document.querySelector('.content')
     if (!section) return
-    if (content instanceof HTMLElement && !isMobile) {
-      content.scrollTo({ top: section.offsetTop, behavior: 'smooth' })
+    if (!isMobile) {
+      const top = clampScrollRef.current(section.offsetTop / scrollSpeed)
+      scrollLockRef.current = true
+      scrollTargetRef.current = top
+      targetScrollRef.current = top
+      clickAnimRef.current = {
+        poseFrom: poseRef.current.t,
+        poseTo: index === 0 ? 0 : 1,
+        scrollFrom: visualScrollRef.current,
+        scrollTo: top,
+        start: performance.now(),
+        duration: clickPoseDuration,
+      }
+      kickVisualLerpRef.current()
+      const lenis = lenisRef.current
+      if (lenis) {
+        lenis.scrollTo(top, {
+          duration: clickPoseDuration,
+          easing: (u) => 1 - (1 - u) ** 3,
+        })
+        return
+      }
+      window.scrollTo({ top, behavior: 'smooth' })
       return
     }
+    scrollLockRef.current = true
+    scrollTargetRef.current = section.getBoundingClientRect().top + window.scrollY
     section.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <div className={`navigator${isMobile ? ' is-mobile' : ' is-desktop'}`}>
-      <div
-        className="canvas"
-        ref={canvasRef}
-        style={bandClip ? { clipPath: bandClip } : undefined}
-      >
+    <div
+      className={`navigator${isMobile ? ' is-mobile' : ' is-desktop'}`}
+      data-selected-index={selectedIndex}
+    >
+      <div className="canvas" ref={canvasRef}>
         <Canvas
           gl={{ alpha: true, antialias: true }}
           dpr={[1, 2]}
@@ -306,6 +569,9 @@ export default function Navigator({ sections }) {
               hoveredPlaneIdx={hoveredPlaneIdx}
               setHoveredPlaneIdx={setHoveredPlaneIdx}
               screenRoll={screenRoll}
+              poseRef={poseRef}
+              scrollIndexRef={scrollIndexRef}
+              orbitModeRef={orbitModeRef}
               textFront={textFrontRad}
               textBack={textBackRad}
               gizmoScale={gizmoScale}
