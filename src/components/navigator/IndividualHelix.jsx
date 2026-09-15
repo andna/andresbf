@@ -15,8 +15,10 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, ske
   const w = canvas.width
   const h = canvas.height
   ctx.clearRect(0, 0, w, h)
-  ctx.fillStyle = isSel ? accent : isHover ? hover : bg
-  ctx.fillRect(0, 0, w, h)
+  if (!isBack) {
+    ctx.fillStyle = isSel ? accent : isHover ? hover : bg
+    ctx.fillRect(0, 0, w, h)
+  }
 
   if (!showLabel) return
 
@@ -39,8 +41,10 @@ const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, ske
   const startY = h / 2 - ((lines.length - 1) * gap) / 2
   ctx.save()
   ctx.translate(w / 2, h / 2)
-  ctx.rotate(face.rot)
-  ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
+  if (!isBack) {
+    ctx.rotate(face.rot)
+    ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
+  }
   ctx.translate(-w / 2, -h / 2)
   lines.forEach((line, i) => {
     ctx.fillText(line, w / 2, startY + i * gap)
@@ -74,6 +78,42 @@ const omitCapCorner = (pts, cap) => {
   return pts.filter((_, i) => i !== omit)
 }
 
+const uvScratch = new THREE.Matrix3()
+
+const setBackTextUv = (matrix, rot, skewX, skewY) => {
+  const cx = 0.5
+  const cy = 0.5
+  const cos = Math.cos(-rot)
+  const sin = Math.sin(-rot)
+  matrix.set(
+    cos,
+    -sin,
+    cx - cos * cx + sin * cy,
+    sin,
+    cos,
+    cy - sin * cx - cos * cy,
+    0,
+    0,
+    1
+  )
+  const a = 1
+  const b = -skewY
+  const c = skewX
+  const d = 1
+  uvScratch.set(
+    a,
+    c,
+    cx - a * cx - c * cy,
+    b,
+    d,
+    cy - b * cx - d * cy,
+    0,
+    0,
+    1
+  )
+  matrix.multiply(uvScratch)
+}
+
 const ringOrder = (pts) => {
   const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length
   const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length
@@ -96,6 +136,7 @@ export default function IndividualHelix({
   cap = null,
   textFront,
   textBack,
+  poseRef,
 }) {
   const x = radius * Math.sin(planeRotation)
   const z = radius * Math.cos(planeRotation)
@@ -141,6 +182,11 @@ export default function IndividualHelix({
   useFrame(({ camera }) => {
     const group = groupRef.current
     const outline = outlineRef.current
+    const tb = poseRef?.current?.textBack ?? textBack
+    if (tb && backTexture) {
+      backTexture.matrixAutoUpdate = false
+      setBackTextUv(backTexture.matrix, tb.rot ?? 0, tb.skewX ?? 0, tb.skewY ?? 0)
+    }
     if (!group || !outline?.material) return
     group.getWorldPosition(worldPos.current)
     viewDir.current.copy(camera.position).sub(worldPos.current).normalize()
@@ -169,6 +215,7 @@ export default function IndividualHelix({
       tex.generateMipmaps = false
       tex.minFilter = THREE.LinearFilter
       tex.magFilter = THREE.LinearFilter
+      tex.matrixAutoUpdate = false
       return tex
     }
     return { texture: make(), backTexture: make() }
@@ -237,7 +284,7 @@ export default function IndividualHelix({
       </mesh>
       <mesh geometry={faceGeom}>
         <meshBasicMaterial
-          map={backTexture}
+          color={isSel ? colors.accent : isHover ? colors.hover : colors.bg}
           toneMapped={false}
           side={THREE.BackSide}
           polygonOffset
@@ -245,6 +292,19 @@ export default function IndividualHelix({
           polygonOffsetUnits={1}
           depthTest
           depthWrite
+        />
+      </mesh>
+      <mesh geometry={faceGeom}>
+        <meshBasicMaterial
+          map={backTexture}
+          transparent
+          toneMapped={false}
+          side={THREE.BackSide}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+          depthTest
+          depthWrite={false}
         />
       </mesh>
       {outlinePoints && (

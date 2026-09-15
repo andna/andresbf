@@ -207,6 +207,7 @@ export default function CanvasScene({
             showLabel={!isMobile}
             textFront={textFront}
             textBack={textBack}
+            poseRef={poseRef}
             gizmoScale={gizmoScale}
             gizmoOpacity={gizmoOpacity}
             contactCloseOpacity={contactCloseOpacity}

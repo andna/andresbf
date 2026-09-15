@@ -79,7 +79,12 @@ export default function Navigator({ sections }) {
   const selectedIndexRef = useRef(0)
   const scrollLockRef = useRef(false)
   const scrollTargetRef = useRef(null)
-  const poseRef = useRef({ t: 0, scale: 0.01, screenRoll: (50 * Math.PI) / 180 })
+  const poseRef = useRef({
+    t: 0,
+    scale: 0.01,
+    screenRoll: (50 * Math.PI) / 180,
+    textBack: { skewX: -0.61, skewY: -0.07, rot: (57 * Math.PI) / 180 },
+  })
   const poseParamsRef = useRef(null)
   const poseBucketRef = useRef(0)
   const applyVisualPoseRef = useRef(() => {})
@@ -155,6 +160,8 @@ export default function Navigator({ sections }) {
     orthoZoom,
     diagonal,
     mobileScale: helixMobile.scale,
+    heroTextBack,
+    restTextBack: textBack,
   }
 
   const secondaryColor = rgbToHex(secondaryRgb)
@@ -162,6 +169,11 @@ export default function Navigator({ sections }) {
   useEffect(() => {
     document.documentElement.style.setProperty('--secondary-color', secondaryColor)
   }, [secondaryColor])
+
+  useEffect(() => {
+    const heroWidth = Math.hypot(view.w, view.h) * scaleFit * Math.sin((screenRotDeg * Math.PI) / 180) * 0.9
+    document.documentElement.style.setProperty('--helix-hero-width', `${heroWidth}px`)
+  }, [view.w, view.h, scaleFit, screenRotDeg])
 
   useEffect(() => {
     const sync = () => {
@@ -198,10 +210,24 @@ export default function Navigator({ sections }) {
     const offsetX = -p.view.w * p.restOffsetXFrac * clamped
     applyLayoutPose(offsetX, -p.screenRotDeg * (1 - clamped), 3 * (1 - clamped))
     poseRef.current.t = clamped
+    if (!p.isMobile) {
+      document.documentElement.style.setProperty(
+        '--chrome-item-rot',
+        `${-p.screenRotDeg * (1 - clamped)}deg`
+      )
+    }
     poseRef.current.scale = p.isMobile
       ? p.mobileScale
       : (p.diagonal * liveScaleFitNow) / (p.worldSpan * p.orthoZoom)
     poseRef.current.screenRoll = (liveScreenRotNow * Math.PI) / 180
+    const heroBack = p.heroTextBack
+    const restBack = p.restTextBack
+    if (heroBack && restBack) {
+      const tb = poseRef.current.textBack
+      tb.skewX = heroBack.skewX + (restBack.skewX - heroBack.skewX) * clamped
+      tb.skewY = heroBack.skewY + (restBack.skewY - heroBack.skewY) * clamped
+      tb.rot = ((heroBack.rotDeg + (restBack.rotDeg - heroBack.rotDeg) * clamped) * Math.PI) / 180
+    }
     if (canvasRef.current && !p.isMobile) {
       canvasRef.current.style.clipPath = diagonalBandClip(
         p.view.w,

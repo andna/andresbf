@@ -49,6 +49,7 @@ export default function Helix({
   showLabel,
   textFront,
   textBack,
+  poseRef,
   gizmoScale = 0.6,
   gizmoOpacity = 0.75,
   contactCloseOpacity = 0.6,
@@ -179,6 +180,7 @@ export default function Helix({
             cap={section.blank ? (index === 0 ? 'start' : 'end') : null}
             textFront={textFront}
             textBack={textBack}
+            poseRef={poseRef}
           />
         )
       })}
