@@ -193,6 +193,29 @@ body {
   opacity: 0.5;
 }
 
+.skills-cubes-face {
+  fill: var(--accent-color);
+  stroke: none;
+  opacity: 0;
+  animation-name: skills-cubes-lit;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes skills-cubes-lit {
+  0%,
+  10%,
+  28%,
+  100% {
+    opacity: 0;
+  }
+
+  16%,
+  22% {
+    opacity: 0.38;
+  }
+}
+
 .experience-pyramid-mesh {
   stroke-width: 0.7;
   opacity: 0.3;
@@ -200,6 +223,29 @@ body {
 
 .experience-pyramid-front {
   stroke-width: 1.45;
+}
+
+.experience-pyramid-face {
+  fill: var(--accent-color);
+  stroke: none;
+  opacity: 0;
+  animation-name: experience-pyramid-lit;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes experience-pyramid-lit {
+  0%,
+  6%,
+  40%,
+  100% {
+    opacity: 0;
+  }
+
+  12%,
+  34% {
+    opacity: 0.38;
+  }
 }
 
 .me-planet-land,
@@ -260,7 +306,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .me-planet-pulse {
+  .me-planet-pulse,
+  .skills-cubes-face,
+  .experience-pyramid-face {
     animation: none;
   }
 }
