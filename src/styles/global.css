@@ -143,6 +143,38 @@ body {
   line-height: 1.6;
 }
 
+.me-planet {
+  display: block;
+  width: min(100%, 28rem);
+  height: auto;
+  margin: 2.5rem auto 1rem;
+}
+
+.me-planet-globe,
+.me-planet-land,
+.me-planet-grid {
+  fill: none;
+  stroke: var(--accent-color);
+}
+
+.me-planet-globe {
+  stroke-width: 2;
+}
+
+.me-planet-land {
+  stroke-width: 1.2;
+  stroke-linejoin: miter;
+}
+
+.me-planet-grid {
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.me-planet-mark {
+  fill: var(--secondary-color);
+}
+
 @media (orientation: landscape) {
   html {
     overflow-y: scroll;
@@ -226,7 +258,7 @@ body {
     max-width: min(42rem, 100%);
   }
 
-  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, blockquote, pre, code, strong, em, .header-hero) {
+  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .header-hero) {
     pointer-events: auto;
   }
 
