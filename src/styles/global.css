@@ -120,6 +120,30 @@ body {
   margin: 0 0 1rem;
 }
 
+.content h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+
+#portfolio-1 > h1,
+#portfolio-4 > h1 {
+  padding: 2rem 0 1rem;
+}
+
+#portfolio-1 > h1 {
+  position: relative;
+  z-index: 3;
+  background: var(--bg-color);
+}
+
+#portfolio-4 > h1 {
+  opacity: 0;
+}
+
+.portfolio-block section > :not(h1) {
+  padding-left: 1.5rem;
+}
+
 .header-hero {
   display: flex;
   align-items: flex-start;

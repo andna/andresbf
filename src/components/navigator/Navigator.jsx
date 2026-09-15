@@ -89,6 +89,7 @@ export default function Navigator({ sections }) {
   const poseBucketRef = useRef(0)
   const applyVisualPoseRef = useRef(() => {})
   const applyScrollVisualsRef = useRef(() => {})
+  const applyPortfolioTitlePinRef = useRef(() => {})
   const kickVisualLerpRef = useRef(() => {})
   const clampScrollRef = useRef((y) => Math.max(0, y))
   const lenisRef = useRef(null)
@@ -238,8 +239,37 @@ export default function Navigator({ sections }) {
     }
   }
 
+  const clearPortfolioTitlePin = () => {
+    const title1 = document.querySelector('#portfolio-1 > h1')
+    if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
+  }
+
+  const applyPortfolioTitlePin = (contentY) => {
+    const title1 = document.querySelector('#portfolio-1 > h1')
+    const title4 = document.querySelector('#portfolio-4 > h1')
+    if (!(title1 instanceof HTMLElement) || !(title4 instanceof HTMLElement)) {
+      return
+    }
+    const start = title1.offsetTop
+    const max = Math.max(0, title4.offsetTop - start)
+    let next = 0
+    if (isMobile) {
+      const parent = title1.offsetParent
+      const parentTop = parent instanceof HTMLElement ? parent.getBoundingClientRect().top : 0
+      next = Math.min(Math.max(0, -(parentTop + start)), max)
+    } else {
+      next = Math.min(Math.max(0, contentY - start), max)
+    }
+    title1.style.transform = next ? `translate3d(0, ${next}px, 0)` : ''
+  }
+
+  applyPortfolioTitlePinRef.current = applyPortfolioTitlePin
+
   const applyScrollVisuals = (scrollY, poseOverride) => {
-    if (isMobile) return
+    if (isMobile) {
+      applyPortfolioTitlePin(window.scrollY)
+      return
+    }
     const track = document.querySelector('.content-track')
     if (track instanceof HTMLElement) {
       track.style.transform = `translate3d(0, ${-scrollY * scrollSpeed}px, 0)`
@@ -258,6 +288,7 @@ export default function Navigator({ sections }) {
     const start = current instanceof HTMLElement ? current.offsetTop : 0
     const span = Math.max(1, nextTop - start)
     scrollIndexRef.current = index + Math.min(1, Math.max(0, (contentY - start) / span))
+    applyPortfolioTitlePin(contentY)
     const t = poseOverride == null
       ? Math.min(1, Math.max(0, contentY / poseRange()))
       : Math.min(1, Math.max(0, poseOverride))
@@ -285,6 +316,8 @@ export default function Navigator({ sections }) {
       stage.style.removeProperty('--content-left')
     }
     if (content instanceof HTMLElement) content.style.removeProperty('transform')
+    const title1 = document.querySelector('#portfolio-1 > h1')
+    if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
   }, [])
 
   useEffect(() => {
@@ -482,7 +515,13 @@ export default function Navigator({ sections }) {
     }
 
     syncSpacer()
-    if (!isMobile) {
+    const onMobilePortfolioPin = () => {
+      applyPortfolioTitlePinRef.current(window.scrollY)
+    }
+    if (isMobile) {
+      window.addEventListener('scroll', onMobilePortfolioPin, { passive: true })
+      onMobilePortfolioPin()
+    } else {
       const lenis = new Lenis({
         autoRaf: true,
         lerp: 0.075,
@@ -514,6 +553,7 @@ export default function Navigator({ sections }) {
     ro.observe(track instanceof HTMLElement ? track : content)
 
     return () => {
+      window.removeEventListener('scroll', onMobilePortfolioPin)
       window.removeEventListener('scrollend', onScrollEnd)
       window.removeEventListener('resize', onResize)
       if (visualRafRef.current) cancelAnimationFrame(visualRafRef.current)

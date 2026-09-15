@@ -28,6 +28,17 @@ const contentById = {
 };
 
 const articles = sections.map(({ id }) => ({ id, Content: contentById[id] }));
+
+const groups = [];
+for (const article of articles) {
+  if (article.id.startsWith('portfolio-')) {
+    const last = groups[groups.length - 1];
+    if (last?.kind === 'portfolio') last.items.push(article);
+    else groups.push({ kind: 'portfolio', items: [article] });
+  } else {
+    groups.push({ kind: 'section', ...article });
+  }
+}
 ---
 
 <Layout>
@@ -47,11 +58,25 @@ const articles = sections.map(({ id }) => ({ id, Content: contentById[id] }));
       </div>
       <main class="content">
         <div class="content-track">
-          {articles.map(({ id, Content }) => (
-            <section id={id}>
-              <Content />
-            </section>
-          ))}
+          {groups.map((group) => {
+            if (group.kind === 'portfolio') {
+              return (
+                <div class="portfolio-block">
+                  {group.items.map(({ id, Content }) => (
+                    <section id={id}>
+                      <Content />
+                    </section>
+                  ))}
+                </div>
+              );
+            }
+            const { id, Content } = group;
+            return (
+              <section id={id}>
+                <Content />
+              </section>
+            );
+          })}
         </div>
       </main>
     </div>
