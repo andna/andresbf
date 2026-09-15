@@ -163,11 +163,43 @@ body {
   line-height: 1.6;
 }
 
-.me-planet {
+.me-planet,
+.skills-cubes,
+.experience-pyramid {
   display: block;
   width: min(100%, 28rem);
   height: auto;
   margin: 2.5rem auto 1rem;
+}
+
+.experience-pyramid-mesh,
+.experience-pyramid-front {
+  fill: none;
+  stroke: var(--accent-color);
+}
+
+.skills-cubes-mesh {
+  fill: var(--accent-color);
+  stroke: var(--accent-color);
+  stroke-width: 1.8;
+  stroke-linejoin: miter;
+}
+
+.skills-cubes-hidden {
+  fill: none;
+  stroke: var(--secondary-color);
+  stroke-width: 0.85;
+  stroke-dasharray: 2 2;
+  opacity: 0.5;
+}
+
+.experience-pyramid-mesh {
+  stroke-width: 0.7;
+  opacity: 0.3;
+}
+
+.experience-pyramid-front {
+  stroke-width: 1.45;
 }
 
 .me-planet-land,
