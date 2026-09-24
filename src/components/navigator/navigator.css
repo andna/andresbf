@@ -80,6 +80,7 @@
   font-size: 0.8rem;
   min-height: 3.5rem;
   transform: translate(63px, -41px);
+  transition: opacity 0.3s ease;
 }
 
 .navigator.is-mobile .navigator-list li {
@@ -114,6 +115,15 @@
 .navigator-list .selected {
   opacity: 1;
   color: var(--accent-color);
+}
+
+html[data-mobile-header="scrolled"] .navigator.is-mobile .navigator-list {
+  opacity: 0;
+  pointer-events: none;
+  min-height: 0;
+  height: 0;
+  overflow: hidden;
+  transform: none;
 }
 
 .debug-sliders {

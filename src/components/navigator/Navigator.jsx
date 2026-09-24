@@ -54,7 +54,7 @@ export default function Navigator({ sections }) {
   const helixSections = sections
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < window.innerHeight)
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(orientation: portrait)').matches)
   const [view, setView] = useState(() => ({
     w: window.innerWidth,
     h: window.innerHeight,
@@ -90,6 +90,15 @@ export default function Navigator({ sections }) {
   const applyVisualPoseRef = useRef(() => {})
   const applyScrollVisualsRef = useRef(() => {})
   const applyPortfolioTitlePinRef = useRef(() => {})
+  const applyHeaderParallaxRef = useRef(() => {})
+  const measurePortfolioPinRef = useRef(() => {})
+  const portfolioPinRef = useRef({
+    title1: null,
+    start: 0,
+    max: 0,
+    parentAbs: 0,
+    last: null,
+  })
   const kickVisualLerpRef = useRef(() => {})
   const clampScrollRef = useRef((y) => Math.max(0, y))
   const lenisRef = useRef(null)
@@ -98,6 +107,11 @@ export default function Navigator({ sections }) {
   const visualRafRef = useRef(0)
   const visualLastTsRef = useRef(0)
   const scrollIndexRef = useRef(0)
+  const sectionAnimRef = useRef('')
+  const headerParallaxRef = useRef({ el: null, last: null })
+  const mobileHeaderRef = useRef('origin')
+  const expandedHeaderRef = useRef(0)
+  const syncHeaderHeightRef = useRef(() => {})
   const orbitModeRef = useRef('scroll')
   const clickAnimRef = useRef(null)
   const clickPoseDuration = 0.85
@@ -186,6 +200,34 @@ export default function Navigator({ sections }) {
     return () => observer.disconnect()
   }, [])
 
+  const setMobileHeaderMode = (mode) => {
+    const root = document.documentElement
+    if (!isMobile) {
+      if (root.dataset.mobileHeader) delete root.dataset.mobileHeader
+      document.body.style.removeProperty('overflow')
+      mobileHeaderRef.current = 'origin'
+      return
+    }
+    if (mobileHeaderRef.current === mode && root.dataset.mobileHeader === mode) return
+    mobileHeaderRef.current = mode
+    root.dataset.mobileHeader = mode
+    const circle = document.querySelector('.header-circle')
+    if (circle instanceof HTMLElement) {
+      const isMenuBtn = mode === 'scrolled' || mode === 'menu'
+      circle.setAttribute('aria-hidden', isMenuBtn ? 'false' : 'true')
+      if (isMenuBtn) {
+        circle.setAttribute('aria-expanded', mode === 'menu' ? 'true' : 'false')
+        circle.setAttribute('aria-label', mode === 'menu' ? 'Close menu' : 'Open menu')
+      } else {
+        circle.removeAttribute('aria-expanded')
+        circle.removeAttribute('aria-label')
+      }
+    }
+    if (mode === 'menu') document.body.style.overflow = 'hidden'
+    else document.body.style.removeProperty('overflow')
+    requestAnimationFrame(() => syncHeaderHeightRef.current())
+  }
+
   const applyLayoutPose = (offsetX, contentRot, contentY) => {
     const stage = document.querySelector('.stage')
     const content = document.querySelector('.content')
@@ -194,6 +236,10 @@ export default function Navigator({ sections }) {
       stage.style.removeProperty('transform')
       stage.style.removeProperty('--content-left')
       content.style.removeProperty('transform')
+      document.documentElement.style.removeProperty('--chrome-item-rot')
+      if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
+      const track = document.querySelector('.content-track')
+      if (track instanceof HTMLElement) track.style.removeProperty('transform')
       return
     }
     const left = poseParamsRef.current?.contentLeft ?? contentLeft
@@ -239,42 +285,85 @@ export default function Navigator({ sections }) {
     }
   }
 
-  const clearPortfolioTitlePin = () => {
+  const measurePortfolioPin = () => {
+    const cache = portfolioPinRef.current
     const title1 = document.querySelector('#portfolio-1 > h1')
-    if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
+    const title4 = document.querySelector('#portfolio-4 > h1')
+    cache.title1 = title1 instanceof HTMLElement ? title1 : null
+    if (!(title1 instanceof HTMLElement) || !(title4 instanceof HTMLElement)) {
+      cache.start = 0
+      cache.max = 0
+      return
+    }
+    cache.start = title1.offsetTop
+    cache.max = Math.max(0, title4.offsetTop - title1.offsetTop)
+    cache.last = null
+    const parent = title1.offsetParent
+    cache.parentAbs = parent instanceof HTMLElement
+      ? parent.getBoundingClientRect().top + window.scrollY
+      : 0
   }
 
   const applyPortfolioTitlePin = (contentY) => {
-    const title1 = document.querySelector('#portfolio-1 > h1')
-    const title4 = document.querySelector('#portfolio-4 > h1')
-    if (!(title1 instanceof HTMLElement) || !(title4 instanceof HTMLElement)) {
-      return
-    }
-    const start = title1.offsetTop
-    const max = Math.max(0, title4.offsetTop - start)
-    let next = 0
-    if (isMobile) {
-      const parent = title1.offsetParent
-      const parentTop = parent instanceof HTMLElement ? parent.getBoundingClientRect().top : 0
-      next = Math.min(Math.max(0, -(parentTop + start)), max)
-    } else {
-      next = Math.min(Math.max(0, contentY - start), max)
-    }
+    const cache = portfolioPinRef.current
+    if (!cache.title1) measurePortfolioPin()
+    const { title1, start, max, parentAbs } = cache
+    if (!(title1 instanceof HTMLElement)) return
+    const next = isMobile
+      ? Math.min(Math.max(0, window.scrollY - parentAbs - start), max)
+      : Math.min(Math.max(0, contentY - start), max)
+    if (next === cache.last) return
+    cache.last = next
     title1.style.transform = next ? `translate3d(0, ${next}px, 0)` : ''
   }
 
+  measurePortfolioPinRef.current = measurePortfolioPin
   applyPortfolioTitlePinRef.current = applyPortfolioTitlePin
 
-  const applyScrollVisuals = (scrollY, poseOverride) => {
+  const applyHeaderParallax = (travel) => {
+    const cache = headerParallaxRef.current
+    if (!cache.el) {
+      const el = document.querySelector('.header-parallax')
+      cache.el = el instanceof HTMLElement ? el : null
+    }
+    if (!(cache.el instanceof HTMLElement)) return
     if (isMobile) {
-      applyPortfolioTitlePin(window.scrollY)
+      if (cache.last != null) {
+        cache.el.style.removeProperty('transform')
+        cache.last = null
+      }
       return
     }
-    const track = document.querySelector('.content-track')
-    if (track instanceof HTMLElement) {
-      track.style.transform = `translate3d(0, ${-scrollY * scrollSpeed}px, 0)`
+    const y = Math.min(160, Math.max(0, travel * 0.18))
+    if (y === cache.last) return
+    cache.last = y
+    cache.el.style.transform = y ? `translate3d(0, ${y}px, 0)` : ''
+  }
+
+  applyHeaderParallaxRef.current = applyHeaderParallax
+
+  const syncSectionAnimation = (index) => {
+    const id = helixSections[index]?.id ?? ''
+    const next = id === 'me' || id === 'skills' || id === 'experience' ? id : ''
+    if (next === sectionAnimRef.current) return
+    if (sectionAnimRef.current) {
+      document.getElementById(sectionAnimRef.current)?.classList.remove('is-animated')
     }
-    const contentY = scrollY * scrollSpeed
+    if (next) document.getElementById(next)?.classList.add('is-animated')
+    sectionAnimRef.current = next
+  }
+
+  const applyScrollVisuals = (scrollY, poseOverride) => {
+    const headerPx = isMobile
+      ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
+      : 0
+    const contentY = isMobile ? scrollY + headerPx : scrollY * scrollSpeed
+    if (!isMobile) {
+      const track = document.querySelector('.content-track')
+      if (track instanceof HTMLElement) {
+        track.style.transform = `translate3d(0, ${-scrollY * scrollSpeed}px, 0)`
+      }
+    }
     let index = 0
     let nextTop = Infinity
     for (let i = 0; i < helixSections.length; i += 1) {
@@ -288,7 +377,18 @@ export default function Navigator({ sections }) {
     const start = current instanceof HTMLElement ? current.offsetTop : 0
     const span = Math.max(1, nextTop - start)
     scrollIndexRef.current = index + Math.min(1, Math.max(0, (contentY - start) / span))
-    applyPortfolioTitlePin(contentY)
+    syncSectionAnimation(index)
+    applyPortfolioTitlePin(isMobile ? scrollY : contentY)
+    applyHeaderParallax(isMobile ? scrollY : contentY)
+    if (isMobile && mobileHeaderRef.current !== 'menu') {
+      setMobileHeaderMode(scrollY <= 0 ? 'origin' : 'scrolled')
+    }
+    if (isMobile) {
+      const track = document.querySelector('.content-track')
+      if (track instanceof HTMLElement) track.style.removeProperty('transform')
+      if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
+      return
+    }
     const t = poseOverride == null
       ? Math.min(1, Math.max(0, contentY / poseRange()))
       : Math.min(1, Math.max(0, poseOverride))
@@ -318,7 +418,124 @@ export default function Navigator({ sections }) {
     if (content instanceof HTMLElement) content.style.removeProperty('transform')
     const title1 = document.querySelector('#portfolio-1 > h1')
     if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
+    const parallax = document.querySelector('.header-parallax')
+    if (parallax instanceof HTMLElement) parallax.style.removeProperty('transform')
   }, [])
+
+  useEffect(() => {
+    const root = document.documentElement
+    const chrome = document.querySelector('.chrome')
+    const hero = document.querySelector('.header-hero')
+    const helix = document.querySelector('.stage-helix')
+    const stage = document.querySelector('.stage')
+    const shell = document.querySelector('.shell')
+    const content = document.querySelector('.content')
+    const track = document.querySelector('.content-track')
+    if (chrome instanceof HTMLElement && shell instanceof HTMLElement && stage instanceof HTMLElement && chrome.parentElement !== shell) {
+      shell.insertBefore(chrome, stage)
+    }
+    if (helix instanceof HTMLElement && stage instanceof HTMLElement && helix.parentElement !== stage) {
+      const main = stage.querySelector('.content')
+      if (main instanceof HTMLElement) stage.insertBefore(helix, main)
+      else stage.prepend(helix)
+    }
+    const title1 = document.querySelector('#portfolio-1 > h1')
+    const parallax = document.querySelector('.header-parallax')
+    const clearModeStyles = () => {
+      root.style.removeProperty('--chrome-header')
+      root.style.removeProperty('--mobile-chrome-h')
+      root.style.removeProperty('--mobile-helix-top')
+      root.style.removeProperty('--mobile-header-bg')
+      root.style.removeProperty('--chrome-item-rot')
+      delete root.dataset.mobileHeader
+      document.body.style.removeProperty('overflow')
+      mobileHeaderRef.current = 'origin'
+      if (stage instanceof HTMLElement) {
+        stage.style.removeProperty('transform')
+        stage.style.removeProperty('--content-left')
+      }
+      if (content instanceof HTMLElement) content.style.removeProperty('transform')
+      if (track instanceof HTMLElement) track.style.removeProperty('transform')
+      if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
+      if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
+      if (parallax instanceof HTMLElement) parallax.style.removeProperty('transform')
+      portfolioPinRef.current.last = null
+      headerParallaxRef.current.last = null
+    }
+    if (!isMobile) {
+      clearModeStyles()
+      return undefined
+    }
+    const syncHeaderHeight = () => {
+      const chromeH = chrome instanceof HTMLElement ? chrome.offsetHeight : 0
+      const heroH = hero instanceof HTMLElement ? hero.offsetHeight : 0
+      const helixH = helix instanceof HTMLElement ? helix.offsetHeight : 0
+      const mode = mobileHeaderRef.current
+      const rowH = mode === 'scrolled' ? heroH : Math.max(chromeH, heroH)
+      const visualH = mode === 'scrolled' ? heroH : rowH + helixH
+      root.style.setProperty('--mobile-chrome-h', `${chromeH}px`)
+      root.style.setProperty('--mobile-helix-top', mode === 'scrolled' ? '0px' : `${rowH}px`)
+      root.style.setProperty('--mobile-header-bg', `${visualH}px`)
+      if (mode !== 'scrolled') {
+        expandedHeaderRef.current = visualH
+        root.style.setProperty('--chrome-header', `${visualH}px`)
+      } else if (expandedHeaderRef.current > 0) {
+        root.style.setProperty('--chrome-header', `${expandedHeaderRef.current}px`)
+      } else {
+        root.style.setProperty('--chrome-header', `${visualH}px`)
+      }
+    }
+    syncHeaderHeightRef.current = syncHeaderHeight
+    setMobileHeaderMode(window.scrollY <= 0 ? 'origin' : 'scrolled')
+    syncHeaderHeight()
+    const ro = new ResizeObserver(syncHeaderHeight)
+    if (chrome instanceof HTMLElement) ro.observe(chrome)
+    if (hero instanceof HTMLElement) ro.observe(hero)
+    if (helix instanceof HTMLElement) ro.observe(helix)
+    const circle = document.querySelector('.header-circle')
+    const overlay = document.querySelector('.mobile-header-overlay')
+    const onCircle = (event) => {
+      if (mobileHeaderRef.current === 'origin') return
+      event.preventDefault()
+      if (mobileHeaderRef.current === 'menu') {
+        setMobileHeaderMode(window.scrollY <= 0 ? 'origin' : 'scrolled')
+      } else {
+        setMobileHeaderMode('menu')
+      }
+    }
+    const onOverlay = () => {
+      if (mobileHeaderRef.current !== 'menu') return
+      setMobileHeaderMode(window.scrollY <= 0 ? 'origin' : 'scrolled')
+    }
+    if (circle instanceof HTMLElement) circle.addEventListener('click', onCircle)
+    if (overlay instanceof HTMLElement) overlay.addEventListener('click', onOverlay)
+    return () => {
+      ro.disconnect()
+      syncHeaderHeightRef.current = () => {}
+      if (circle instanceof HTMLElement) circle.removeEventListener('click', onCircle)
+      if (overlay instanceof HTMLElement) overlay.removeEventListener('click', onOverlay)
+      clearModeStyles()
+    }
+  }, [isMobile])
+
+  useEffect(() => {
+    if (!isMobile) return undefined
+    const ids = ['me', 'skills', 'experience']
+    const nodes = ids
+      .map((id) => document.getElementById(id))
+      .filter((node) => node instanceof HTMLElement)
+    if (!nodes.length) return undefined
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        entry.target.classList.toggle('is-animated', entry.isIntersecting)
+      }
+    }, { root: null, rootMargin: '15% 0px', threshold: 0.08 })
+    nodes.forEach((node) => io.observe(node))
+    return () => {
+      io.disconnect()
+      nodes.forEach((node) => node.classList.remove('is-animated'))
+    }
+  }, [isMobile])
 
   useEffect(() => {
     const onKey = (event) => {
@@ -330,11 +547,17 @@ export default function Navigator({ sections }) {
   }, [])
 
   useEffect(() => {
-    const onResize = () => {
-      setIsMobile(window.innerWidth < window.innerHeight)
+    const mq = window.matchMedia('(orientation: portrait)')
+    const sync = () => {
+      setIsMobile(mq.matches)
+      setView({ w: window.innerWidth, h: window.innerHeight })
     }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    mq.addEventListener('change', sync)
+    window.addEventListener('resize', sync)
+    return () => {
+      mq.removeEventListener('change', sync)
+      window.removeEventListener('resize', sync)
+    }
   }, [])
 
   useEffect(() => {
@@ -368,7 +591,12 @@ export default function Navigator({ sections }) {
       const viewport = window.innerHeight
       const maxY = document.documentElement.scrollHeight - viewport
       if (maxY > 0 && scrollY >= maxY - 2) return helixSections.length - 1
-      const probe = scrollY * scrollSpeed + viewport * 0.33
+      const headerPx = isMobile
+        ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
+        : 0
+      const probe = isMobile
+        ? scrollY + headerPx
+        : scrollY * scrollSpeed + viewport * 0.33
       let best = 0
       let bestTop = -Infinity
       for (let i = 0; i < helixSections.length; i += 1) {
@@ -392,6 +620,7 @@ export default function Navigator({ sections }) {
     const clampScroll = (y) => Math.min(scrollLimit(), Math.max(0, y))
 
     const syncSpacer = () => {
+      measurePortfolioPinRef.current()
       if (isMobile) {
         spacer.style.removeProperty('height')
         return
@@ -515,12 +744,14 @@ export default function Navigator({ sections }) {
     }
 
     syncSpacer()
-    const onMobilePortfolioPin = () => {
-      applyPortfolioTitlePinRef.current(window.scrollY)
+    const onMobileScroll = () => {
+      const y = window.scrollY
+      applyScrollVisualsRef.current(y)
+      syncSelection(y)
     }
     if (isMobile) {
-      window.addEventListener('scroll', onMobilePortfolioPin, { passive: true })
-      onMobilePortfolioPin()
+      window.addEventListener('scroll', onMobileScroll, { passive: true })
+      onMobileScroll()
     } else {
       const lenis = new Lenis({
         autoRaf: true,
@@ -553,7 +784,7 @@ export default function Navigator({ sections }) {
     ro.observe(track instanceof HTMLElement ? track : content)
 
     return () => {
-      window.removeEventListener('scroll', onMobilePortfolioPin)
+      window.removeEventListener('scroll', onMobileScroll)
       window.removeEventListener('scrollend', onScrollEnd)
       window.removeEventListener('resize', onResize)
       if (visualRafRef.current) cancelAnimationFrame(visualRafRef.current)
@@ -604,9 +835,11 @@ export default function Navigator({ sections }) {
       window.scrollTo({ top, behavior: 'smooth' })
       return
     }
+    const headerPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
+    const top = Math.max(0, section.offsetTop - headerPx)
     scrollLockRef.current = true
-    scrollTargetRef.current = section.getBoundingClientRect().top + window.scrollY
-    section.scrollIntoView({ behavior: 'smooth' })
+    scrollTargetRef.current = top
+    window.scrollTo({ top, behavior: 'smooth' })
   }
 
   return (

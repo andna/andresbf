@@ -17,6 +17,7 @@ html[data-theme="dark"] {
 
 :root {
   --chrome-header: 14rem;
+  --mobile-header-bg: var(--chrome-header);
   --chrome-sidebar: 18rem;
   --chrome-pad-x: 1rem;
   --chrome-item-rot: -50deg;
@@ -154,20 +155,77 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: visible;
 }
 
 .header-circle {
+  appearance: none;
+  border: 0;
+  padding: 0;
   width: 4.75rem;
   height: 4.75rem;
   border-radius: 50%;
   background: var(--accent-color);
+  cursor: default;
+}
+
+.mobile-header-overlay {
+  display: none;
+}
+
+.header-parallax {
+  position: relative;
+  pointer-events: none;
+  overflow: visible;
+  transition: transform 0.45s ease-out;
+}
+
+.header-parallax-art {
+  position: relative;
+  overflow: visible;
+}
+
+.header-graphs,
+.content .header-graphs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.header-graphs-grid {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 0.45;
+  opacity: 0.2;
+}
+
+.header-graphs-plot {
+  fill: none;
+  stroke: var(--secondary-color);
+  stroke-width: 0.85;
+  opacity: 0.42;
+}
+
+.header-graphs-vectors,
+.header-graphs-nodes {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 0.7;
+  opacity: 0.55;
 }
 
 .header-mountains {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 12.5rem;
   height: auto;
   margin-top: 0.85rem;
+  overflow: visible;
 }
 
 .header-mountains-mesh,
@@ -218,9 +276,12 @@ body {
 }
 
 .skills-cubes-face {
-  fill: var(--accent-color);
+  fill: var(--secondary-color);
   stroke: none;
   opacity: 0;
+}
+
+#skills.is-animated .skills-cubes-face {
   animation-name: skills-cubes-lit;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
@@ -250,9 +311,12 @@ body {
 }
 
 .experience-pyramid-face {
-  fill: var(--accent-color);
+  fill: var(--secondary-color);
   stroke: none;
   opacity: 0;
+}
+
+#experience.is-animated .experience-pyramid-face {
   animation-name: experience-pyramid-lit;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
@@ -310,10 +374,13 @@ body {
   opacity: 0;
   transform-box: view-box;
   transform-origin: 150.5px 144.5px;
+}
+
+#me.is-animated .me-planet-pulse {
   animation: me-planet-ripple 2.4s ease-out infinite;
 }
 
-.me-planet-pulse-b {
+#me.is-animated .me-planet-pulse-b {
   animation-delay: 1.2s;
 }
 
@@ -329,11 +396,140 @@ body {
   }
 }
 
+@media (orientation: portrait) {
+  .shell::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    height: var(--mobile-header-bg, var(--chrome-header));
+    background: var(--bg-color);
+    pointer-events: none;
+  }
+
+  .stage {
+    position: relative;
+    inset: auto;
+    width: auto;
+    height: auto;
+    transform: none;
+    padding-top: var(--chrome-header);
+    padding-bottom: 0;
+  }
+
+  #header {
+    overflow: visible;
+  }
+
+  .chrome {
+    top: 0;
+    bottom: auto;
+    left: auto;
+    right: 0;
+    z-index: 7;
+    width: 50%;
+    align-items: flex-end;
+    transform: none;
+    padding: 0.75rem 1.25rem 0.35rem;
+    background: transparent;
+  }
+
+  .chrome-bar {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .header-hero {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: auto;
+    width: 50%;
+    z-index: 6;
+    box-sizing: border-box;
+    padding: 0.35rem 1.25rem 0.5rem;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  .header-parallax,
+  .header-parallax-art,
+  .header-graphs,
+  .content .header-graphs {
+    overflow: hidden;
+  }
+
+  .stage-helix {
+    position: fixed;
+    top: var(--mobile-helix-top, 12rem);
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: auto;
+    z-index: 6;
+    background: transparent;
+  }
+
+  .content {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    z-index: auto;
+    height: auto;
+    transform: none;
+  }
+
+  html[data-mobile-header="scrolled"] .chrome,
+  html[data-mobile-header="scrolled"] .header-parallax,
+  html[data-mobile-header="scrolled"] .header-title-container {
+    display: none;
+  }
+
+  html[data-mobile-header="scrolled"] .header-hero {
+    width: auto;
+    padding: 0.1rem 0.55rem 0;
+  }
+
+  html[data-mobile-header="scrolled"] .stage-helix {
+    top: calc(var(--mobile-header-bg) / 2);
+    left: 0;
+    right: 0;
+    width: auto;
+    transform: translateY(-50%);
+  }
+
+  html[data-mobile-header="scrolled"] .header-circle,
+  html[data-mobile-header="menu"] .header-circle {
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  html[data-mobile-header="menu"] .mobile-header-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    border: 0;
+    padding: 0;
+    background: rgb(0 0 0 / 0.3);
+    cursor: pointer;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .me-planet-pulse,
-  .skills-cubes-face,
-  .experience-pyramid-face {
+  #me.is-animated .me-planet-pulse,
+  #skills.is-animated .skills-cubes-face,
+  #experience.is-animated .experience-pyramid-face {
     animation: none;
+  }
+
+  .header-parallax {
+    transition: none;
   }
 }
 
@@ -420,7 +616,7 @@ body {
     max-width: min(42rem, 100%);
   }
 
-  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .header-hero) {
+  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .header-hero, .header-parallax) {
     pointer-events: auto;
   }
 
@@ -441,9 +637,12 @@ body {
     top: -30vw;
   }
 
+  .header-parallax-art {
+    transform: rotate(50deg);
+  }
+
   .header-mountains {
     width: min(28rem, 38vw);
-    transform: rotate(50deg);
   }
 
   .header-title-container {
