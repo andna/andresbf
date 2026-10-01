@@ -1,6 +1,6 @@
 import IndividualHelix from './IndividualHelix.jsx'
 import HelixGizmo from './HelixGizmo.jsx'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
 
@@ -115,6 +115,14 @@ export default function Helix({
 
   const contactsRef = useRef([...contactClose, ...contactFar])
   contactsRef.current = [...contactClose, ...contactFar]
+  const tipCarryRef = useRef({ justClosed: false, world: new THREE.Vector3() })
+
+  useLayoutEffect(() => {
+    if (hoveredPlaneIdx < 0 || !showTips) {
+      tipCarryRef.current.justClosed = false
+      tipCarryRef.current.hasPos = false
+    }
+  }, [hoveredPlaneIdx, showTips])
 
   useEffect(() => {
     const sync = () => setThemeSecondary(readThemeColors().secondary)
@@ -175,6 +183,7 @@ export default function Helix({
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
             showTips={showTips}
+            tipCarryRef={tipCarryRef}
             planeRotation={planeRotation}
             baseRotation={baseRotation}
             label={section.label}

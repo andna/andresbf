@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
 import { useFrame } from '@react-three/fiber'
@@ -155,19 +155,26 @@ const makeTipTexture = (title, kicker, color, bg) => {
   return { tex, aspect: w / h }
 }
 
-function RugTip({ title, kicker, color, bg, tipY, tipZ }) {
+function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef }) {
   const [tipMap, setTipMap] = useState(null)
   const mapRef = useRef(null)
   const groupRef = useRef()
   const lineRef = useRef()
   const boxRef = useRef()
+  const boxGroupRef = useRef()
   const right = useRef(new THREE.Vector3())
   const up = useRef(new THREE.Vector3())
   const inv = useRef(new THREE.Matrix4())
   const toAnchor = useRef(new THREE.Vector3())
   const end = useRef(new THREE.Vector3())
   const grown = useRef(new THREE.Vector3())
+  const fromLocal = useRef(new THREE.Vector3())
+  const fromWorld = useRef(new THREE.Vector3())
+  const center = useRef(new THREE.Vector3())
+  const tipVec = useRef(new THREE.Vector3())
   const started = useRef(0)
+  const slide = useRef(false)
+  const placed = useRef(false)
   const boxH = kicker ? 0.22 : 0.16
   const boxW = boxH * (tipMap?.aspect || 4)
   const anchor = [0, 0, 0]
@@ -194,33 +201,64 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ }) {
     mapRef.current = null
   }, [])
 
+  useLayoutEffect(() => {
+    const carry = tipCarryRef.current
+    const fromSlot = carry.slot
+    const f2c2 = (fromSlot === 4 && slot === 5) || (fromSlot === 5 && slot === 4)
+    if (carry.justClosed && !f2c2) {
+      slide.current = true
+      fromWorld.current.copy(carry.world)
+    }
+    carry.justClosed = false
+    return () => {
+      if (carry.hasPos) carry.justClosed = true
+    }
+  }, [tipCarryRef])
+
   useFrame(({ camera, clock }) => {
     const group = groupRef.current
     const line = lineRef.current
     if (!group || !line?.geometry) return
     if (!started.current) started.current = clock.elapsedTime
     const elapsed = clock.elapsedTime - started.current
+    const grow = !slide.current
     const u = Math.min(1, elapsed / 0.32)
     const t = 1 - (1 - u) ** 3
-    const boxU = Math.min(1, Math.max(0, (elapsed - 0.2) / 0.12))
+    const boxU = grow ? Math.min(1, Math.max(0, (elapsed - 0.2) / 0.12)) : 1
     const boxT = 1 - (1 - boxU) ** 3
-    if (boxRef.current) boxRef.current.scale.setScalar(0.02 + 0.98 * boxT)
+    if (boxRef.current) boxRef.current.scale.setScalar(grow ? 0.02 + 0.98 * boxT : 1)
     group.updateWorldMatrix(true, false)
+    if (slide.current && !placed.current) {
+      fromLocal.current.copy(fromWorld.current)
+      group.worldToLocal(fromLocal.current)
+      placed.current = true
+    }
+    tipVec.current.set(tip[0], tip[1], tip[2])
+    const slideU = Math.min(1, elapsed / 0.2)
+    const slideT = 1 - (1 - slideU) ** 3
+    if (slide.current) center.current.lerpVectors(fromLocal.current, tipVec.current, slideT)
+    else center.current.copy(tipVec.current)
+    if (boxGroupRef.current) boxGroupRef.current.position.copy(center.current)
     inv.current.copy(group.matrixWorld).invert()
     right.current.set(1, 0, 0).applyQuaternion(camera.quaternion).transformDirection(inv.current)
     up.current.set(0, 1, 0).applyQuaternion(camera.quaternion).transformDirection(inv.current)
-    toAnchor.current.set(anchor[0] - tip[0], anchor[1] - tip[1], anchor[2] - tip[2])
+    toAnchor.current.set(anchor[0] - center.current.x, anchor[1] - center.current.y, anchor[2] - center.current.z)
     const dx = toAnchor.current.dot(right.current)
     const dy = toAnchor.current.dot(up.current)
     const ax = Math.abs(dx)
     const ay = Math.abs(dy)
     const s = Math.min(ax > 1e-5 ? (boxW / 2) / ax : Infinity, ay > 1e-5 ? (boxH / 2) / ay : Infinity)
-    end.current.set(tip[0], tip[1], tip[2])
+    end.current.copy(center.current)
     if (Number.isFinite(s)) end.current.addScaledVector(right.current, dx * s).addScaledVector(up.current, dy * s)
     grown.current.set(anchor[0], anchor[1], anchor[2]).lerp(end.current, t)
     line.geometry.setPositions([anchor[0], anchor[1], anchor[2], grown.current.x, grown.current.y, grown.current.z])
     line.computeLineDistances()
     if (line.material) line.material.dashOffset = -clock.elapsedTime * 0.09
+    const carry = tipCarryRef.current
+    carry.world.copy(center.current)
+    group.localToWorld(carry.world)
+    carry.hasPos = true
+    carry.slot = slot
   })
 
   return (
@@ -244,14 +282,16 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ }) {
           <meshBasicMaterial color={color} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
         </mesh>
       </Billboard>
-      <Billboard position={tip}>
-        {tipMap && (
-          <mesh ref={boxRef} scale={0.02} raycast={() => null} renderOrder={10}>
-            <planeGeometry args={[boxW, boxH]} />
-            <meshBasicMaterial map={tipMap.tex} transparent depthTest={false} depthWrite toneMapped={false} side={THREE.DoubleSide} />
-          </mesh>
-        )}
-      </Billboard>
+      <group ref={boxGroupRef}>
+        <Billboard>
+          {tipMap && (
+            <mesh ref={boxRef} scale={slide.current ? 1 : 0.02} raycast={() => null} renderOrder={10}>
+              <planeGeometry args={[boxW, boxH]} />
+              <meshBasicMaterial map={tipMap.tex} transparent depthTest={false} depthWrite toneMapped={false} side={THREE.DoubleSide} />
+            </mesh>
+          )}
+        </Billboard>
+      </group>
     </group>
   )
 }
@@ -274,6 +314,7 @@ export default function IndividualHelix({
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
   showTips,
+  tipCarryRef,
   showLabel,
   title,
   kicker,
@@ -502,7 +543,7 @@ export default function IndividualHelix({
         />
       )}
       {isHover && showTips && title && !mutePointer && (
-        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} />
+        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} slot={slot} tipCarryRef={tipCarryRef} />
       )}
       {corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>
