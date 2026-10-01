@@ -138,14 +138,15 @@ export default function Helix({
 
   const gizmoMove = 0.35
   const gizmoStart = 1
-  const gizmoNewY = -0.35
   const y0 = helixPlaneY(0, skewValue, planeWidth, planeHeight)
   const yN = helixPlaneY(Math.max(0, sections.length - 1), skewValue, planeWidth, planeHeight)
   const gizmoMidY = (y0 + yN) / 2
   const gizmoResetAt = sections.length - 3
-  const gizmoYOffset = selectedIndex >= gizmoResetAt
-    ? gizmoNewY - (selectedIndex - gizmoResetAt) * gizmoMove
-    : gizmoStart - selectedIndex * gizmoMove
+  // const gizmoNewY = -0.35
+  // const gizmoYOffset = selectedIndex >= gizmoResetAt
+  //   ? gizmoNewY - (selectedIndex - gizmoResetAt) * gizmoMove
+  //   : gizmoStart - selectedIndex * gizmoMove
+  const gizmoYOffset = gizmoStart - (gizmoResetAt - 1) * gizmoMove
   const gizmoSize = Math.min(radius * 0.55, planeWidth * 0.48) * gizmoScale
 
   return (

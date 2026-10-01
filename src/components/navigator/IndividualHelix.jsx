@@ -155,7 +155,7 @@ const makeTipTexture = (title, kicker, color, bg) => {
   return { tex, aspect: w / h }
 }
 
-function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef }) {
+function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, anchor = [0, 0, 0] }) {
   const [tipMap, setTipMap] = useState(null)
   const mapRef = useRef(null)
   const groupRef = useRef()
@@ -177,7 +177,6 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef }) {
   const placed = useRef(false)
   const boxH = kicker ? 0.22 : 0.16
   const boxW = boxH * (tipMap?.aspect || 4)
-  const anchor = [0, 0, 0]
   const tip = [0, tipY, tipZ]
 
   useEffect(() => {
@@ -342,7 +341,6 @@ export default function IndividualHelix({
       ][slot]
     : (steps === 2 ? 0 : 0.45) + 0.08
   const tipZ = cycle === 6 && slot === 5 ? -radius + 0.18 : -radius // C2 sits closer to its rug
-  const occludesTip = steps < 2
   const [colors, setColors] = useState(() => ({
     accent: '#1a5564',
     bg: '#ebebe5',
@@ -354,6 +352,11 @@ export default function IndividualHelix({
     () => omitCapCorner(uniqueCorners(skewedPlaneGeometry), blank ? cap : null),
     [skewedPlaneGeometry, blank, cap]
   )
+  const tipAnchor = useMemo(() => {
+    if (!blank || corners.length < 3) return [0, 0, 0]
+    const n = corners.length
+    return corners.reduce((sum, p) => [sum[0] + p[0] / n, sum[1] + p[1] / n, sum[2] + p[2] / n], [0, 0, 0])
+  }, [blank, corners])
   const faceGeom = useMemo(() => {
     if (!blank || corners.length < 3) return skewedPlaneGeometry
     const ordered = ringOrder(corners)
@@ -451,7 +454,7 @@ export default function IndividualHelix({
     if (faceGeom !== skewedPlaneGeometry) faceGeom.dispose()
   }, [faceGeom, skewedPlaneGeometry])
 
-  const mutePointer = isSel && cap === 'start'
+  const mutePointer = isSel && !!cap
   const faceRaycast = mutePointer ? () => null : THREE.Mesh.prototype.raycast
 
   useEffect(() => {
@@ -491,7 +494,7 @@ export default function IndividualHelix({
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
           depthTest
-          depthWrite={occludesTip}
+          depthWrite
         />
       </mesh>
       <mesh geometry={faceGeom} raycast={faceRaycast}>
@@ -503,7 +506,7 @@ export default function IndividualHelix({
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
           depthTest
-          depthWrite={occludesTip}
+          depthWrite
         />
       </mesh>
       {showLabel && (
@@ -543,7 +546,7 @@ export default function IndividualHelix({
         />
       )}
       {isHover && showTips && title && !mutePointer && (
-        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} slot={slot} tipCarryRef={tipCarryRef} />
+        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} slot={slot} tipCarryRef={tipCarryRef} anchor={tipAnchor} />
       )}
       {corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>
