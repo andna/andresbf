@@ -42,7 +42,6 @@ const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew) => {
   stampCtx.fillRect(0, 0, size, size)
 
   ctx.save()
-  ctx.globalAlpha = isBack ? 0.3 : 1
   ctx.translate(w / 2, h / 2)
   if (!isBack) {
     ctx.rotate(face.rot)
@@ -50,7 +49,6 @@ const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew) => {
   }
   ctx.drawImage(stamp, -size / 2, -size / 2)
   ctx.restore()
-  ctx.globalAlpha = 1
 }
 
 const uniqueCorners = (geometry) => {
@@ -382,6 +380,8 @@ export default function IndividualHelix({
   const worldNormal = useRef(new THREE.Vector3())
   const viewDir = useRef(new THREE.Vector3())
   const worldPos = useRef(new THREE.Vector3())
+  const frontLabelRef = useRef()
+  const backLabelRef = useRef()
 
   useFrame(({ camera }) => {
     const group = groupRef.current
@@ -395,9 +395,13 @@ export default function IndividualHelix({
     group.getWorldPosition(worldPos.current)
     viewDir.current.copy(camera.position).sub(worldPos.current).normalize()
     worldNormal.current.set(0, 0, 1).transformDirection(group.matrixWorld)
-    const front = worldNormal.current.dot(viewDir.current) > 0
+    const facing = worldNormal.current.dot(viewDir.current)
+    const close = THREE.MathUtils.smoothstep(facing, -0.08, 0.08)
+    const fade = 0.3 + 0.7 * close
     outline.material.transparent = true
-    outline.material.opacity = front ? 1 : 0.3
+    outline.material.opacity = fade
+    if (frontLabelRef.current) frontLabelRef.current.material.opacity = fade
+    if (backLabelRef.current) backLabelRef.current.material.opacity = fade
   })
 
   useEffect(() => {
@@ -510,7 +514,7 @@ export default function IndividualHelix({
         />
       </mesh>
       {showLabel && (
-        <mesh geometry={faceGeom} position={[0, 0, textLift]} raycast={() => null}>
+        <mesh ref={frontLabelRef} geometry={faceGeom} position={[0, 0, textLift]} raycast={() => null}>
           <meshBasicMaterial
             map={texture}
             transparent
@@ -522,7 +526,7 @@ export default function IndividualHelix({
         </mesh>
       )}
       {showLabel && (
-        <mesh geometry={faceGeom} position={[0, 0, -textLift]} raycast={() => null}>
+        <mesh ref={backLabelRef} geometry={faceGeom} position={[0, 0, -textLift]} raycast={() => null}>
           <meshBasicMaterial
             map={backTexture}
             transparent

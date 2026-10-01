@@ -144,6 +144,7 @@ export default function Navigator({ sections }) {
   const syncHeaderHeightRef = useRef(() => {})
   const applyMobileHeaderPoseRef = useRef(() => {})
   const orbitModeRef = useRef('scroll')
+  const wheelAtRef = useRef(0)
   const clickAnimRef = useRef(null)
   const clickPoseDuration = 0.85
   const poseRange = () => {
@@ -777,6 +778,7 @@ export default function Navigator({ sections }) {
     const takeOverWithWheel = (event) => {
       if (event.ctrlKey) return
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      wheelAtRef.current = performance.now()
       const interrupt = orbitModeRef.current === 'click' || clickAnimRef.current
       orbitModeRef.current = 'scroll'
       clickAnimRef.current = null
@@ -950,6 +952,7 @@ export default function Navigator({ sections }) {
               poseRef={poseRef}
               scrollIndexRef={scrollIndexRef}
               orbitModeRef={orbitModeRef}
+              wheelAtRef={wheelAtRef}
               textFront={textFrontRad}
               textBack={textBackRad}
               gizmoScale={gizmoScale}

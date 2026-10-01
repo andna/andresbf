@@ -22,6 +22,7 @@ export default function CanvasScene({
   poseRef,
   scrollIndexRef,
   orbitModeRef,
+  wheelAtRef,
   textFront,
   textBack,
   gizmoScale = 0.6,
@@ -66,6 +67,13 @@ export default function CanvasScene({
   const orbitOffset = useRef(new THREE.Vector3())
   const orbitRight = useRef(new THREE.Vector3(1, 0, 0))
   const orbitForward = useRef(new THREE.Vector3())
+  const autoSpinRef = useRef(false)
+  const lastHoverRef = useRef(0)
+  const hoveredOnceRef = useRef(false)
+  const seenWheelRef = useRef(0)
+  const hoveredIdxRef = useRef(hoveredPlaneIdx)
+  hoveredIdxRef.current = hoveredPlaneIdx
+  const autoSpinSpeed = (Math.PI * 2) / 36
 
   useEffect(() => {
     if (userRotatingRef.current) return
@@ -125,24 +133,49 @@ export default function CanvasScene({
     controls.target.copy(tmpTarget.current)
   })
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const cam = camRef.current
     const pivot = helixPivot.current
     if (!cam || !pivot) return
     pivot.getWorldPosition(tmpTarget.current)
 
-    if (!userRotatingRef.current && orbitModeRef?.current === 'scroll' && scrollIndexRef) {
+    const now = performance.now()
+    const wheelAt = wheelAtRef?.current ?? 0
+    if (wheelAt !== seenWheelRef.current) {
+      seenWheelRef.current = wheelAt
+      autoSpinRef.current = false
+      lastHoverRef.current = Math.max(lastHoverRef.current, wheelAt)
+    }
+    if (hoveredIdxRef.current >= 0) {
+      hoveredOnceRef.current = true
+      lastHoverRef.current = now
+    }
+    if (orbitModeRef?.current === 'click') autoSpinRef.current = false
+    else if (
+      hoveredOnceRef.current &&
+      !autoSpinRef.current &&
+      hoveredIdxRef.current < 0 &&
+      now - lastHoverRef.current >= 3000
+    ) autoSpinRef.current = true
+
+    const spinning = autoSpinRef.current && !userRotatingRef.current
+    if (spinning) {
+      const next = (cam.userData.angle ?? targetAngleRef.current) + delta * autoSpinSpeed
+      cam.userData.angle = next
+      targetAngleRef.current = next
+      currentIndexRef.current = next / baseRotation
+    } else if (!userRotatingRef.current && orbitModeRef?.current === 'scroll' && scrollIndexRef) {
       currentIndexRef.current = scrollIndexRef.current
       const raw = scrollIndexRef.current * baseRotation
       const from = cam.userData.angle ?? raw
-      let delta = (raw - from) % (Math.PI * 2)
-      if (delta > Math.PI) delta -= Math.PI * 2
-      if (delta < -Math.PI) delta += Math.PI * 2
-      targetAngleRef.current = from + delta
+      let turn = (raw - from) % (Math.PI * 2)
+      if (turn > Math.PI) turn -= Math.PI * 2
+      if (turn < -Math.PI) turn += Math.PI * 2
+      targetAngleRef.current = from + turn
     }
     cam.userData.angle ??= targetAngleRef.current
     if (userRotatingRef.current) cam.userData.angle = targetAngleRef.current
-    else cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
+    else if (!spinning) cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
     const a = cam.userData.angle
     if (isMobile) orbitOffset.current.set(0, Math.sin(a) * 10, Math.cos(a) * 10)
     else orbitOffset.current.set(Math.sin(a) * 10, 0, Math.cos(a) * 10)
