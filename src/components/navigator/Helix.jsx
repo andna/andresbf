@@ -46,6 +46,7 @@ export default function Helix({
   setSelectedIndex,
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
+  showTips,
   showLabel,
   textFront,
   textBack,
@@ -88,7 +89,7 @@ export default function Helix({
       const omit = index === 0
         ? localCorners.reduce((best, c) => (c.x < best.x || (c.x === best.x && c.y < best.y) ? c : best))
         : index === sections.length - 1
-          ? localCorners.reduce((best, c) => (c.y < best.y || (c.y === best.y && c.x > best.x) ? c : best))
+          ? localCorners.reduce((best, c) => (c.x > best.x || (c.x === best.x && c.y > best.y) ? c : best))
           : null
       return omit ? corner.distanceTo(omit) < 1e-5 : false
     }
@@ -173,8 +174,11 @@ export default function Helix({
             setSelectedIndex={setSelectedIndex}
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
+            showTips={showTips}
             planeRotation={planeRotation}
+            baseRotation={baseRotation}
             label={section.label}
+            title={section.title}
             showLabel={showLabel && !section.blank}
             blank={!!section.blank}
             cap={section.blank ? (index === 0 ? 'start' : 'end') : null}

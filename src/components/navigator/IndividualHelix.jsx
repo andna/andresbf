@@ -2,53 +2,53 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
 import { useFrame } from '@react-three/fiber'
-import { Line } from '@react-three/drei'
+import { Billboard, Line } from '@react-three/drei'
 
 const labelMapSize = 1024
 
-const labelFont = '"Black Ops One", system-ui, sans-serif'
+const logoUrl = '/logo-a.svg'
 
-const drawLabel = (canvas, label, isSel, isHover, isBack, showLabel, colors, skew) => {
-  const { accent, bg, hover } = colors
+const loadLogo = () => new Promise((resolve, reject) => {
+  const image = new Image()
+  image.onload = () => resolve(image)
+  image.onerror = reject
+  image.src = logoUrl
+})
+
+let logoPromise
+const getLogo = () => {
+  if (!logoPromise) logoPromise = loadLogo()
+  return logoPromise
+}
+
+const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew) => {
+  const { accent, bg } = colors
   const face = isBack ? skew.back : skew.front
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
   ctx.clearRect(0, 0, w, h)
-  if (!isBack) {
-    ctx.fillStyle = isSel ? accent : isHover ? hover : bg
-    ctx.fillRect(0, 0, w, h)
-  }
 
-  if (!showLabel) return
+  if (!showLabel || !logo) return
 
-  const lines = [label]
-  const pad = w * 0.1
-  const maxW = w - pad * 2
-  let size = Math.floor(h * 0.22)
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.font = `${size}px ${labelFont}`
-  const widest = () => Math.max(...lines.map((line) => ctx.measureText(line).width))
-  while (size > 10 && widest() > maxW) {
-    size -= 1
-    ctx.font = `${size}px ${labelFont}`
-  }
+  const size = Math.floor(w * 0.36)
+  const stamp = document.createElement('canvas')
+  stamp.width = size
+  stamp.height = size
+  const stampCtx = stamp.getContext('2d')
+  stampCtx.drawImage(logo, 0, 0, size, size)
+  stampCtx.globalCompositeOperation = 'source-in'
+  stampCtx.fillStyle = isSel ? bg : accent
+  stampCtx.fillRect(0, 0, size, size)
 
-  ctx.globalAlpha = isBack ? 0.3 : 1
-  ctx.fillStyle = isSel ? bg : accent
-  const gap = size * 1.15
-  const startY = h / 2 - ((lines.length - 1) * gap) / 2
   ctx.save()
+  ctx.globalAlpha = isBack ? 0.3 : 1
   ctx.translate(w / 2, h / 2)
   if (!isBack) {
     ctx.rotate(face.rot)
     ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
   }
-  ctx.translate(-w / 2, -h / 2)
-  lines.forEach((line, i) => {
-    ctx.fillText(line, w / 2, startY + i * gap)
-  })
+  ctx.drawImage(stamp, -size / 2, -size / 2)
   ctx.restore()
   ctx.globalAlpha = 1
 }
@@ -71,7 +71,7 @@ const omitCapCorner = (pts, cap) => {
   for (let i = 1; i < pts.length; i += 1) {
     if (cap === 'start') {
       if (pts[i][0] < pts[omit][0] || (pts[i][0] === pts[omit][0] && pts[i][1] < pts[omit][1])) omit = i
-    } else if (pts[i][1] < pts[omit][1] || (pts[i][1] === pts[omit][1] && pts[i][0] > pts[omit][0])) {
+    } else if (pts[i][0] > pts[omit][0] || (pts[i][0] === pts[omit][0] && pts[i][1] > pts[omit][1])) {
       omit = i
     }
   }
@@ -114,6 +114,128 @@ const setBackTextUv = (matrix, rot, skewX, skewY) => {
   matrix.multiply(uvScratch)
 }
 
+const textLift = 0.00
+
+const tipFont = '800 64px "Oxanium", system-ui, sans-serif'
+
+const makeTipTexture = (title, color, bg) => {
+  const canvas = document.createElement('canvas')
+  const measure = canvas.getContext('2d')
+  measure.font = tipFont
+  const textW = measure.measureText(title).width
+  const padX = 40
+  const padY = 28
+  const w = Math.ceil(textW + padX * 2)
+  const h = 64 + padY * 2
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = bg
+  ctx.fillRect(0, 0, w, h)
+  ctx.strokeStyle = color
+  ctx.lineWidth = 4
+  ctx.strokeRect(3, 3, w - 6, h - 6)
+  ctx.fillStyle = color
+  ctx.font = tipFont
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(title, w / 2, h / 2 + 2)
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.colorSpace = THREE.SRGBColorSpace
+  tex.generateMipmaps = false
+  tex.minFilter = THREE.LinearFilter
+  tex.magFilter = THREE.LinearFilter
+  return { tex, aspect: w / h }
+}
+
+function RugTip({ title, color, bg, tipY, tipZ }) {
+  const [tipMap, setTipMap] = useState(null)
+  const mapRef = useRef(null)
+  const groupRef = useRef()
+  const lineRef = useRef()
+  const right = useRef(new THREE.Vector3())
+  const up = useRef(new THREE.Vector3())
+  const inv = useRef(new THREE.Matrix4())
+  const toAnchor = useRef(new THREE.Vector3())
+  const end = useRef(new THREE.Vector3())
+  const boxH = 0.16
+  const boxW = boxH * (tipMap?.aspect || 4)
+  const anchor = [0, 0, 0]
+  const tip = [0, tipY, tipZ]
+
+  useEffect(() => {
+    let cancelled = false
+    const paint = () => {
+      if (cancelled) return
+      const next = makeTipTexture(title, color, bg)
+      mapRef.current?.tex.dispose()
+      mapRef.current = next
+      setTipMap(next)
+    }
+    paint()
+    document.fonts.load(tipFont).then(paint)
+    return () => {
+      cancelled = true
+    }
+  }, [title, color, bg])
+
+  useEffect(() => () => {
+    mapRef.current?.tex.dispose()
+    mapRef.current = null
+  }, [])
+
+  useFrame(({ camera }) => {
+    const group = groupRef.current
+    const line = lineRef.current
+    if (!group || !line?.geometry) return
+    group.updateWorldMatrix(true, false)
+    inv.current.copy(group.matrixWorld).invert()
+    right.current.set(1, 0, 0).applyQuaternion(camera.quaternion).transformDirection(inv.current)
+    up.current.set(0, 1, 0).applyQuaternion(camera.quaternion).transformDirection(inv.current)
+    toAnchor.current.set(anchor[0] - tip[0], anchor[1] - tip[1], anchor[2] - tip[2])
+    const dx = toAnchor.current.dot(right.current)
+    const dy = toAnchor.current.dot(up.current)
+    const ax = Math.abs(dx)
+    const ay = Math.abs(dy)
+    const s = Math.min(ax > 1e-5 ? (boxW / 2) / ax : Infinity, ay > 1e-5 ? (boxH / 2) / ay : Infinity)
+    end.current.set(tip[0], tip[1], tip[2])
+    if (Number.isFinite(s)) end.current.addScaledVector(right.current, dx * s).addScaledVector(up.current, dy * s)
+    line.geometry.setPositions([anchor[0], anchor[1], anchor[2], end.current.x, end.current.y, end.current.z])
+    line.computeLineDistances()
+  })
+
+  return (
+    <group ref={groupRef} raycast={() => null}>
+      <Line
+        ref={lineRef}
+        points={[anchor, tip]}
+        color={color}
+        dashed
+        dashSize={0.04}
+        gapSize={0.02}
+        lineWidth={1.5}
+        transparent
+        depthTest={false}
+        raycast={() => null}
+      />
+      <Billboard position={anchor}>
+        <mesh raycast={() => null}>
+          <ringGeometry args={[0.016, 0.021, 28]} />
+          <meshBasicMaterial color={color} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
+        </mesh>
+      </Billboard>
+      <Billboard position={tip}>
+        {tipMap && (
+          <mesh raycast={() => null}>
+            <planeGeometry args={[boxW, boxH]} />
+            <meshBasicMaterial map={tipMap.tex} transparent depthTest={false} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+          </mesh>
+        )}
+      </Billboard>
+    </group>
+  )
+}
+
 const ringOrder = (pts) => {
   const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length
   const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length
@@ -124,14 +246,16 @@ export default function IndividualHelix({
   index,
   y,
   planeRotation,
+  baseRotation,
   radius,
   skewedPlaneGeometry,
   selectedIndex,
   setSelectedIndex,
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
-  label,
+  showTips,
   showLabel,
+  title,
   blank = false,
   cap = null,
   textFront,
@@ -142,6 +266,13 @@ export default function IndividualHelix({
   const z = radius * Math.cos(planeRotation)
   const isSel = selectedIndex === index
   const isHover = hoveredPlaneIdx === index
+  const cycle = Math.max(1, Math.round((Math.PI * 2) / baseRotation))
+  const slot = ((index - selectedIndex) % cycle + cycle) % cycle
+  const steps = Math.min(slot, cycle - slot)
+  const tipY = cycle === 6
+    ? [0.53, 0.73, -0.2, 0.33, 0.18, 0.35][slot]
+    : (steps === 2 ? 0 : 0.45) + 0.08
+  const tipZ = cycle === 6 && slot === 1 ? 0 : -radius
   const [colors, setColors] = useState(() => ({
     accent: '#1a5564',
     bg: '#ebebe5',
@@ -224,22 +355,21 @@ export default function IndividualHelix({
   useEffect(() => {
     let cancelled = false
     const skew = { front: textFront, back: textBack }
-    const paint = () => {
+    const paint = (logo) => {
       if (cancelled) return
-      drawLabel(texture.image, label, isSel, isHover, false, showLabel, colors, skew)
+      drawMark(texture.image, logo, isSel, false, showLabel, colors, skew)
       const backCtx = backTexture.image.getContext('2d')
       backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-      drawLabel(backTexture.image, label, isSel, isHover, true, showLabel, colors, skew)
+      drawMark(backTexture.image, logo, isSel, true, showLabel, colors, skew)
       backCtx.setTransform(1, 0, 0, 1, 0, 0)
       texture.needsUpdate = true
       backTexture.needsUpdate = true
     }
-    paint()
-    document.fonts.load(`64px ${labelFont}`).then(paint)
+    getLogo().then(paint)
     return () => {
       cancelled = true
     }
-  }, [texture, backTexture, label, isSel, isHover, showLabel, colors, textFront, textBack])
+  }, [texture, backTexture, isSel, showLabel, colors, textFront, textBack])
 
   useEffect(() => () => {
     texture.dispose()
@@ -251,28 +381,40 @@ export default function IndividualHelix({
     if (faceGeom !== skewedPlaneGeometry) faceGeom.dispose()
   }, [faceGeom, skewedPlaneGeometry])
 
+  const mutePointer = isSel && cap === 'start'
+  const faceRaycast = mutePointer ? () => null : THREE.Mesh.prototype.raycast
+
+  useEffect(() => {
+    if (!mutePointer || hoveredPlaneIdx !== index) return
+    if (setHoveredPlaneIdx(-1, index) === false) return
+    document.body.style.cursor = ''
+  }, [mutePointer, hoveredPlaneIdx, index, setHoveredPlaneIdx])
+
   return (
     <group
       ref={groupRef}
       rotation={[0, planeRotation, 0]}
       position={[x, y, z]}
       onPointerOver={(e) => {
+        if (mutePointer) return
         setHoveredPlaneIdx(index)
         document.body.style.cursor = 'pointer'
         e.stopPropagation()
       }}
       onPointerOut={() => {
-        setHoveredPlaneIdx(-1)
+        if (mutePointer) return
+        if (setHoveredPlaneIdx(-1, index) === false) return
         document.body.style.cursor = ''
       }}
       onClick={(e) => {
+        if (isSel) return
         setSelectedIndex(index)
         e.stopPropagation()
       }}
     >
-      <mesh geometry={faceGeom}>
+      <mesh geometry={faceGeom} raycast={faceRaycast}>
         <meshBasicMaterial
-          map={texture}
+          color={isSel ? colors.accent : isHover ? colors.hover : colors.bg}
           toneMapped={false}
           side={THREE.FrontSide}
           polygonOffset
@@ -282,7 +424,7 @@ export default function IndividualHelix({
           depthWrite
         />
       </mesh>
-      <mesh geometry={faceGeom}>
+      <mesh geometry={faceGeom} raycast={faceRaycast}>
         <meshBasicMaterial
           color={isSel ? colors.accent : isHover ? colors.hover : colors.bg}
           toneMapped={false}
@@ -294,19 +436,30 @@ export default function IndividualHelix({
           depthWrite
         />
       </mesh>
-      <mesh geometry={faceGeom}>
-        <meshBasicMaterial
-          map={backTexture}
-          transparent
-          toneMapped={false}
-          side={THREE.BackSide}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-          depthTest
-          depthWrite={false}
-        />
-      </mesh>
+      {showLabel && (
+        <mesh geometry={faceGeom} position={[0, 0, textLift]} raycast={() => null}>
+          <meshBasicMaterial
+            map={texture}
+            transparent
+            toneMapped={false}
+            side={THREE.FrontSide}
+            depthTest
+            depthWrite={false}
+          />
+        </mesh>
+      )}
+      {showLabel && (
+        <mesh geometry={faceGeom} position={[0, 0, -textLift]} raycast={() => null}>
+          <meshBasicMaterial
+            map={backTexture}
+            transparent
+            toneMapped={false}
+            side={THREE.BackSide}
+            depthTest
+            depthWrite={false}
+          />
+        </mesh>
+      )}
       {outlinePoints && (
         <Line
           ref={outlineRef}
@@ -318,6 +471,9 @@ export default function IndividualHelix({
           toneMapped={false}
           raycast={() => null}
         />
+      )}
+      {isHover && showTips && title && !mutePointer && (
+        <RugTip title={title} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} />
       )}
       {corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>

@@ -17,6 +17,7 @@ export default function CanvasScene({
   isMobile,
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
+  showTips,
   screenRoll,
   poseRef,
   scrollIndexRef,
@@ -68,7 +69,7 @@ export default function CanvasScene({
 
   useEffect(() => {
     if (userRotatingRef.current) return
-    if (!isMobile && orbitModeRef?.current === 'scroll') return
+    if (orbitModeRef?.current === 'scroll') return
     const current = ((currentIndexRef.current % planesPerCycle) + planesPerCycle) % planesPerCycle
     const target = ((selectedIndex % planesPerCycle) + planesPerCycle) % planesPerCycle
     let delta = target - current
@@ -130,7 +131,7 @@ export default function CanvasScene({
     if (!cam || !pivot) return
     pivot.getWorldPosition(tmpTarget.current)
 
-    if (!userRotatingRef.current && !isMobile && orbitModeRef?.current === 'scroll' && scrollIndexRef) {
+    if (!userRotatingRef.current && orbitModeRef?.current === 'scroll' && scrollIndexRef) {
       currentIndexRef.current = scrollIndexRef.current
       const raw = scrollIndexRef.current * baseRotation
       const from = cam.userData.angle ?? raw
@@ -204,6 +205,7 @@ export default function CanvasScene({
             setSelectedIndex={setSelectedIndex}
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
+            showTips={showTips}
             showLabel={!isMobile}
             textFront={textFront}
             textBack={textBack}

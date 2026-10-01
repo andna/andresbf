@@ -78,9 +78,11 @@
   margin: 0;
   padding: 0;
   font-size: 0.8rem;
-  min-height: 3.5rem;
+  min-height: calc(3.5rem * (1 - var(--mobile-header-t, 0)));
+  max-height: calc(3.5rem * (1 - var(--mobile-header-t, 0)));
+  overflow: hidden;
   transform: translate(63px, -41px);
-  transition: opacity 0.3s ease;
+  opacity: calc(1 - var(--mobile-header-t, 0));
 }
 
 .navigator.is-mobile .navigator-list li {
@@ -117,13 +119,9 @@
   color: var(--accent-color);
 }
 
+html[data-mobile-header="tween"] .navigator.is-mobile .navigator-list,
 html[data-mobile-header="scrolled"] .navigator.is-mobile .navigator-list {
-  opacity: 0;
   pointer-events: none;
-  min-height: 0;
-  height: 0;
-  overflow: hidden;
-  transform: none;
 }
 
 .debug-sliders {

@@ -54,7 +54,39 @@ export default function Navigator({ sections }) {
   const helixSections = sections
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
+  const [showTips, setShowTips] = useState(false)
+  const tipsArmedRef = useRef(false)
+  const hoveredRef = useRef(-1)
+  const setHoveredPlane = (index, from = index) => {
+    if (index < 0 && hoveredRef.current !== from) return false
+    hoveredRef.current = index
+    setHoveredPlaneIdx(index)
+    if (index < 0 || !tipsArmedRef.current) {
+      setShowTips(false)
+      return true
+    }
+    setShowTips(true)
+    return true
+  }
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(orientation: portrait)').matches)
+
+  useEffect(() => {
+    const onMove = () => {
+      tipsArmedRef.current = true
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [])
+
+  useEffect(() => {
+    if (selectedIndex !== 0 && hoveredRef.current === selectedIndex) {
+      tipsArmedRef.current = true
+      setShowTips(true)
+      return
+    }
+    tipsArmedRef.current = false
+    setShowTips(false)
+  }, [selectedIndex])
   const [view, setView] = useState(() => ({
     w: window.innerWidth,
     h: window.innerHeight,
@@ -110,8 +142,12 @@ export default function Navigator({ sections }) {
   const sectionAnimRef = useRef('')
   const headerParallaxRef = useRef({ el: null, last: null })
   const mobileHeaderRef = useRef('origin')
+  const mobileHeaderTRef = useRef(0)
   const expandedHeaderRef = useRef(0)
+  const expandedRowRef = useRef(0)
+  const compactHeaderRef = useRef(0)
   const syncHeaderHeightRef = useRef(() => {})
+  const applyMobileHeaderPoseRef = useRef(() => {})
   const orbitModeRef = useRef('scroll')
   const clickAnimRef = useRef(null)
   const clickPoseDuration = 0.85
@@ -223,10 +259,35 @@ export default function Navigator({ sections }) {
         circle.removeAttribute('aria-label')
       }
     }
-    if (mode === 'menu') document.body.style.overflow = 'hidden'
-    else document.body.style.removeProperty('overflow')
+    if (mode === 'menu') {
+      document.body.style.overflow = 'hidden'
+      root.style.setProperty('--mobile-header-t', '0')
+      mobileHeaderTRef.current = 0
+      if (expandedHeaderRef.current > 0) {
+        root.style.setProperty('--mobile-header-bg', `${expandedHeaderRef.current}px`)
+      }
+    } else {
+      document.body.style.removeProperty('overflow')
+    }
     requestAnimationFrame(() => syncHeaderHeightRef.current())
   }
+
+  const applyMobileHeaderPose = (scrollY) => {
+    if (!isMobile) return
+    if (mobileHeaderRef.current === 'menu') return
+    const t = Math.min(1, Math.max(0, scrollY / poseRange()))
+    mobileHeaderTRef.current = t
+    const root = document.documentElement
+    root.style.setProperty('--mobile-header-t', `${t}`)
+    const start = expandedHeaderRef.current
+    const end = compactHeaderRef.current
+    if (start > 0 && end > 0) {
+      root.style.setProperty('--mobile-header-bg', `${start + (end - start) * t}px`)
+    }
+    setMobileHeaderMode(t <= 0 ? 'origin' : t >= 1 ? 'scrolled' : 'tween')
+  }
+
+  applyMobileHeaderPoseRef.current = applyMobileHeaderPose
 
   const applyLayoutPose = (offsetX, contentRot, contentY) => {
     const stage = document.querySelector('.stage')
@@ -381,7 +442,7 @@ export default function Navigator({ sections }) {
     applyPortfolioTitlePin(isMobile ? scrollY : contentY)
     applyHeaderParallax(isMobile ? scrollY : contentY)
     if (isMobile && mobileHeaderRef.current !== 'menu') {
-      setMobileHeaderMode(scrollY <= 0 ? 'origin' : 'scrolled')
+      applyMobileHeaderPose(scrollY)
     }
     if (isMobile) {
       const track = document.querySelector('.content-track')
@@ -446,6 +507,8 @@ export default function Navigator({ sections }) {
       root.style.removeProperty('--mobile-chrome-h')
       root.style.removeProperty('--mobile-helix-top')
       root.style.removeProperty('--mobile-header-bg')
+      root.style.removeProperty('--mobile-header-t')
+      root.style.removeProperty('--mobile-art-h')
       root.style.removeProperty('--chrome-item-rot')
       delete root.dataset.mobileHeader
       document.body.style.removeProperty('overflow')
@@ -470,23 +533,39 @@ export default function Navigator({ sections }) {
       const chromeH = chrome instanceof HTMLElement ? chrome.offsetHeight : 0
       const heroH = hero instanceof HTMLElement ? hero.offsetHeight : 0
       const helixH = helix instanceof HTMLElement ? helix.offsetHeight : 0
+      const circleEl = document.querySelector('.header-circle')
+      const art = document.querySelector('.header-parallax')
+      const circleH = circleEl instanceof HTMLElement ? circleEl.offsetHeight : 0
       const mode = mobileHeaderRef.current
-      const rowH = mode === 'scrolled' ? heroH : Math.max(chromeH, heroH)
-      const visualH = mode === 'scrolled' ? heroH : rowH + helixH
-      root.style.setProperty('--mobile-chrome-h', `${chromeH}px`)
-      root.style.setProperty('--mobile-helix-top', mode === 'scrolled' ? '0px' : `${rowH}px`)
-      root.style.setProperty('--mobile-header-bg', `${visualH}px`)
-      if (mode !== 'scrolled') {
-        expandedHeaderRef.current = visualH
-        root.style.setProperty('--chrome-header', `${visualH}px`)
+      const t = mobileHeaderTRef.current
+      if (mode === 'origin' || mode === 'menu' || t <= 0) {
+        const rowH = Math.max(chromeH, heroH)
+        expandedRowRef.current = rowH
+        expandedHeaderRef.current = rowH + helixH
+        root.style.setProperty('--mobile-helix-top', `${rowH}px`)
+        root.style.setProperty('--chrome-header', `${rowH + helixH}px`)
+        if (art instanceof HTMLElement && art.offsetHeight > 0) {
+          root.style.setProperty('--mobile-art-h', `${art.offsetHeight}px`)
+        }
       } else if (expandedHeaderRef.current > 0) {
         root.style.setProperty('--chrome-header', `${expandedHeaderRef.current}px`)
-      } else {
-        root.style.setProperty('--chrome-header', `${visualH}px`)
+        if (expandedRowRef.current > 0) {
+          root.style.setProperty('--mobile-helix-top', `${expandedRowRef.current}px`)
+        }
       }
+      compactHeaderRef.current = circleH + 2
+      if (mode === 'menu' && expandedHeaderRef.current > 0) {
+        root.style.setProperty('--mobile-header-bg', `${expandedHeaderRef.current}px`)
+      } else {
+        const start = expandedHeaderRef.current
+        const end = compactHeaderRef.current
+        const bg = start > 0 && end > 0 ? start + (end - start) * t : start || end
+        root.style.setProperty('--mobile-header-bg', `${bg}px`)
+      }
+      root.style.setProperty('--mobile-chrome-h', `${chromeH}px`)
     }
     syncHeaderHeightRef.current = syncHeaderHeight
-    setMobileHeaderMode(window.scrollY <= 0 ? 'origin' : 'scrolled')
+    applyMobileHeaderPose(window.scrollY)
     syncHeaderHeight()
     const ro = new ResizeObserver(syncHeaderHeight)
     if (chrome instanceof HTMLElement) ro.observe(chrome)
@@ -495,17 +574,21 @@ export default function Navigator({ sections }) {
     const circle = document.querySelector('.header-circle')
     const overlay = document.querySelector('.mobile-header-overlay')
     const onCircle = (event) => {
-      if (mobileHeaderRef.current === 'origin') return
+      if (mobileHeaderRef.current === 'origin' || mobileHeaderRef.current === 'tween') return
       event.preventDefault()
       if (mobileHeaderRef.current === 'menu') {
-        setMobileHeaderMode(window.scrollY <= 0 ? 'origin' : 'scrolled')
+        mobileHeaderRef.current = 'origin'
+        document.body.style.removeProperty('overflow')
+        applyMobileHeaderPoseRef.current(window.scrollY)
       } else {
         setMobileHeaderMode('menu')
       }
     }
     const onOverlay = () => {
       if (mobileHeaderRef.current !== 'menu') return
-      setMobileHeaderMode(window.scrollY <= 0 ? 'origin' : 'scrolled')
+      mobileHeaderRef.current = 'origin'
+      document.body.style.removeProperty('overflow')
+      applyMobileHeaderPoseRef.current(window.scrollY)
     }
     if (circle instanceof HTMLElement) circle.addEventListener('click', onCircle)
     if (overlay instanceof HTMLElement) overlay.addEventListener('click', onOverlay)
@@ -866,7 +949,8 @@ export default function Navigator({ sections }) {
               setSelectedIndex={setSelectedIndexAndScroll}
               isMobile={isMobile}
               hoveredPlaneIdx={hoveredPlaneIdx}
-              setHoveredPlaneIdx={setHoveredPlaneIdx}
+              setHoveredPlaneIdx={setHoveredPlane}
+              showTips={showTips}
               screenRoll={screenRoll}
               poseRef={poseRef}
               scrollIndexRef={scrollIndexRef}
@@ -1073,8 +1157,8 @@ export default function Navigator({ sections }) {
                   selectedIndex === helixIndex ? 'selected' : '',
                   hoveredPlaneIdx === helixIndex ? 'hovered' : '',
                 ].filter(Boolean).join(' ')}
-                onPointerEnter={() => setHoveredPlaneIdx(helixIndex)}
-                onPointerLeave={() => setHoveredPlaneIdx(-1)}
+                onPointerEnter={() => setHoveredPlane(helixIndex)}
+                onPointerLeave={() => setHoveredPlane(-1, helixIndex)}
                 onClick={() => setSelectedIndexAndScroll(helixIndex)}
               >
                 {section.label}

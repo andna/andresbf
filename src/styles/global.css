@@ -18,6 +18,8 @@ html[data-theme="dark"] {
 :root {
   --chrome-header: 14rem;
   --mobile-header-bg: var(--chrome-header);
+  --mobile-header-t: 0;
+  --mobile-art-h: 10rem;
   --chrome-sidebar: 18rem;
   --chrome-pad-x: 1rem;
   --chrome-item-rot: -50deg;
@@ -29,7 +31,7 @@ body {
   margin: 0;
   background: var(--bg-color);
   color: var(--text-color);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: "Oxanium", system-ui, -apple-system, sans-serif;
 }
 
 .shell {
@@ -149,6 +151,11 @@ body {
   display: flex;
   align-items: flex-start;
   column-gap: 1rem;
+  pointer-events: none;
+}
+
+.header-hero > * {
+  pointer-events: auto;
 }
 
 .header-circle-container {
@@ -434,6 +441,7 @@ body {
     transform: none;
     padding: 0.75rem 1.25rem 0.35rem;
     background: transparent;
+    opacity: calc(1 - var(--mobile-header-t, 0));
   }
 
   .chrome-bar {
@@ -450,7 +458,10 @@ body {
     width: 50%;
     z-index: 6;
     box-sizing: border-box;
-    padding: 0.35rem 1.25rem 0.5rem;
+    padding-top: calc(0.35rem * (1 - var(--mobile-header-t, 0)) + 0.1rem * var(--mobile-header-t, 0));
+    padding-right: calc(1.25rem * (1 - var(--mobile-header-t, 0)) + 0.55rem * var(--mobile-header-t, 0));
+    padding-bottom: calc(0.5rem * (1 - var(--mobile-header-t, 0)));
+    padding-left: calc(1.25rem * (1 - var(--mobile-header-t, 0)) + 0.55rem * var(--mobile-header-t, 0));
     background: transparent;
     overflow: hidden;
   }
@@ -462,9 +473,25 @@ body {
     overflow: hidden;
   }
 
+  .header-parallax {
+    opacity: calc(1 - var(--mobile-header-t, 0));
+    max-height: calc(var(--mobile-art-h, 10rem) * (1 - var(--mobile-header-t, 0)));
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .header-title-container {
+    opacity: calc(1 - var(--mobile-header-t, 0));
+    max-height: calc(5rem * (1 - var(--mobile-header-t, 0)));
+    overflow: hidden;
+  }
+
   .stage-helix {
     position: fixed;
-    top: var(--mobile-helix-top, 12rem);
+    top: calc(
+      var(--mobile-helix-top, 12rem) * (1 - var(--mobile-header-t, 0))
+      + (var(--mobile-header-bg, var(--chrome-header)) * 0.5) * var(--mobile-header-t, 0)
+    );
     right: 0;
     bottom: auto;
     left: 0;
@@ -472,6 +499,11 @@ body {
     height: auto;
     z-index: 6;
     background: transparent;
+    transform: translate3d(
+      calc((50% - 8.75rem) * var(--mobile-header-t, 0)),
+      calc(-50% * var(--mobile-header-t, 0)),
+      0
+    );
   }
 
   .content {
@@ -484,23 +516,13 @@ body {
     transform: none;
   }
 
-  html[data-mobile-header="scrolled"] .chrome,
-  html[data-mobile-header="scrolled"] .header-parallax,
-  html[data-mobile-header="scrolled"] .header-title-container {
-    display: none;
+  html[data-mobile-header="tween"] .chrome,
+  html[data-mobile-header="scrolled"] .chrome {
+    pointer-events: none;
   }
 
   html[data-mobile-header="scrolled"] .header-hero {
     width: auto;
-    padding: 0.1rem 0.55rem 0;
-  }
-
-  html[data-mobile-header="scrolled"] .stage-helix {
-    top: calc(var(--mobile-header-bg) / 2);
-    left: 0;
-    right: 0;
-    width: auto;
-    transform: translateY(-50%);
   }
 
   html[data-mobile-header="scrolled"] .header-circle,
@@ -616,7 +638,7 @@ body {
     max-width: min(42rem, 100%);
   }
 
-  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .header-hero, .header-parallax) {
+  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .header-parallax) {
     pointer-events: auto;
   }
 
