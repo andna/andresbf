@@ -179,6 +179,7 @@ export default function Helix({
             baseRotation={baseRotation}
             label={section.label}
             title={section.title}
+            kicker={section.kicker}
             showLabel={showLabel && !section.blank}
             blank={!!section.blank}
             cap={section.blank ? (index === 0 ? 'start' : 'end') : null}

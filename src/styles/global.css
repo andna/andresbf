@@ -158,11 +158,12 @@ body {
   pointer-events: auto;
 }
 
-.header-circle-container {
+.header-hero > .header-circle-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: visible;
+  pointer-events: none;
 }
 
 .header-circle {
@@ -174,6 +175,7 @@ body {
   border-radius: 50%;
   background: var(--accent-color);
   cursor: default;
+  pointer-events: auto;
 }
 
 .mobile-header-overlay {
@@ -182,9 +184,15 @@ body {
 
 .header-parallax {
   position: relative;
+  z-index: -1;
   pointer-events: none;
   overflow: visible;
   transition: transform 0.45s ease-out;
+}
+
+.content .header-parallax,
+.content .header-parallax * {
+  pointer-events: none;
 }
 
 .header-parallax-art {
@@ -638,7 +646,7 @@ body {
     max-width: min(42rem, 100%);
   }
 
-  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .header-parallax) {
+  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em) {
     pointer-events: auto;
   }
 

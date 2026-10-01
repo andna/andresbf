@@ -79,11 +79,6 @@ export default function Navigator({ sections }) {
   }, [])
 
   useEffect(() => {
-    if (selectedIndex !== 0 && hoveredRef.current === selectedIndex) {
-      tipsArmedRef.current = true
-      setShowTips(true)
-      return
-    }
     tipsArmedRef.current = false
     setShowTips(false)
   }, [selectedIndex])

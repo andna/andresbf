@@ -117,29 +117,36 @@ const setBackTextUv = (matrix, rot, skewX, skewY) => {
 const textLift = 0.00
 
 const tipFont = '800 64px "Oxanium", system-ui, sans-serif'
+const tipKickerFont = '600 32px "Oxanium", system-ui, sans-serif'
 
-const makeTipTexture = (title, color, bg) => {
+const makeTipTexture = (title, kicker, color, bg) => {
   const canvas = document.createElement('canvas')
   const measure = canvas.getContext('2d')
   measure.font = tipFont
   const textW = measure.measureText(title).width
+  measure.font = tipKickerFont
+  const kickerW = kicker ? measure.measureText(kicker).width : 0
   const padX = 40
   const padY = 28
-  const w = Math.ceil(textW + padX * 2)
-  const h = 64 + padY * 2
+  const w = Math.ceil(Math.max(textW, kickerW) + padX * 2)
+  const h = kicker ? 32 + 12 + 64 + padY * 2 : 64 + padY * 2
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
-  ctx.fillStyle = bg
-  ctx.fillRect(0, 0, w, h)
-  ctx.strokeStyle = color
-  ctx.lineWidth = 4
-  ctx.strokeRect(3, 3, w - 6, h - 6)
   ctx.fillStyle = color
-  ctx.font = tipFont
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = bg
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(title, w / 2, h / 2 + 2)
+  if (kicker) {
+    ctx.font = tipKickerFont
+    ctx.fillText(kicker, w / 2, padY + 16)
+    ctx.font = tipFont
+    ctx.fillText(title, w / 2, padY + 32 + 12 + 32)
+  } else {
+    ctx.font = tipFont
+    ctx.fillText(title, w / 2, h / 2 + 2)
+  }
   const tex = new THREE.CanvasTexture(canvas)
   tex.colorSpace = THREE.SRGBColorSpace
   tex.generateMipmaps = false
@@ -148,17 +155,20 @@ const makeTipTexture = (title, color, bg) => {
   return { tex, aspect: w / h }
 }
 
-function RugTip({ title, color, bg, tipY, tipZ }) {
+function RugTip({ title, kicker, color, bg, tipY, tipZ }) {
   const [tipMap, setTipMap] = useState(null)
   const mapRef = useRef(null)
   const groupRef = useRef()
   const lineRef = useRef()
+  const boxRef = useRef()
   const right = useRef(new THREE.Vector3())
   const up = useRef(new THREE.Vector3())
   const inv = useRef(new THREE.Matrix4())
   const toAnchor = useRef(new THREE.Vector3())
   const end = useRef(new THREE.Vector3())
-  const boxH = 0.16
+  const grown = useRef(new THREE.Vector3())
+  const started = useRef(0)
+  const boxH = kicker ? 0.22 : 0.16
   const boxW = boxH * (tipMap?.aspect || 4)
   const anchor = [0, 0, 0]
   const tip = [0, tipY, tipZ]
@@ -167,27 +177,34 @@ function RugTip({ title, color, bg, tipY, tipZ }) {
     let cancelled = false
     const paint = () => {
       if (cancelled) return
-      const next = makeTipTexture(title, color, bg)
+      const next = makeTipTexture(title, kicker, color, bg)
       mapRef.current?.tex.dispose()
       mapRef.current = next
       setTipMap(next)
     }
     paint()
-    document.fonts.load(tipFont).then(paint)
+    Promise.all([document.fonts.load(tipFont), document.fonts.load(tipKickerFont)]).then(paint)
     return () => {
       cancelled = true
     }
-  }, [title, color, bg])
+  }, [title, kicker, color, bg])
 
   useEffect(() => () => {
     mapRef.current?.tex.dispose()
     mapRef.current = null
   }, [])
 
-  useFrame(({ camera }) => {
+  useFrame(({ camera, clock }) => {
     const group = groupRef.current
     const line = lineRef.current
     if (!group || !line?.geometry) return
+    if (!started.current) started.current = clock.elapsedTime
+    const elapsed = clock.elapsedTime - started.current
+    const u = Math.min(1, elapsed / 0.32)
+    const t = 1 - (1 - u) ** 3
+    const boxU = Math.min(1, Math.max(0, (elapsed - 0.2) / 0.12))
+    const boxT = 1 - (1 - boxU) ** 3
+    if (boxRef.current) boxRef.current.scale.setScalar(0.02 + 0.98 * boxT)
     group.updateWorldMatrix(true, false)
     inv.current.copy(group.matrixWorld).invert()
     right.current.set(1, 0, 0).applyQuaternion(camera.quaternion).transformDirection(inv.current)
@@ -200,8 +217,10 @@ function RugTip({ title, color, bg, tipY, tipZ }) {
     const s = Math.min(ax > 1e-5 ? (boxW / 2) / ax : Infinity, ay > 1e-5 ? (boxH / 2) / ay : Infinity)
     end.current.set(tip[0], tip[1], tip[2])
     if (Number.isFinite(s)) end.current.addScaledVector(right.current, dx * s).addScaledVector(up.current, dy * s)
-    line.geometry.setPositions([anchor[0], anchor[1], anchor[2], end.current.x, end.current.y, end.current.z])
+    grown.current.set(anchor[0], anchor[1], anchor[2]).lerp(end.current, t)
+    line.geometry.setPositions([anchor[0], anchor[1], anchor[2], grown.current.x, grown.current.y, grown.current.z])
     line.computeLineDistances()
+    if (line.material) line.material.dashOffset = -clock.elapsedTime * 0.09
   })
 
   return (
@@ -215,7 +234,8 @@ function RugTip({ title, color, bg, tipY, tipZ }) {
         gapSize={0.02}
         lineWidth={1.5}
         transparent
-        depthTest={false}
+        depthTest
+        depthWrite={false}
         raycast={() => null}
       />
       <Billboard position={anchor}>
@@ -226,9 +246,9 @@ function RugTip({ title, color, bg, tipY, tipZ }) {
       </Billboard>
       <Billboard position={tip}>
         {tipMap && (
-          <mesh raycast={() => null}>
+          <mesh ref={boxRef} scale={0.02} raycast={() => null} renderOrder={10}>
             <planeGeometry args={[boxW, boxH]} />
-            <meshBasicMaterial map={tipMap.tex} transparent depthTest={false} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+            <meshBasicMaterial map={tipMap.tex} transparent depthTest={false} depthWrite toneMapped={false} side={THREE.DoubleSide} />
           </mesh>
         )}
       </Billboard>
@@ -256,6 +276,7 @@ export default function IndividualHelix({
   showTips,
   showLabel,
   title,
+  kicker,
   blank = false,
   cap = null,
   textFront,
@@ -270,9 +291,17 @@ export default function IndividualHelix({
   const slot = ((index - selectedIndex) % cycle + cycle) % cycle
   const steps = Math.min(slot, cycle - slot)
   const tipY = cycle === 6
-    ? [0.53, 0.73, -0.2, 0.33, 0.18, 0.35][slot]
+    ? [
+        -0.53, // C1
+        -0.31, // C3
+        -0.07, // F3
+        0.21, // F1
+        0.18, // F2
+        -0.75, // C2
+      ][slot]
     : (steps === 2 ? 0 : 0.45) + 0.08
-  const tipZ = cycle === 6 && slot === 1 ? 0 : -radius
+  const tipZ = cycle === 6 && slot === 5 ? -radius + 0.18 : -radius // C2 sits closer to its rug
+  const occludesTip = steps < 2
   const [colors, setColors] = useState(() => ({
     accent: '#1a5564',
     bg: '#ebebe5',
@@ -421,7 +450,7 @@ export default function IndividualHelix({
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
           depthTest
-          depthWrite
+          depthWrite={occludesTip}
         />
       </mesh>
       <mesh geometry={faceGeom} raycast={faceRaycast}>
@@ -433,7 +462,7 @@ export default function IndividualHelix({
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
           depthTest
-          depthWrite
+          depthWrite={occludesTip}
         />
       </mesh>
       {showLabel && (
@@ -473,7 +502,7 @@ export default function IndividualHelix({
         />
       )}
       {isHover && showTips && title && !mutePointer && (
-        <RugTip title={title} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} />
+        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} />
       )}
       {corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>
