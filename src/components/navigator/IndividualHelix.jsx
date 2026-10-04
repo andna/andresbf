@@ -544,7 +544,6 @@ export default function IndividualHelix({
           color={colors.accent}
           lineWidth={2.4}
           transparent
-          opacity={1}
           toneMapped={false}
           raycast={() => null}
         />
