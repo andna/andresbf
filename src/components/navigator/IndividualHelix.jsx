@@ -5,6 +5,8 @@ import { useFrame } from '@react-three/fiber'
 import { Billboard, Line } from '@react-three/drei'
 
 const labelMapSize = 1024
+const capIconScale = 0.6
+const capIconNudge = 0.05
 
 const logoUrl = '/logo-a.svg'
 
@@ -21,7 +23,7 @@ const getLogo = () => {
   return logoPromise
 }
 
-const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew) => {
+const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew, markScale = 1) => {
   const { accent, bg } = colors
   const face = isBack ? skew.back : skew.front
   const ctx = canvas.getContext('2d')
@@ -31,7 +33,7 @@ const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew) => {
 
   if (!showLabel || !logo) return
 
-  const size = Math.floor(w * 0.36)
+  const size = Math.floor(w * 0.36 * markScale)
   const stamp = document.createElement('canvas')
   stamp.width = size
   stamp.height = size
@@ -153,7 +155,38 @@ const makeTipTexture = (title, kicker, color, bg) => {
   return { tex, aspect: w / h }
 }
 
-function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, anchor = [0, 0, 0] }) {
+const desktopTipY = [
+  -0.53, // C1
+  -0.31, // C3
+  -0.07, // F3
+  0.21, // F1
+  0.18, // F2
+  -0.75, // C2
+]
+
+function tipFor(index, angle, baseRotation, radius) {
+  const cycle = Math.max(1, Math.round((Math.PI * 2) / baseRotation))
+  let along = index - angle / baseRotation
+  along = ((along % cycle) + cycle) % cycle
+  const slot = Math.floor(along) % cycle
+  const next = (slot + 1) % cycle
+  const frac = along - Math.floor(along)
+  const at = (n) => {
+    const steps = Math.min(n, cycle - n)
+    const tipY = cycle === 6 ? desktopTipY[n] : (steps === 2 ? 0 : 0.45) + 0.08
+    const tipZ = cycle === 6 && n === 5 ? -radius + 0.28 : -radius
+    return { tipY, tipZ }
+  }
+  const a = at(slot)
+  const b = at(next)
+  return {
+    slot: Math.round(along) % cycle,
+    tipY: a.tipY + (b.tipY - a.tipY) * frac,
+    tipZ: a.tipZ + (b.tipZ - a.tipZ) * frac,
+  }
+}
+
+function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, anchor = [0, 0, 0], index, baseRotation, radius, poseRef }) {
   const [tipMap, setTipMap] = useState(null)
   const mapRef = useRef(null)
   const groupRef = useRef()
@@ -173,6 +206,11 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
   const started = useRef(0)
   const slide = useRef(false)
   const placed = useRef(false)
+  const dotMatRef = useRef()
+  const dotRingRef = useRef()
+  const rugNormal = useRef(new THREE.Vector3())
+  const rugPos = useRef(new THREE.Vector3())
+  const rugView = useRef(new THREE.Vector3())
   const boxH = kicker ? 0.22 : 0.16
   const boxW = boxH * (tipMap?.aspect || 4)
   const tip = [0, tipY, tipZ]
@@ -230,7 +268,10 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
       group.worldToLocal(fromLocal.current)
       placed.current = true
     }
-    tipVec.current.set(tip[0], tip[1], tip[2])
+    const liveAngle = poseRef?.current?.orbitAngle
+    const live = typeof liveAngle === 'number' ? tipFor(index, liveAngle, baseRotation, radius) : null
+    const liveSlot = live ? live.slot : slot
+    tipVec.current.set(0, live ? live.tipY : tip[1], live ? live.tipZ : tip[2])
     const slideU = Math.min(1, elapsed / 0.2)
     const slideT = 1 - (1 - slideU) ** 3
     if (slide.current) center.current.lerpVectors(fromLocal.current, tipVec.current, slideT)
@@ -255,7 +296,20 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
     carry.world.copy(center.current)
     group.localToWorld(carry.world)
     carry.hasPos = true
-    carry.slot = slot
+    carry.slot = liveSlot
+    const rug = group.parent
+    if (rug) {
+      rug.getWorldPosition(rugPos.current)
+      rugView.current.copy(camera.position).sub(rugPos.current).normalize()
+      rugNormal.current.set(0, 0, 1).transformDirection(rug.matrixWorld)
+      const close = rugNormal.current.dot(rugView.current) > 0
+      const fill = close ? color : bg
+      const stroke = close ? bg : color
+      if (dotMatRef.current) dotMatRef.current.color.set(fill)
+      if (dotRingRef.current) dotRingRef.current.color.set(stroke)
+      if (line.material) line.material.depthTest = close
+      line.renderOrder = close ? 0 : 7
+    }
   })
 
   return (
@@ -274,9 +328,13 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
         raycast={() => null}
       />
       <Billboard position={anchor}>
-        <mesh raycast={() => null}>
+        <mesh raycast={() => null} renderOrder={8}>
+          <circleGeometry args={[0.016, 28]} />
+          <meshBasicMaterial ref={dotMatRef} color={color} transparent opacity={0.5} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
+        </mesh>
+        <mesh raycast={() => null} renderOrder={9}>
           <ringGeometry args={[0.016, 0.021, 28]} />
-          <meshBasicMaterial color={color} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
+          <meshBasicMaterial ref={dotRingRef} color={bg} transparent opacity={0.5} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
         </mesh>
       </Billboard>
       <group ref={boxGroupRef}>
@@ -325,20 +383,8 @@ export default function IndividualHelix({
   const z = radius * Math.cos(planeRotation)
   const isSel = selectedIndex === index
   const isHover = hoveredPlaneIdx === index
-  const cycle = Math.max(1, Math.round((Math.PI * 2) / baseRotation))
-  const slot = ((index - selectedIndex) % cycle + cycle) % cycle
-  const steps = Math.min(slot, cycle - slot)
-  const tipY = cycle === 6
-    ? [
-        -0.53, // C1
-        -0.31, // C3
-        -0.07, // F3
-        0.21, // F1
-        0.18, // F2
-        -0.75, // C2
-      ][slot]
-    : (steps === 2 ? 0 : 0.45) + 0.08
-  const tipZ = cycle === 6 && slot === 5 ? -radius + 0.18 : -radius // C2 sits closer to its rug
+  const frontAngle = poseRef?.current?.orbitAngle ?? selectedIndex * baseRotation
+  const { slot, tipY, tipZ } = tipFor(index, frontAngle, baseRotation, radius)
   const [colors, setColors] = useState(() => ({
     accent: '#1a5564',
     bg: '#ebebe5',
@@ -357,21 +403,37 @@ export default function IndividualHelix({
   }, [blank, corners])
   const faceGeom = useMemo(() => {
     if (!blank || corners.length < 3) return skewedPlaneGeometry
-    const ordered = ringOrder(corners)
+    const ordered = ringOrder(corners).slice(0, 3)
     const geom = new THREE.BufferGeometry()
     const positions = new Float32Array(9)
-    const uvs = new Float32Array([0, 0, 1, 0, 0.5, 1])
-    ordered.slice(0, 3).forEach((p, i) => {
+    const uvs = new Float32Array(6)
+    const srcPos = skewedPlaneGeometry.attributes.position
+    const srcUv = skewedPlaneGeometry.attributes.uv
+    const planeUv = ordered.map((p) => {
+      for (let i = 0; i < srcPos.count; i += 1) {
+        const dx = srcPos.getX(i) - p[0]
+        const dy = srcPos.getY(i) - p[1]
+        const dz = srcPos.getZ(i) - p[2]
+        if (dx * dx + dy * dy + dz * dz < 1e-10) return [srcUv.getX(i), srcUv.getY(i)]
+      }
+      return [0.5, 0.5]
+    })
+    const nudge = cap === 'end' ? -capIconNudge : capIconNudge
+    const cu = planeUv.reduce((sum, uv) => sum + uv[0], 0) / planeUv.length + nudge
+    const cv = planeUv.reduce((sum, uv) => sum + uv[1], 0) / planeUv.length + nudge
+    ordered.forEach((p, i) => {
       positions[i * 3] = p[0]
       positions[i * 3 + 1] = p[1]
       positions[i * 3 + 2] = p[2]
+      uvs[i * 2] = 0.5 + (planeUv[i][0] - cu)
+      uvs[i * 2 + 1] = 0.5 + (planeUv[i][1] - cv)
     })
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
     geom.setIndex([0, 1, 2])
     geom.computeVertexNormals()
     return geom
-  }, [blank, corners, skewedPlaneGeometry])
+  }, [blank, corners, skewedPlaneGeometry, cap])
   const outlinePoints = useMemo(() => {
     if (corners.length < 3) return null
     const ordered = ringOrder(corners).map((p) => new THREE.Vector3(...p))
@@ -432,12 +494,13 @@ export default function IndividualHelix({
   useEffect(() => {
     let cancelled = false
     const skew = { front: textFront, back: textBack }
+    const markScale = cap ? capIconScale : 1
     const paint = (logo) => {
       if (cancelled) return
-      drawMark(texture.image, logo, isSel, false, showLabel, colors, skew)
+      drawMark(texture.image, logo, isSel, false, showLabel, colors, skew, markScale)
       const backCtx = backTexture.image.getContext('2d')
       backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-      drawMark(backTexture.image, logo, isSel, true, showLabel, colors, skew)
+      drawMark(backTexture.image, logo, isSel, true, showLabel, colors, skew, markScale)
       backCtx.setTransform(1, 0, 0, 1, 0, 0)
       texture.needsUpdate = true
       backTexture.needsUpdate = true
@@ -446,7 +509,7 @@ export default function IndividualHelix({
     return () => {
       cancelled = true
     }
-  }, [texture, backTexture, isSel, showLabel, colors, textFront, textBack])
+  }, [texture, backTexture, isSel, showLabel, colors, textFront, textBack, cap])
 
   useEffect(() => () => {
     texture.dispose()
@@ -549,7 +612,7 @@ export default function IndividualHelix({
         />
       )}
       {isHover && showTips && title && !mutePointer && (
-        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} slot={slot} tipCarryRef={tipCarryRef} anchor={tipAnchor} />
+        <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} slot={slot} tipCarryRef={tipCarryRef} anchor={tipAnchor} index={index} baseRotation={baseRotation} radius={radius} poseRef={poseRef} />
       )}
       {corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>

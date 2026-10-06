@@ -200,39 +200,6 @@ body {
   overflow: visible;
 }
 
-.header-graphs,
-.content .header-graphs {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.header-graphs-grid {
-  fill: none;
-  stroke: var(--accent-color);
-  stroke-width: 0.45;
-  opacity: 0.2;
-}
-
-.header-graphs-plot {
-  fill: none;
-  stroke: var(--secondary-color);
-  stroke-width: 0.85;
-  opacity: 0.42;
-}
-
-.header-graphs-vectors,
-.header-graphs-nodes {
-  fill: none;
-  stroke: var(--accent-color);
-  stroke-width: 0.7;
-  opacity: 0.55;
-}
-
 .header-mountains {
   position: relative;
   z-index: 1;
@@ -475,9 +442,7 @@ body {
   }
 
   .header-parallax,
-  .header-parallax-art,
-  .header-graphs,
-  .content .header-graphs {
+  .header-parallax-art {
     overflow: hidden;
   }
 

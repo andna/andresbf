@@ -190,7 +190,7 @@ export default function Helix({
             label={section.label}
             title={section.title}
             kicker={section.kicker}
-            showLabel={showLabel && !section.blank}
+            showLabel={showLabel}
             blank={!!section.blank}
             cap={section.blank ? (index === 0 ? 'start' : 'end') : null}
             textFront={textFront}

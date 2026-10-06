@@ -292,15 +292,13 @@ export default function CanvasScene({
       if (spinWasRef.current) {
         spinWasRef.current = false
         const from = cam.userData.angle ?? targetAngleRef.current
-        if (indexDelta === 0) {
-          const base = desired * baseRotation
-          let turn = (base - from) % (Math.PI * 2)
-          if (turn > Math.PI) turn -= Math.PI * 2
-          if (turn < -Math.PI) turn += Math.PI * 2
-          targetAngleRef.current = from + turn
-        } else {
-          targetAngleRef.current = from + indexDelta * baseRotation
-        }
+        const fromIndex = from / baseRotation
+        const steps = (desired - fromIndex) % planesPerCycle
+        const base = desired * baseRotation
+        const whole = Math.round((fromIndex - (desired - steps)) / planesPerCycle)
+        const cycle = whole * planesPerCycle * baseRotation
+        cam.userData.angle = from - cycle
+        targetAngleRef.current = base
       } else if (indexDelta !== 0) {
         targetAngleRef.current += indexDelta * baseRotation
       }
@@ -311,6 +309,7 @@ export default function CanvasScene({
     if (userRotatingRef.current) cam.userData.angle = targetAngleRef.current
     else if (!spinning) cam.userData.angle += (targetAngleRef.current - cam.userData.angle) * 0.06
     const a = cam.userData.angle
+    if (poseRef?.current) poseRef.current.orbitAngle = a
     if (isMobile) orbitOffset.current.set(0, Math.sin(a) * 10, Math.cos(a) * 10)
     else orbitOffset.current.set(Math.sin(a) * 10, 0, Math.cos(a) * 10)
     cam.position.copy(tmpTarget.current).add(orbitOffset.current)
