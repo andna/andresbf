@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
@@ -53,6 +54,8 @@ const helixMobile = { scale: 0.25, offsetPx: [0, 0] }
 export default function Navigator({ sections }) {
   const helixSections = sections
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [pendingIndex, setPendingIndex] = useState(-1)
+  const pendingIndexRef = useRef(-1)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
   const [showTips, setShowTips] = useState(false)
   const tipsArmedRef = useRef(false)
@@ -86,7 +89,7 @@ export default function Navigator({ sections }) {
     w: window.innerWidth,
     h: window.innerHeight,
   }))
-  const [textFront, setTextFront] = useState({ skewX: -0.07, skewY: -0.17, rotDeg: 8 })
+  const [textFront, setTextFront] = useState({ skewX: 0.41, skewY: -0.64, rotDeg: 25 })
   const [textBack, setTextBack] = useState({ skewX: 0.01, skewY: 0.08, rotDeg: 13 })
   const [scaleFit, setScaleFit] = useState(0.67)
   const [screenRotDeg, setScreenRotDeg] = useState(50)
@@ -293,7 +296,6 @@ export default function Navigator({ sections }) {
       stage.style.removeProperty('transform')
       stage.style.removeProperty('--content-left')
       content.style.removeProperty('transform')
-      document.documentElement.style.removeProperty('--chrome-item-rot')
       if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
       const track = document.querySelector('.content-track')
       if (track instanceof HTMLElement) track.style.removeProperty('transform')
@@ -314,12 +316,6 @@ export default function Navigator({ sections }) {
     const offsetX = -p.view.w * p.restOffsetXFrac * clamped
     applyLayoutPose(offsetX, -p.screenRotDeg * (1 - clamped), 3 * (1 - clamped))
     poseRef.current.t = clamped
-    if (!p.isMobile) {
-      document.documentElement.style.setProperty(
-        '--chrome-item-rot',
-        `${-p.screenRotDeg * (1 - clamped)}deg`
-      )
-    }
     poseRef.current.scale = p.isMobile
       ? p.mobileScale
       : (p.diagonal * liveScaleFitNow) / (p.worldSpan * p.orthoZoom)
@@ -488,9 +484,6 @@ export default function Navigator({ sections }) {
     const shell = document.querySelector('.shell')
     const content = document.querySelector('.content')
     const track = document.querySelector('.content-track')
-    if (chrome instanceof HTMLElement && shell instanceof HTMLElement && stage instanceof HTMLElement && chrome.parentElement !== shell) {
-      shell.insertBefore(chrome, stage)
-    }
     if (helix instanceof HTMLElement && stage instanceof HTMLElement && helix.parentElement !== stage) {
       const main = stage.querySelector('.content')
       if (main instanceof HTMLElement) stage.insertBefore(helix, main)
@@ -505,7 +498,6 @@ export default function Navigator({ sections }) {
       root.style.removeProperty('--mobile-header-bg')
       root.style.removeProperty('--mobile-header-t')
       root.style.removeProperty('--mobile-art-h')
-      root.style.removeProperty('--chrome-item-rot')
       delete root.dataset.mobileHeader
       document.body.style.removeProperty('overflow')
       mobileHeaderRef.current = 'origin'
@@ -522,8 +514,15 @@ export default function Navigator({ sections }) {
       headerParallaxRef.current.last = null
     }
     if (!isMobile) {
+      const titleBox = document.querySelector('.header-title-container')
+      if (chrome instanceof HTMLElement && titleBox instanceof HTMLElement && chrome.parentElement !== titleBox) {
+        titleBox.appendChild(chrome)
+      }
       clearModeStyles()
       return undefined
+    }
+    if (chrome instanceof HTMLElement && shell instanceof HTMLElement && stage instanceof HTMLElement && chrome.parentElement !== shell) {
+      shell.insertBefore(chrome, stage)
     }
     const syncHeaderHeight = () => {
       const chromeH = chrome instanceof HTMLElement ? chrome.offsetHeight : 0
@@ -711,9 +710,12 @@ export default function Navigator({ sections }) {
       if (orbitModeRef.current === 'click' || scrollLockRef.current) {
         const target = scrollTargetRef.current
         if (target != null && Math.abs(scrollY - target) < 4) unlockScroll()
-        return
       }
       const next = indexFromScroll(scrollY)
+      if (pendingIndexRef.current >= 0 && next === pendingIndexRef.current) {
+        pendingIndexRef.current = -1
+        setPendingIndex(-1)
+      }
       if (next === selectedIndexRef.current) return
       selectedIndexRef.current = next
       setSelectedIndex(next)
@@ -780,6 +782,10 @@ export default function Navigator({ sections }) {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
       wheelAtRef.current = performance.now()
       const interrupt = orbitModeRef.current === 'click' || clickAnimRef.current
+      if (interrupt) {
+        pendingIndexRef.current = -1
+        setPendingIndex(-1)
+      }
       orbitModeRef.current = 'scroll'
       clickAnimRef.current = null
       scrollLockRef.current = false
@@ -799,6 +805,10 @@ export default function Navigator({ sections }) {
     }
 
     const onUserScrollIntent = () => {
+      if (pendingIndexRef.current >= 0) {
+        pendingIndexRef.current = -1
+        setPendingIndex(-1)
+      }
       unlockScroll()
     }
 
@@ -818,6 +828,8 @@ export default function Navigator({ sections }) {
         event.key === 'End' ||
         event.key === ' '
       ) {
+        pendingIndexRef.current = -1
+        setPendingIndex(-1)
         orbitModeRef.current = 'scroll'
         unlockScroll()
       }
@@ -884,12 +896,12 @@ export default function Navigator({ sections }) {
 
   const setSelectedIndexAndScroll = (index) => {
     orbitModeRef.current = 'click'
-    selectedIndexRef.current = index
-    setSelectedIndex(index)
     const id = helixSections[index]?.id
     if (!id) return
     const section = document.getElementById(id)
     if (!section) return
+    pendingIndexRef.current = index
+    setPendingIndex(index)
     if (!isMobile) {
       const top = clampScrollRef.current(section.offsetTop / scrollSpeed)
       scrollLockRef.current = true
@@ -943,6 +955,7 @@ export default function Navigator({ sections }) {
               planeHeight={planeHeight}
               skewValue={valueSkew}
               selectedIndex={selectedIndex}
+              pendingIndex={pendingIndex}
               setSelectedIndex={setSelectedIndexAndScroll}
               isMobile={isMobile}
               hoveredPlaneIdx={hoveredPlaneIdx}
@@ -964,6 +977,7 @@ export default function Navigator({ sections }) {
           </Suspense>
         </Canvas>
       </div>
+      {createPortal(
       <aside className={`debug-sliders${showDebug ? ' is-open' : ''}`}>
         <div className="debug-group">
           <p>front text</p>
@@ -1142,7 +1156,9 @@ export default function Navigator({ sections }) {
             />
           </label>
         </div>
-      </aside>
+      </aside>,
+      document.body,
+      )}
       {isMobile && (
         <ul className="navigator-list">
           {sections.filter((section) => !section.blank).map((section) => {

@@ -116,8 +116,8 @@ const setBackTextUv = (matrix, rot, skewX, skewY) => {
 
 const textLift = 0.00
 
-const tipFont = '800 64px "Oxanium", system-ui, sans-serif'
-const tipKickerFont = '600 32px "Oxanium", system-ui, sans-serif'
+const tipFont = '800 64px "Turret Road", system-ui, sans-serif'
+const tipKickerFont = '700 32px "Turret Road", system-ui, sans-serif'
 
 const makeTipTexture = (title, kicker, color, bg) => {
   const canvas = document.createElement('canvas')
@@ -365,6 +365,7 @@ export default function IndividualHelix({
   radius,
   skewedPlaneGeometry,
   selectedIndex,
+  pendingIndex = -1,
   setSelectedIndex,
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
@@ -383,6 +384,7 @@ export default function IndividualHelix({
   const z = radius * Math.cos(planeRotation)
   const isSel = selectedIndex === index
   const isHover = hoveredPlaneIdx === index
+  const faceHover = isHover || (pendingIndex === index && !isSel)
   const frontAngle = poseRef?.current?.orbitAngle ?? selectedIndex * baseRotation
   const { slot, tipY, tipZ } = tipFor(index, frontAngle, baseRotation, radius)
   const [colors, setColors] = useState(() => ({
@@ -554,7 +556,7 @@ export default function IndividualHelix({
     >
       <mesh geometry={faceGeom} raycast={faceRaycast}>
         <meshBasicMaterial
-          color={isSel ? colors.accent : isHover ? colors.hover : colors.bg}
+          color={isSel ? colors.accent : faceHover ? colors.hover : colors.bg}
           toneMapped={false}
           side={THREE.FrontSide}
           polygonOffset
@@ -566,7 +568,7 @@ export default function IndividualHelix({
       </mesh>
       <mesh geometry={faceGeom} raycast={faceRaycast}>
         <meshBasicMaterial
-          color={isSel ? colors.accent : isHover ? colors.hover : colors.bg}
+          color={isSel ? colors.accent : faceHover ? colors.hover : colors.bg}
           toneMapped={false}
           side={THREE.BackSide}
           polygonOffset

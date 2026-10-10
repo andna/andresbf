@@ -43,6 +43,7 @@ export default function Helix({
   planeWidth = 0.7,
   planeHeight = 0.5,
   selectedIndex,
+  pendingIndex = -1,
   setSelectedIndex,
   hoveredPlaneIdx,
   setHoveredPlaneIdx,
@@ -180,6 +181,7 @@ export default function Helix({
             radius={radius}
             skewedPlaneGeometry={skewedPlaneGeometry}
             selectedIndex={selectedIndex}
+            pendingIndex={pendingIndex}
             setSelectedIndex={setSelectedIndex}
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}

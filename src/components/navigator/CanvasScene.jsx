@@ -126,6 +126,7 @@ export default function CanvasScene({
   planeHeight = 0.5,
   skewValue,
   selectedIndex,
+  pendingIndex = -1,
   setSelectedIndex,
   isMobile,
   hoveredPlaneIdx,
@@ -280,7 +281,7 @@ export default function CanvasScene({
     ) autoSpinRef.current = true
 
     const spinning = autoSpinRef.current && !userRotatingRef.current
-    const desired = orbitModeRef?.current === 'click' ? selectedIndex : scrollIndexRef?.current
+    const desired = scrollIndexRef?.current
     if (spinning) {
       const next = (cam.userData.angle ?? targetAngleRef.current) + delta * autoSpinSpeed
       cam.userData.angle = next
@@ -409,6 +410,7 @@ export default function CanvasScene({
             planeWidth={planeWidth}
             planeHeight={planeHeight}
             selectedIndex={selectedIndex}
+            pendingIndex={pendingIndex}
             setSelectedIndex={setSelectedIndex}
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}

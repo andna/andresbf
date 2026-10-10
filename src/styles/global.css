@@ -22,7 +22,6 @@ html[data-theme="dark"] {
   --mobile-art-h: 10rem;
   --chrome-sidebar: 18rem;
   --chrome-pad-x: 1rem;
-  --chrome-item-rot: -50deg;
   --helix-hero-width: 60vw;
 }
 
@@ -31,7 +30,7 @@ body {
   margin: 0;
   background: var(--bg-color);
   color: var(--text-color);
-  font-family: "Oxanium", system-ui, -apple-system, sans-serif;
+  font-family: "Turret Road", system-ui, -apple-system, sans-serif;
 }
 
 .shell {
@@ -726,10 +725,6 @@ html[data-theme="dark"] .content .experience-org-name {
     transform: translateY(-100%);
   }
 
-  .chrome-bar > * {
-    transform: rotate(var(--chrome-item-rot));
-  }
-
   .stage {
     position: fixed;
     inset: 0;
@@ -819,6 +814,18 @@ html[data-theme="dark"] .content .experience-org-name {
     position: absolute;
     top: 0;
     left: 0;
+  }
+
+  .header-title-container .chrome {
+    position: absolute;
+    z-index: 3;
+    top: 8.25rem;
+    right: auto;
+    bottom: auto;
+    left: 0;
+    padding: 0;
+    background: transparent;
+    transform: none;
   }
 
   .content #header {
