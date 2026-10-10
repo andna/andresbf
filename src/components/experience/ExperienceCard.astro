@@ -1,0 +1,57 @@
+---
+const { name, field, logo = false, entries } = Astro.props;
+---
+
+<div class="experience-card">
+  <div class="experience-head">
+    {logo && <span class="experience-logo" aria-hidden="true"></span>}
+    <div class="experience-org">
+      <h2 class="experience-org-name">{name}</h2>
+      <p class="experience-org-field">{field}</p>
+    </div>
+  </div>
+  <ol class="experience-track">
+    <li class="experience-mark">
+      <span class="experience-arrow" aria-hidden="true"></span>
+    </li>
+    {entries.map((entry) => {
+      if (entry.type === 'start') {
+        return (
+          <li class="experience-mark experience-mark-fill">
+            <time class="experience-when" datetime={entry.datetime}>{entry.label}</time>
+            <span class="experience-spine" aria-hidden="true"></span>
+          </li>
+        );
+      }
+      if (entry.type === 'gap') {
+        return (
+          <li class="experience-mark">
+            <time class="experience-when" datetime={entry.datetime}>{entry.label}</time>
+          </li>
+        );
+      }
+      return (
+        <li class:list={['experience-step', { 'experience-step-range': entry.end }]}>
+          {entry.end && (
+            <time class="experience-when" datetime={entry.end.datetime}>{entry.end.label}</time>
+          )}
+          <span class="experience-spine" aria-hidden="true"></span>
+          <p class="experience-role">
+            <span>
+              {entry.lines.map((line, index) => {
+                const text = typeof line === 'string' ? line : line.text;
+                const plain = typeof line === 'object' && line.plain;
+                return (
+                  <>
+                    {index > 0 && <br />}
+                    {plain ? <span class="experience-role-plain">{text}</span> : text}
+                  </>
+                );
+              })}
+            </span>
+          </p>
+        </li>
+      );
+    })}
+  </ol>
+</div>

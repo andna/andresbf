@@ -13,6 +13,8 @@ import { Content as Portfolio3 } from '../content/portfolio-3.md';
 import { Content as Portfolio4 } from '../content/portfolio-4.md';
 import { Content as Education } from '../content/education.md';
 import { Content as Footer } from '../content/footer.md';
+import ExperienceCard from '../components/experience/ExperienceCard.astro';
+import { experienceJobs } from '../data/experience.js';
 
 const contentById = {
   header: Header,
@@ -72,6 +74,16 @@ for (const article of articles) {
               );
             }
             const { id, Content } = group;
+            if (id === 'experience') {
+              return (
+                <section id={id}>
+                  <Content />
+                  {experienceJobs.map((job) => (
+                    <ExperienceCard {...job} />
+                  ))}
+                </section>
+              );
+            }
             return (
               <section id={id}>
                 <Content />

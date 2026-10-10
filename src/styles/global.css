@@ -111,10 +111,11 @@ body {
 }
 
 .content section {
+  position: relative;
+  isolation: isolate;
   min-height: calc(100vh - var(--chrome-header));
   box-sizing: border-box;
   padding: 2rem 1.25rem 4rem;
-  max-width: 42rem;
   scroll-margin-top: var(--chrome-header);
 }
 
@@ -230,10 +231,14 @@ body {
 .me-planet,
 .skills-cubes,
 .experience-pyramid {
+  position: absolute;
+  z-index: -1;
+  right: -100%;
   display: block;
   width: min(100%, 28rem);
   height: auto;
   margin: 2.5rem auto 1rem;
+  opacity: 0.3;
 }
 
 .experience-pyramid-mesh,
@@ -316,6 +321,171 @@ body {
   34% {
     opacity: 0.38;
   }
+}
+
+.experience-card {
+  --experience-dates: 5rem;
+  --spine-w: 0.36rem;
+  --arrow-half: 0.48rem;
+  --arrow-h: 0.68rem;
+  --notch: 0.15rem;
+  width: min(100%, 30rem);
+  margin-top: 0.5rem;
+}
+
+.experience-card + .experience-card {
+  margin-top: 2rem;
+}
+
+.experience-head {
+  display: grid;
+  grid-template-columns: var(--experience-dates) 1.15rem minmax(0, 1fr);
+  column-gap: 0.55rem;
+  align-items: end;
+}
+
+.experience-org {
+  grid-column: 3;
+}
+
+.experience-mark,
+.experience-step {
+  display: grid;
+  grid-template-columns: var(--experience-dates) 1.15rem minmax(0, 1fr);
+  column-gap: 0.55rem;
+  align-items: center;
+}
+
+.experience-logo {
+  justify-self: end;
+  width: var(--experience-dates);
+  height: var(--experience-dates);
+  background-color: var(--secondary-color);
+  -webkit-mask: url("/logo-a.svg") right center / contain no-repeat;
+  mask: url("/logo-a.svg") right center / contain no-repeat;
+}
+
+.content .experience-org-name {
+  margin: 0;
+  color: var(--accent-color);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.content .experience-org-field {
+  margin: 0.18rem 0 0;
+  color: color-mix(in srgb, var(--accent-color) 50%, var(--bg-color) 50%);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.experience-track {
+  --experience-gap-pull: 0.16rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0.85rem 0 0;
+  padding: 0 0 0.5rem;
+  list-style: none;
+}
+
+.experience-mark {
+  min-height: 0.75rem;
+}
+
+.experience-mark:first-child {
+  min-height: var(--arrow-h);
+}
+
+.experience-step + .experience-mark,
+.experience-mark:not(.experience-mark-fill) + .experience-step {
+  margin-top: calc(var(--experience-gap-pull) * -1);
+}
+
+.experience-mark-fill + .experience-step {
+  margin-top: calc(var(--experience-gap-pull) * -2);
+}
+
+.experience-when {
+  grid-column: 1;
+  justify-self: stretch;
+  margin: 0;
+  color: var(--text-color);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.05;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.experience-arrow {
+  grid-column: 2;
+  justify-self: center;
+  align-self: end;
+  width: calc(var(--arrow-half) * 2);
+  height: var(--arrow-h);
+  margin-bottom: -1px;
+  background: var(--text-color);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.content .experience-role {
+  display: flex;
+  align-items: center;
+  position: relative;
+  grid-column: 3;
+  margin: 0;
+  padding-left: 1.1rem;
+  min-height: 2.65lh;
+  color: oklch(from color-mix(in oklch, var(--secondary-color) 30%, var(--text-color) 70%) l calc(c / 0.3) h);
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.02;
+}
+
+.content .experience-role-plain {
+  font-weight: 400;
+}
+
+.content .experience-role::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.32rem;
+  height: 0.32rem;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translateY(-50%);
+}
+
+.experience-spine {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  align-self: stretch;
+  width: var(--spine-w);
+  background: var(--text-color);
+  position: relative;
+}
+
+.experience-mark-fill + .experience-step .experience-spine {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - var(--notch)), 0 100%);
+}
+
+.experience-mark:not(.experience-mark-fill) + .experience-step .experience-spine {
+  clip-path: polygon(50% 0, 100% var(--notch), 100% 100%, 50% calc(100% - var(--notch)), 0 100%, 0 var(--notch));
+}
+
+.experience-step-range .experience-when {
+  align-self: end;
+  transform: translateY(50%);
+}
+
+html[data-theme="dark"] .content .experience-org-name {
+  color: var(--secondary-color);
 }
 
 .me-planet-land,
@@ -608,7 +778,6 @@ body {
   .content section {
     min-height: 100vh;
     padding: 3rem 2.5rem 5rem;
-    max-width: min(42rem, 100%);
   }
 
   .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em) {
