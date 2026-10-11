@@ -120,11 +120,8 @@ export default function Navigator({ sections }) {
   const applyHeaderParallaxRef = useRef(() => {})
   const measurePortfolioPinRef = useRef(() => {})
   const portfolioPinRef = useRef({
-    title1: null,
-    start: 0,
-    max: 0,
-    parentAbs: 0,
-    last: null,
+    block: null,
+    cards: [],
   })
   const kickVisualLerpRef = useRef(() => {})
   const clampScrollRef = useRef((y) => Math.max(0, y))
@@ -344,34 +341,74 @@ export default function Navigator({ sections }) {
 
   const measurePortfolioPin = () => {
     const cache = portfolioPinRef.current
-    const title1 = document.querySelector('#portfolio-1 > h1')
-    const title4 = document.querySelector('#portfolio-4 > h1')
-    cache.title1 = title1 instanceof HTMLElement ? title1 : null
-    if (!(title1 instanceof HTMLElement) || !(title4 instanceof HTMLElement)) {
-      cache.start = 0
-      cache.max = 0
-      return
-    }
-    cache.start = title1.offsetTop
-    cache.max = Math.max(0, title4.offsetTop - title1.offsetTop)
-    cache.last = null
-    const parent = title1.offsetParent
-    cache.parentAbs = parent instanceof HTMLElement
-      ? parent.getBoundingClientRect().top + window.scrollY
-      : 0
+    const block = document.querySelector('.portfolio-block')
+    cache.block = block instanceof HTMLElement ? block : null
+    cache.cards = cache.block
+      ? [...cache.block.querySelectorAll(':scope > section')]
+      : []
+    cache.cards.forEach((card) => {
+      card.style.removeProperty('transform')
+    })
+    const title = cache.block?.querySelector(':scope > .portfolio-title')
+    if (title instanceof HTMLElement) title.style.removeProperty('transform')
   }
 
   const applyPortfolioTitlePin = (contentY) => {
     const cache = portfolioPinRef.current
-    if (!cache.title1) measurePortfolioPin()
-    const { title1, start, max, parentAbs } = cache
-    if (!(title1 instanceof HTMLElement)) return
-    const next = isMobile
-      ? Math.min(Math.max(0, window.scrollY - parentAbs - start), max)
-      : Math.min(Math.max(0, contentY - start), max)
-    if (next === cache.last) return
-    cache.last = next
-    title1.style.transform = next ? `translate3d(0, ${next}px, 0)` : ''
+    if (!cache.block) measurePortfolioPin()
+    const { block, cards } = cache
+    if (!(block instanceof HTMLElement) || !cards.length) return
+    const flap = 18
+    const content = document.querySelector('.content')
+    const headerPx = isMobile
+      ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
+      : 0
+    const viewport = isMobile
+      ? window.innerHeight
+      : content instanceof HTMLElement ? content.clientHeight : window.innerHeight
+    const contentTop = isMobile && content instanceof HTMLElement ? content.offsetTop : 0
+    const y = isMobile ? window.scrollY : contentY
+    const title = block.querySelector(':scope > .portfolio-title')
+    const titleBand = title instanceof HTMLElement
+      ? title.offsetHeight + (parseFloat(getComputedStyle(title).marginBottom) || 0)
+      : 0
+    const gap = 96
+    const sticks = cards.map((_, index) => headerPx + titleBand + index * flap)
+    cards.forEach((card, index) => {
+      const height = `${Math.max(220, Math.round(viewport - sticks[index] - gap))}px`
+      if (card.style.minHeight !== height) card.style.minHeight = height
+    })
+    const last = cards.length - 1
+    const prevArrive = last > 0
+      ? contentTop + cards[last - 1].offsetTop - sticks[last - 1]
+      : 0
+    const arriveY = contentTop + cards[last].offsetTop - sticks[last]
+    const dwell = Math.max(0, arriveY - prevArrive)
+    const pad = `${Math.round(dwell)}px`
+    if (block.style.paddingBottom !== pad) block.style.paddingBottom = pad
+    const release = Math.max(0, y - arriveY - dwell)
+    let current = 0
+    cards.forEach((card, index) => {
+      const stick = sticks[index]
+      const natural = contentTop + card.offsetTop - y
+      if (natural <= stick) current = index
+      const pin = Math.max(0, stick - natural)
+      const dy = pin - release
+      const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
+      if (card.style.transform !== next) card.style.transform = next
+      card.style.zIndex = String(index + 1)
+    })
+    if (title instanceof HTMLElement) {
+      const natural = contentTop + title.offsetTop - y
+      const pin = Math.max(0, headerPx - natural)
+      const dy = pin - release
+      const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
+      if (title.style.transform !== next) title.style.transform = next
+      title.style.zIndex = String(cards.length + 1)
+      const subtitle = title.querySelector('.portfolio-subtitle')
+      const label = cards[current].dataset.subtitle ?? ''
+      if (subtitle && subtitle.textContent !== label) subtitle.textContent = label
+    }
   }
 
   measurePortfolioPinRef.current = measurePortfolioPin
@@ -473,8 +510,11 @@ export default function Navigator({ sections }) {
       stage.style.removeProperty('--content-left')
     }
     if (content instanceof HTMLElement) content.style.removeProperty('transform')
-    const title1 = document.querySelector('#portfolio-1 > h1')
-    if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
+    document.querySelectorAll('.portfolio-block > section').forEach((card) => {
+      if (card instanceof HTMLElement) card.style.removeProperty('transform')
+    })
+    const portfolioTitle = document.querySelector('.portfolio-block > .portfolio-title')
+    if (portfolioTitle instanceof HTMLElement) portfolioTitle.style.removeProperty('transform')
     const parallax = document.querySelector('.header-parallax')
     if (parallax instanceof HTMLElement) parallax.style.removeProperty('transform')
   }, [])
@@ -496,7 +536,6 @@ export default function Navigator({ sections }) {
       if (main instanceof HTMLElement) stage.insertBefore(helix, main)
       else stage.prepend(helix)
     }
-    const title1 = document.querySelector('#portfolio-1 > h1')
     const parallax = document.querySelector('.header-parallax')
     const clearModeStyles = () => {
       root.style.removeProperty('--chrome-header')
@@ -516,9 +555,13 @@ export default function Navigator({ sections }) {
       if (content instanceof HTMLElement) content.style.removeProperty('transform')
       if (track instanceof HTMLElement) track.style.removeProperty('transform')
       if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
-      if (title1 instanceof HTMLElement) title1.style.removeProperty('transform')
+      document.querySelectorAll('.portfolio-block > section').forEach((card) => {
+        if (card instanceof HTMLElement) card.style.removeProperty('transform')
+      })
+      const portfolioTitle = document.querySelector('.portfolio-block > .portfolio-title')
+      if (portfolioTitle instanceof HTMLElement) portfolioTitle.style.removeProperty('transform')
       if (parallax instanceof HTMLElement) parallax.style.removeProperty('transform')
-      portfolioPinRef.current.last = null
+      portfolioPinRef.current.block = null
       headerParallaxRef.current.last = null
     }
     if (!isMobile) {
