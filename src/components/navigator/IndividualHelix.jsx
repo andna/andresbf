@@ -378,6 +378,7 @@ export default function IndividualHelix({
   textFront,
   textBack,
   poseRef,
+  isMobile = false,
 }) {
   const x = radius * Math.sin(planeRotation)
   const z = radius * Math.cos(planeRotation)
@@ -521,7 +522,7 @@ export default function IndividualHelix({
     if (faceGeom !== skewedPlaneGeometry) faceGeom.dispose()
   }, [faceGeom, skewedPlaneGeometry])
 
-  const mutePointer = isSel && !!cap
+  const mutePointer = isSel && !!cap && !isMobile
   const faceRaycast = mutePointer ? () => null : THREE.Mesh.prototype.raycast
 
   useEffect(() => {
@@ -547,7 +548,6 @@ export default function IndividualHelix({
         document.body.style.cursor = ''
       }}
       onClick={(e) => {
-        if (isSel) return
         setSelectedIndex(index)
         e.stopPropagation()
       }}

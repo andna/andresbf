@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
@@ -6,6 +6,7 @@ import { hexToRgb, rgbToHex, readThemeColors } from '../../theme.js'
 import './navigator.css'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
+import { mobileHelixLabel, mobileLogoLabel } from '../../data/sections.js'
 
 const valueSkewDesktop = -0.67
 const valueSkewMobile = -1.3
@@ -69,6 +70,58 @@ export default function Navigator({ sections }) {
     return true
   }
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(orientation: portrait)').matches)
+  const labelListRef = useRef(null)
+  const portfolioWordRef = useRef(null)
+
+  useLayoutEffect(() => {
+    if (!isMobile) return undefined
+    const place = () => {
+      const list = labelListRef.current
+      const word = portfolioWordRef.current
+      if (!(list instanceof HTMLElement) || !(word instanceof HTMLElement)) return
+      const items = [...list.querySelectorAll(':scope > li.is-portfolio')]
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (!(first instanceof HTMLElement) || !(last instanceof HTMLElement)) return
+      const wrap = word.parentElement
+      if (!(wrap instanceof HTMLElement)) return
+      const glyphBox = (el) => {
+        const node = el.querySelector('button') || el
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        return range.getBoundingClientRect()
+      }
+      const before = first.previousElementSibling
+      const after = last.nextElementSibling
+      if (!(before instanceof HTMLElement) || !(after instanceof HTMLElement)) return
+      const wrapRect = wrap.getBoundingClientRect()
+      const beforeBox = glyphBox(before)
+      const afterBox = glyphBox(after)
+      const under = Math.max(...items.map((item) => glyphBox(item).bottom))
+      const firstBox = glyphBox(first)
+      const lastBox = glyphBox(last)
+      const spanCenter = (firstBox.left + firstBox.right + lastBox.left + lastBox.right) / 4 - wrapRect.left
+      const width = Math.max(0, afterBox.left - beforeBox.right)
+      const glyphs = () => {
+        const range = document.createRange()
+        range.selectNodeContents(word)
+        return range.getBoundingClientRect()
+      }
+      word.style.top = `${under - wrapRect.top + 8}px`
+      word.style.letterSpacing = '0px'
+      word.style.width = 'max-content'
+      word.style.left = '0px'
+      const natural = glyphs().width
+      const gaps = Math.max(1, (word.textContent || '').length - 1)
+      word.style.letterSpacing = `${natural > 0 ? Math.max(0, (width - natural) / gaps) * 0.3 : 0}px`
+      const placed = glyphs()
+      word.style.left = `${spanCenter - (placed.left + placed.right) / 2 + wrapRect.left + 14}px`
+    }
+    place()
+    document.fonts?.ready.then(place)
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [isMobile])
 
   useEffect(() => {
     const onMove = () => {
@@ -103,6 +156,9 @@ export default function Navigator({ sections }) {
   const heroTextBack = { skewX: -0.61, skewY: -0.07, rotDeg: 57 }
   const [scrollPoseT, setScrollPoseT] = useState(0)
   const canvasRef = useRef(null)
+  const helixWrapRef = useRef(null)
+  const mobileFitRef = useRef(1)
+  const [mobileFit, setMobileFit] = useState(1)
   const selectedIndexRef = useRef(0)
   const scrollLockRef = useRef(false)
   const scrollTargetRef = useRef(null)
@@ -138,6 +194,7 @@ export default function Navigator({ sections }) {
   const expandedHeaderRef = useRef(0)
   const expandedRowRef = useRef(0)
   const compactHeaderRef = useRef(0)
+  const mobileIndexAtRef = useRef(() => ({ index: 0, start: 0, nextTop: Infinity }))
   const syncHeaderHeightRef = useRef(() => {})
   const applyMobileHeaderPoseRef = useRef(() => {})
   const orbitModeRef = useRef('scroll')
@@ -165,6 +222,7 @@ export default function Navigator({ sections }) {
   const planeHeight = isMobile ? planeHeightMobile : planeHeightDesktop
   const orthoZoom = 200
   const pose = isMobile ? helixMobile : helixCenter
+  const mobileScale = pose.scale * (isMobile ? mobileFit : 1)
   const planeWidth = 0.5
   const worldSpan =
     Math.abs(
@@ -172,7 +230,7 @@ export default function Navigator({ sections }) {
       helixPlaneY(0, valueSkew, planeWidth, planeHeight)
     ) + planeHeight
   const diagonal = Math.hypot(view.w, view.h)
-  const scale = isMobile ? pose.scale : (diagonal * liveScaleFit) / (worldSpan * orthoZoom)
+  const scale = isMobile ? mobileScale : (diagonal * liveScaleFit) / (worldSpan * orthoZoom)
   const screenRoll = (liveScreenRotDeg * Math.PI) / 180
   const textFrontRad = {
     skewX: textFront.skewX,
@@ -203,7 +261,7 @@ export default function Navigator({ sections }) {
     worldSpan,
     orthoZoom,
     diagonal,
-    mobileScale: helixMobile.scale,
+    mobileScale,
     heroTextBack,
     restTextBack: textBack,
   }
@@ -358,10 +416,11 @@ export default function Navigator({ sections }) {
     if (!cache.block) measurePortfolioPin()
     const { block, cards } = cache
     if (!(block instanceof HTMLElement) || !cards.length) return
-    const flap = 18
     const content = document.querySelector('.content')
     const headerPx = isMobile
-      ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
+      ? (compactHeaderRef.current
+          || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-bg'))
+          || 0)
       : 0
     const viewport = isMobile
       ? window.innerHeight
@@ -373,25 +432,41 @@ export default function Navigator({ sections }) {
       ? title.offsetHeight + (parseFloat(getComputedStyle(title).marginBottom) || 0)
       : 0
     const gap = 96
-    const sticks = cards.map((_, index) => headerPx + titleBand + index * flap)
-    cards.forEach((card, index) => {
-      const height = `${Math.max(220, Math.round(viewport - sticks[index] - gap))}px`
+    const tab = cards[0].querySelector('.portfolio-tab')
+    const tabHeight = tab instanceof HTMLElement ? tab.offsetHeight : 0
+    if (isMobile) {
+      cards.forEach((card) => {
+        if (card.style.marginTop) card.style.removeProperty('margin-top')
+        if (card.style.transform) card.style.removeProperty('transform')
+        if (card.style.minHeight) card.style.removeProperty('min-height')
+        if (card.style.zIndex) card.style.removeProperty('z-index')
+      })
+      if (block.style.paddingBottom) block.style.removeProperty('padding-bottom')
+      if (title instanceof HTMLElement) {
+        if (title.style.transform) title.style.removeProperty('transform')
+        if (title.style.zIndex) title.style.removeProperty('z-index')
+      }
+      return
+    }
+    const titleGap = titleBand
+    const stick = headerPx + titleGap + tabHeight
+    cards.forEach((card) => {
+      const height = `${Math.max(220, Math.round(viewport - stick - gap))}px`
+      const margin = `${tabHeight}px`
       if (card.style.minHeight !== height) card.style.minHeight = height
+      if (card.style.marginTop !== margin) card.style.marginTop = margin
     })
     const last = cards.length - 1
     const prevArrive = last > 0
-      ? contentTop + cards[last - 1].offsetTop - sticks[last - 1]
+      ? contentTop + cards[last - 1].offsetTop - stick
       : 0
-    const arriveY = contentTop + cards[last].offsetTop - sticks[last]
+    const arriveY = contentTop + cards[last].offsetTop - stick
     const dwell = Math.max(0, arriveY - prevArrive)
     const pad = `${Math.round(dwell)}px`
     if (block.style.paddingBottom !== pad) block.style.paddingBottom = pad
     const release = Math.max(0, y - arriveY - dwell)
-    let current = 0
     cards.forEach((card, index) => {
-      const stick = sticks[index]
       const natural = contentTop + card.offsetTop - y
-      if (natural <= stick) current = index
       const pin = Math.max(0, stick - natural)
       const dy = pin - release
       const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
@@ -405,9 +480,6 @@ export default function Navigator({ sections }) {
       const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
       if (title.style.transform !== next) title.style.transform = next
       title.style.zIndex = String(cards.length + 1)
-      const subtitle = title.querySelector('.portfolio-subtitle')
-      const label = cards[current].dataset.subtitle ?? ''
-      if (subtitle && subtitle.textContent !== label) subtitle.textContent = label
     }
   }
 
@@ -447,11 +519,53 @@ export default function Navigator({ sections }) {
     sectionAnimRef.current = next
   }
 
+  const layoutTop = (el) => {
+    let y = 0
+    let node = el
+    while (node instanceof HTMLElement) {
+      y += node.offsetTop
+      node = node.offsetParent
+    }
+    return y
+  }
+
+  const mobileSectionAnchor = (section) => {
+    if (section.id === 'header') return 0
+    const tab = section.querySelector(':scope > .portfolio-tab')
+    const heading = section.querySelector('h1, h2')
+    const title = tab instanceof HTMLElement ? tab : heading instanceof HTMLElement ? heading : section
+    const pad = parseFloat(getComputedStyle(section).paddingTop) || 0
+    const headerPx = compactHeaderRef.current
+      || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-bg'))
+      || 0
+    let top = layoutTop(title)
+    if (title === tab && getComputedStyle(title).position === 'absolute') top -= title.offsetHeight - 1
+    return Math.max(0, top - headerPx - pad)
+  }
+
+  const mobileIndexAt = (scrollY) => {
+    let index = 0
+    let start = 0
+    let nextTop = Infinity
+    for (let i = 0; i < helixSections.length; i += 1) {
+      const section = document.getElementById(helixSections[i].id)
+      if (!(section instanceof HTMLElement)) continue
+      const top = mobileSectionAnchor(section)
+      if (top <= scrollY + 1) {
+        index = i
+        start = top
+        nextTop = Infinity
+      } else if (nextTop === Infinity) {
+        nextTop = top
+      }
+    }
+    return { index, start, nextTop }
+  }
+
+  mobileIndexAtRef.current = mobileIndexAt
+
   const applyScrollVisuals = (scrollY, poseOverride) => {
-    const headerPx = isMobile
-      ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
-      : 0
-    const contentY = isMobile ? scrollY + headerPx : scrollY * scrollSpeed
+    const contentY = isMobile ? scrollY : scrollY * scrollSpeed
     if (!isMobile) {
       const track = document.querySelector('.content-track')
       if (track instanceof HTMLElement) {
@@ -459,16 +573,24 @@ export default function Navigator({ sections }) {
       }
     }
     let index = 0
+    let start = 0
     let nextTop = Infinity
-    for (let i = 0; i < helixSections.length; i += 1) {
-      const section = document.getElementById(helixSections[i].id)
-      if (!(section instanceof HTMLElement)) continue
-      const top = section.offsetTop
-      if (top <= contentY) index = i
-      else if (nextTop === Infinity) nextTop = top
+    if (isMobile) {
+      const at = mobileIndexAt(scrollY)
+      index = at.index
+      start = at.start
+      nextTop = at.nextTop
+    } else {
+      for (let i = 0; i < helixSections.length; i += 1) {
+        const section = document.getElementById(helixSections[i].id)
+        if (!(section instanceof HTMLElement)) continue
+        const top = section.offsetTop
+        if (top <= contentY) index = i
+        else if (nextTop === Infinity) nextTop = top
+      }
+      const current = document.getElementById(helixSections[index]?.id)
+      start = current instanceof HTMLElement ? current.offsetTop : 0
     }
-    const current = document.getElementById(helixSections[index]?.id)
-    const start = current instanceof HTMLElement ? current.offsetTop : 0
     const span = Math.max(1, nextTop - start)
     scrollIndexRef.current = index + Math.min(1, Math.max(0, (contentY - start) / span))
     syncSectionAnimation(index)
@@ -508,6 +630,7 @@ export default function Navigator({ sections }) {
     if (stage instanceof HTMLElement) {
       stage.style.removeProperty('transform')
       stage.style.removeProperty('--content-left')
+      stage.style.removeProperty('padding-bottom')
     }
     if (content instanceof HTMLElement) content.style.removeProperty('transform')
     document.querySelectorAll('.portfolio-block > section').forEach((card) => {
@@ -551,6 +674,7 @@ export default function Navigator({ sections }) {
       if (stage instanceof HTMLElement) {
         stage.style.removeProperty('transform')
         stage.style.removeProperty('--content-left')
+        stage.style.removeProperty('padding-bottom')
       }
       if (content instanceof HTMLElement) content.style.removeProperty('transform')
       if (track instanceof HTMLElement) track.style.removeProperty('transform')
@@ -593,6 +717,7 @@ export default function Navigator({ sections }) {
         }
       }
       compactHeaderRef.current = circleH + 2
+      root.style.setProperty('--mobile-header-compact', `${compactHeaderRef.current}px`)
       if (mode === 'menu' && expandedHeaderRef.current > 0) {
         root.style.setProperty('--mobile-header-bg', `${expandedHeaderRef.current}px`)
       } else {
@@ -602,6 +727,10 @@ export default function Navigator({ sections }) {
         root.style.setProperty('--mobile-header-bg', `${bg}px`)
       }
       root.style.setProperty('--mobile-chrome-h', `${chromeH}px`)
+      if (stage instanceof HTMLElement && expandedHeaderRef.current > 0 && compactHeaderRef.current > 0) {
+        const extra = Math.max(0, Math.round(expandedHeaderRef.current - compactHeaderRef.current))
+        stage.style.paddingBottom = extra ? `${extra}px` : ''
+      }
     }
     syncHeaderHeightRef.current = syncHeaderHeight
     applyMobileHeaderPose(window.scrollY)
@@ -695,7 +824,15 @@ export default function Navigator({ sections }) {
 
   useEffect(() => {
     selectedIndexRef.current = selectedIndex
-  }, [selectedIndex])
+    const label = document.querySelector('.mobile-header-logo-name')
+    const kicker = document.querySelector('.mobile-header-logo-kicker')
+    const logo = document.querySelector('.mobile-header-logo')
+    if (!(label instanceof HTMLElement) || !(kicker instanceof HTMLElement) || !(logo instanceof HTMLElement)) return
+    const section = helixSections[selectedIndex]
+    label.textContent = mobileLogoLabel(section)
+    kicker.textContent = section?.kicker === 'Portfolio' ? 'Portfolio' : ''
+    logo.classList.toggle('is-contact', section?.title === 'Contact')
+  }, [selectedIndex, helixSections])
 
   useEffect(() => {
     const spacer = document.querySelector('.scroll-spacer')
@@ -713,12 +850,8 @@ export default function Navigator({ sections }) {
       const viewport = window.innerHeight
       const maxY = document.documentElement.scrollHeight - viewport
       if (maxY > 0 && scrollY >= maxY - 2) return helixSections.length - 1
-      const headerPx = isMobile
-        ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
-        : 0
-      const probe = isMobile
-        ? scrollY + headerPx
-        : scrollY * scrollSpeed + viewport * 0.33
+      if (isMobile) return mobileIndexAtRef.current(scrollY).index
+      const probe = scrollY * scrollSpeed + viewport * 0.33
       let best = 0
       let bestTop = -Infinity
       for (let i = 0; i < helixSections.length; i += 1) {
@@ -958,11 +1091,62 @@ export default function Navigator({ sections }) {
       window.scrollTo({ top, behavior: 'smooth' })
       return
     }
-    const headerPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-header')) || 0
-    const top = Math.max(0, section.offsetTop - headerPx)
+    const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+    const top = Math.min(maxY, mobileSectionAnchor(section))
     scrollLockRef.current = true
     scrollTargetRef.current = top
     window.scrollTo({ top, behavior: 'smooth' })
+  }
+
+  const stepSection = (delta) => {
+    const current = selectedIndexRef.current
+    const next = current + delta
+    if (next < 0) {
+      setSelectedIndexAndScroll(0)
+      return
+    }
+    if (next >= helixSections.length) {
+      setSelectedIndexAndScroll(helixSections.length - 1)
+      return
+    }
+    setSelectedIndexAndScroll(next)
+  }
+
+  const reportHelixBounds = (bounds) => {
+    const el = helixWrapRef.current
+    if (el) {
+      el.style.setProperty('--helix-left', `${bounds.left}px`)
+      el.style.setProperty('--helix-right', `${bounds.right}px`)
+      const lineY = bounds.leftY - 2
+      el.style.setProperty('--helix-left-y', `${lineY}px`)
+      el.style.setProperty('--helix-right-y', `${lineY}px`)
+    }
+    if (!isMobile || bounds.width < 1) return
+    const logo = document.querySelector('.mobile-header-logo')
+    const font = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    const logoBox = logo instanceof HTMLElement ? logo.getBoundingClientRect() : null
+    const reserved = logoBox && logoBox.width > 0 ? logoBox.right : (0.5 + 1.75) * font
+    document.documentElement.style.setProperty('--logo-span', `${reserved}px`)
+    const pad = 1.5 * font
+    const gap = 3 * font
+    const tipInset = 0.7 * font * 2 / 12
+    const desiredRight = window.innerWidth - pad - tipInset - gap
+    const maxWidth = Math.max(1, desiredRight - reserved - gap)
+    const t = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-t')) || 0
+    const heroNudge = window.innerWidth / 2 - (bounds.left + bounds.right) / 2
+    const headerNudge = desiredRight - bounds.right
+    const nudge = heroNudge + (headerNudge - heroNudge) * t
+    document.documentElement.style.setProperty('--helix-nudge', `${nudge}px`)
+    const fit = mobileFitRef.current
+    const full = bounds.width / fit
+    const next = Math.min(1, maxWidth / full)
+    if (Math.abs(next - fit) > 0.004) {
+      mobileFitRef.current = next
+      const fitted = helixMobile.scale * next
+      if (poseParamsRef.current) poseParamsRef.current.mobileScale = fitted
+      poseRef.current.scale = fitted
+      setMobileFit(next)
+    }
   }
 
   return (
@@ -970,7 +1154,18 @@ export default function Navigator({ sections }) {
       className={`navigator${isMobile ? ' is-mobile' : ' is-desktop'}`}
       data-selected-index={selectedIndex}
     >
-      <div className="canvas" ref={canvasRef}>
+      <div className="navigator-helix" ref={helixWrapRef}>
+        <button
+          type="button"
+          className="navigator-arrow is-prev"
+          aria-label="Previous section"
+          onClick={() => stepSection(-1)}
+        >
+          <svg viewBox="0 0 12 20" aria-hidden="true">
+            <path d="M10 1.5 L2 10 L10 18.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+        </button>
+        <div className="canvas" ref={canvasRef}>
         <Canvas
           gl={{ alpha: true, antialias: true }}
           dpr={[1, 2]}
@@ -1003,9 +1198,21 @@ export default function Navigator({ sections }) {
               contactCloseOpacity={contactCloseOpacity}
               contactFarOpacity={contactFarOpacity}
               secondaryColor={secondaryColor}
+              onHelixBounds={reportHelixBounds}
             />
           </Suspense>
         </Canvas>
+        </div>
+        <button
+          type="button"
+          className="navigator-arrow is-next"
+          aria-label="Next section"
+          onClick={() => stepSection(1)}
+        >
+          <svg viewBox="0 0 12 20" aria-hidden="true">
+            <path d="M2 1.5 L10 10 L2 18.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+        </button>
       </div>
       <aside className={`debug-sliders${showDebug ? ' is-open' : ''}`}>
         <div className="debug-group">
@@ -1187,27 +1394,35 @@ export default function Navigator({ sections }) {
         </div>
       </aside>
       {isMobile && (
-        <ul className="navigator-list">
-          {sections.filter((section) => !section.blank).map((section) => {
-            const helixIndex = sections.findIndex((entry) => entry.id === section.id)
-            return (
-            <li key={section.id}>
-              <button
-                type="button"
-                className={[
-                  selectedIndex === helixIndex ? 'selected' : '',
-                  hoveredPlaneIdx === helixIndex ? 'hovered' : '',
-                ].filter(Boolean).join(' ')}
-                onPointerEnter={() => setHoveredPlane(helixIndex)}
-                onPointerLeave={() => setHoveredPlane(-1, helixIndex)}
-                onClick={() => setSelectedIndexAndScroll(helixIndex)}
-              >
-                {section.label}
-              </button>
-            </li>
-            )
-          })}
-        </ul>
+        <div className="navigator-labels">
+          <span
+            className={`navigator-portfolio-word${sections[hoveredPlaneIdx]?.kicker === 'Portfolio' ? ' is-lit' : ''}`}
+            ref={portfolioWordRef}
+          >
+            Portfolio
+          </span>
+          <ul className="navigator-list" ref={labelListRef}>
+            {sections.map((section) => {
+              const helixIndex = sections.findIndex((entry) => entry.id === section.id)
+              return (
+              <li key={section.id} className={section.kicker === 'Portfolio' ? 'is-portfolio' : undefined}>
+                <button
+                  type="button"
+                  className={[
+                    selectedIndex === helixIndex ? 'selected' : '',
+                    hoveredPlaneIdx === helixIndex ? 'hovered' : '',
+                  ].filter(Boolean).join(' ')}
+                  onPointerEnter={() => setHoveredPlane(helixIndex)}
+                  onPointerLeave={() => setHoveredPlane(-1, helixIndex)}
+                  onClick={() => setSelectedIndexAndScroll(helixIndex)}
+                >
+                  {mobileHelixLabel(section)}
+                </button>
+              </li>
+              )
+            })}
+          </ul>
+        </div>
       )}
     </div>
   )

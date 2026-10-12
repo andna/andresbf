@@ -153,9 +153,25 @@ body {
   font-size: 1.25rem;
 }
 
-.portfolio-subtitle {
+.portfolio-tab {
+  --tab-reveal: 0.9rem;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: calc(var(--octagon-cut) + var(--tab-index) * var(--tab-reveal));
+  transform: translateY(calc(-100% + 1px));
+  min-width: 4.5rem;
+  padding: 0.15rem 0.9rem 0.1rem;
+  background-color: var(--bg-color);
+  border: 1px solid var(--accent-color);
+  border-bottom: 0;
+  border-radius: var(--octagon-cut) var(--octagon-cut) 0 0;
+  corner-shape: bevel;
   font-size: 2rem;
   font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .header-hero {
@@ -190,6 +206,10 @@ body {
 }
 
 .mobile-header-overlay {
+  display: none;
+}
+
+.mobile-header-logo {
   display: none;
 }
 
@@ -559,15 +579,69 @@ html[data-theme="dark"] .content .experience-org-name {
 }
 
 @media (orientation: portrait) {
+  html,
+  body {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
+  .me-planet,
+  .skills-cubes,
+  .experience-pyramid {
+    right: 0;
+    width: min(72%, 14rem);
+    max-width: 100%;
+  }
+
+  .portfolio-block section,
+  .content .portfolio-block section {
+    min-height: calc(100vh - var(--chrome-header));
+    background: none;
+    border: 0;
+    border-radius: 0;
+    corner-shape: initial;
+  }
+
+  .portfolio-block .portfolio-title {
+    display: block;
+    padding: 2rem 1.25rem 0;
+    background: none;
+    font-size: 2rem;
+    margin: 0 0 1rem;
+  }
+
+  .portfolio-tab {
+    position: static;
+    z-index: auto;
+    top: auto;
+    left: auto;
+    transform: none;
+    min-width: 0;
+    max-width: none;
+    padding: 0;
+    margin: 0 0 0.75rem;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    corner-shape: initial;
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: left;
+    white-space: normal;
+  }
+
   .shell::before {
     content: "";
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 5;
+    z-index: 20;
+    box-sizing: border-box;
     height: var(--mobile-header-bg, var(--chrome-header));
     background: var(--bg-color);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent-color) calc(var(--mobile-header-t, 0) * 100%), transparent);
     pointer-events: none;
   }
 
@@ -590,7 +664,7 @@ html[data-theme="dark"] .content .experience-org-name {
     bottom: auto;
     left: auto;
     right: 0;
-    z-index: 7;
+    z-index: 22;
     width: 50%;
     align-items: flex-end;
     transform: none;
@@ -605,13 +679,76 @@ html[data-theme="dark"] .content .experience-org-name {
     align-items: center;
   }
 
+  .mobile-header-logo {
+    display: grid;
+    place-items: center;
+    container-type: size;
+    position: fixed;
+    z-index: 23;
+    top: calc(0.5rem * (1 - var(--mobile-header-t, 0)) + 1rem * var(--mobile-header-t, 0));
+    left: calc(0.5rem * (1 - var(--mobile-header-t, 0)) + 1rem * var(--mobile-header-t, 0));
+    width: calc(1.75rem + (var(--mobile-header-compact, 4.75rem) - 2rem - 1.75rem) * var(--mobile-header-t, 0));
+    height: calc(1.75rem + (var(--mobile-header-compact, 4.75rem) - 2rem - 1.75rem) * var(--mobile-header-t, 0));
+    pointer-events: none;
+    background-color: var(--accent-color);
+    -webkit-mask: url("/logo-a.svg") center / contain no-repeat;
+    mask: url("/logo-a.svg") center / contain no-repeat;
+  }
+
+  .mobile-header-logo-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1cqmin;
+    font-family: "Oxanium", system-ui, sans-serif;
+    line-height: 1;
+    text-align: center;
+    color: var(--bg-color);
+    transform: rotate(-45deg);
+  }
+
+  .mobile-header-logo-kicker {
+    font-size: 20cqmin;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+    padding-top: 6px;
+  }
+
+  .mobile-header-logo-kicker:empty {
+    display: none;
+  }
+
+  .mobile-header-logo-name {
+    font-size: 34cqmin;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+  }
+
+  .mobile-header-logo-mark {
+    display: none;
+    width: 46%;
+    height: 46%;
+    background-color: var(--bg-color);
+    -webkit-mask: url("/logo-a.svg") center / contain no-repeat;
+    mask: url("/logo-a.svg") center / contain no-repeat;
+  }
+
+  .mobile-header-logo.is-contact .mobile-header-logo-label {
+    display: none;
+  }
+
+  .mobile-header-logo.is-contact .mobile-header-logo-mark {
+    display: block;
+  }
+
   .header-hero {
     position: fixed;
     top: 0;
     left: 0;
     right: auto;
     width: 50%;
-    z-index: 6;
+    z-index: 21;
     box-sizing: border-box;
     padding-top: calc(0.35rem * (1 - var(--mobile-header-t, 0)) + 0.1rem * var(--mobile-header-t, 0));
     padding-right: calc(1.25rem * (1 - var(--mobile-header-t, 0)) + 0.55rem * var(--mobile-header-t, 0));
@@ -648,12 +785,13 @@ html[data-theme="dark"] .content .experience-org-name {
     right: 0;
     bottom: auto;
     left: 0;
-    width: auto;
+    width: 100%;
+    max-width: 100%;
     height: auto;
-    z-index: 6;
+    z-index: 21;
     background: transparent;
     transform: translate3d(
-      calc((50% - 8.75rem) * var(--mobile-header-t, 0)),
+      var(--helix-nudge, 0px),
       calc(-50% * var(--mobile-header-t, 0)),
       0
     );

@@ -1,3 +1,12 @@
+export const mobileHelixLabel = (section) => section.title
+
+export const mobileLogoLabel = (section) => {
+  if (!section || section.title === 'init' || section.title === 'Contact') return ''
+  if (section.title === 'Experience') return 'Exp.'
+  if (section.title === 'Education') return 'Edu.'
+  return section.title
+}
+
 export const sections = [
   { id: 'header', label: '', title: 'init', blank: true },
   { id: 'me', label: 'ME', title: 'Me' },

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import './navigator.css'
+import { mobileHelixLabel } from '../../data/sections.js'
 
 const Navigator = lazy(() => import('./Navigator.jsx'))
 
@@ -15,7 +16,7 @@ export default function NavigatorIsland({ sections }) {
       <div className="navigator-placeholder">
         <ul>
           {sections.map((section) => (
-            <li key={section.id}>{section.label}</li>
+            <li key={section.id}>{mobileHelixLabel(section)}</li>
           ))}
         </ul>
       </div>
@@ -28,7 +29,7 @@ export default function NavigatorIsland({ sections }) {
         <div className="navigator-placeholder">
           <ul>
             {sections.map((section) => (
-              <li key={section.id}>{section.label}</li>
+              <li key={section.id}>{mobileHelixLabel(section)}</li>
             ))}
           </ul>
         </div>

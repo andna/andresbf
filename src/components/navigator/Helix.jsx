@@ -56,6 +56,8 @@ export default function Helix({
   contactCloseOpacity = 0.6,
   contactFarOpacity = 0.7,
   secondaryColor,
+  showSecondary = true,
+  isMobile = false,
 }) {
   const [themeSecondary, setThemeSecondary] = useState(() => readThemeColors().secondary)
   const secondary = secondaryColor || themeSecondary
@@ -71,6 +73,7 @@ export default function Helix({
   }, [skewedPlaneGeometry])
 
   const { contactClose, contactFar } = useMemo(() => {
+    if (!showSecondary) return { contactClose: [], contactFar: [] }
     const toWorld = (index, p) => {
       const angle = baseRotation * index
       const ox = radius * Math.sin(angle)
@@ -111,7 +114,7 @@ export default function Helix({
       contactClose: makeContacts(2, outerCorners, true),
       contactFar: makeContacts(3, localCorners.slice(-1), true),
     }
-  }, [sections, localCorners, radius, baseRotation, skewValue, planeWidth, planeHeight])
+  }, [showSecondary, sections, localCorners, radius, baseRotation, skewValue, planeWidth, planeHeight])
 
   const contactsRef = useRef([...contactClose, ...contactFar])
   contactsRef.current = [...contactClose, ...contactFar]
@@ -151,19 +154,21 @@ export default function Helix({
 
   return (
     <>
-      <HelixGizmo
-        midY={gizmoMidY}
-        yOffset={gizmoYOffset}
-        size={gizmoSize}
-        opacity={gizmoOpacity}
-        secondary={secondary}
-      />
-      {contactClose.map((geom, index) => (
+      {showSecondary && (
+        <HelixGizmo
+          midY={gizmoMidY}
+          yOffset={gizmoYOffset}
+          size={gizmoSize}
+          opacity={gizmoOpacity}
+          secondary={secondary}
+        />
+      )}
+      {showSecondary && contactClose.map((geom, index) => (
         <line key={`contact-close-${index}`} geometry={geom} raycast={() => null}>
           <lineDashedMaterial color={secondary} transparent opacity={contactCloseOpacity} dashSize={0.042} gapSize={0.022} depthWrite={false} />
         </line>
       ))}
-      {contactFar.map((geom, index) => (
+      {showSecondary && contactFar.map((geom, index) => (
         <line key={`contact-far-${index}`} geometry={geom} raycast={() => null}>
           <lineDashedMaterial color={secondary} transparent opacity={contactFarOpacity} dashSize={0.008} gapSize={0.02} depthWrite={false} />
         </line>
@@ -196,6 +201,7 @@ export default function Helix({
             textFront={textFront}
             textBack={textBack}
             poseRef={poseRef}
+            isMobile={isMobile}
           />
         )
       })}

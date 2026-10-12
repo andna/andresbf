@@ -54,6 +54,13 @@ for (const article of articles) {
         <ThemeToggle client:load />
       </div>
     </header>
+    <span class="mobile-header-logo">
+      <span class="mobile-header-logo-mark"></span>
+      <span class="mobile-header-logo-label">
+        <span class="mobile-header-logo-kicker"></span>
+        <span class="mobile-header-logo-name"></span>
+      </span>
+    </span>
     <button type="button" class="mobile-header-overlay" aria-label="Close menu"></button>
     <div class="stage">
       <div class="stage-helix">
@@ -65,9 +72,10 @@ for (const article of articles) {
             if (group.kind === 'portfolio') {
               return (
                 <div class="portfolio-block">
-                  <h1 class="portfolio-title"><span>Portfolio</span><span class="portfolio-subtitle">{sections.find((section) => section.id === group.items[0]?.id)?.title ?? ''}</span></h1>
-                  {group.items.map(({ id, Content }) => (
-                    <section id={id} data-subtitle={sections.find((section) => section.id === id)?.title ?? ''}>
+                  <h1 class="portfolio-title"><span>Portfolio</span></h1>
+                  {group.items.map(({ id, Content }, index) => (
+                    <section id={id} style={`--tab-index: ${index}`}>
+                      <span class="portfolio-tab">{sections.find((section) => section.id === id)?.title ?? ''}</span>
                       <Content />
                     </section>
                   ))}

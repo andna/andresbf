@@ -5,6 +5,8 @@ import { OrbitControls, OrthographicCamera } from '@react-three/drei'
 import Helix, { helixPlaneY } from './Helix.jsx'
 
 const cornerScratch = new THREE.Vector3()
+const boundScratch = new THREE.Vector3()
+const boundPts = []
 const screenPts = [
   { x: 0, y: 0, z: 0 },
   { x: 0, y: 0, z: 0 },
@@ -143,6 +145,7 @@ export default function CanvasScene({
   contactCloseOpacity = 0.6,
   contactFarOpacity = 0.7,
   secondaryColor,
+  onHelixBounds,
 }) {
   const totalPlanes = sections.length
 
@@ -332,6 +335,47 @@ export default function CanvasScene({
     else cam.clearViewOffset()
     cam.updateProjectionMatrix()
 
+    if (isMobile && onHelixBounds && pivot) {
+      boundPts.length = 0
+      pivot.updateWorldMatrix(true, true)
+      pivot.traverse((obj) => {
+        const pos = obj.geometry?.attributes?.position
+        if (!pos || !obj.isMesh || pos.count > 6) return
+        for (let i = 0; i < pos.count; i += 1) {
+          boundScratch.fromBufferAttribute(pos, i).applyMatrix4(obj.matrixWorld)
+          boundPts.push(
+            size.width / 2 + boundScratch.x * orthoZoom,
+            size.height / 2 + boundScratch.y * orthoZoom,
+          )
+        }
+      })
+      if (boundPts.length >= 4) {
+        let left = Infinity
+        let right = -Infinity
+        let top = Infinity
+        let bottom = -Infinity
+        for (let i = 0; i < boundPts.length; i += 2) {
+          const x = boundPts[i]
+          const y = boundPts[i + 1]
+          if (x < left) left = x
+          if (x > right) right = x
+          if (y < top) top = y
+          if (y > bottom) bottom = y
+        }
+        if (right > left) {
+          const stroke = 1.2
+          const mid = (top + bottom) / 2
+          onHelixBounds({
+            left: left - stroke,
+            right: right + stroke,
+            width: right - left + stroke * 2,
+            leftY: mid,
+            rightY: mid,
+          })
+        }
+      }
+    }
+
     const pointer = pointerRef.current
     const idle = pointer.inside && now - pointer.t > 90
     if (!spinning || !idle) {
@@ -412,7 +456,8 @@ export default function CanvasScene({
             setSelectedIndex={setSelectedIndex}
             hoveredPlaneIdx={hoveredPlaneIdx}
             setHoveredPlaneIdx={setHoveredPlaneIdx}
-            showTips={showTips}
+            showTips={!isMobile && showTips}
+            showSecondary={!isMobile}
             showLabel={!isMobile}
             textFront={textFront}
             textBack={textBack}
@@ -422,6 +467,7 @@ export default function CanvasScene({
             contactCloseOpacity={contactCloseOpacity}
             contactFarOpacity={contactFarOpacity}
             secondaryColor={secondaryColor}
+            isMobile={isMobile}
           />
         </group>
       </group>
