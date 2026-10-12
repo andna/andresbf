@@ -369,12 +369,6 @@ export default function Navigator({ sections }) {
     const offsetX = -p.view.w * p.restOffsetXFrac * clamped
     applyLayoutPose(offsetX, -p.screenRotDeg * (1 - clamped), 3 * (1 - clamped))
     poseRef.current.t = clamped
-    if (!p.isMobile) {
-      document.documentElement.style.setProperty(
-        '--chrome-item-rot',
-        `${-p.screenRotDeg * (1 - clamped)}deg`
-      )
-    }
     poseRef.current.scale = p.isMobile
       ? p.mobileScale
       : (p.diagonal * liveScaleFitNow) / (p.worldSpan * p.orthoZoom)
@@ -651,7 +645,12 @@ export default function Navigator({ sections }) {
     const shell = document.querySelector('.shell')
     const content = document.querySelector('.content')
     const track = document.querySelector('.content-track')
-    if (chrome instanceof HTMLElement && shell instanceof HTMLElement && stage instanceof HTMLElement && chrome.parentElement !== shell) {
+    if (!isMobile && chrome instanceof HTMLElement) {
+      const titleBox = document.querySelector('.header-title-container')
+      if (titleBox instanceof HTMLElement && chrome.parentElement !== titleBox) {
+        titleBox.appendChild(chrome)
+      }
+    } else if (chrome instanceof HTMLElement && shell instanceof HTMLElement && stage instanceof HTMLElement && chrome.parentElement !== shell) {
       shell.insertBefore(chrome, stage)
     }
     if (helix instanceof HTMLElement && stage instanceof HTMLElement && helix.parentElement !== stage) {

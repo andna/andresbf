@@ -20,7 +20,7 @@ const makeLabelTexture = (letter, ink, bg) => {
   ctx.fillStyle = bg
   ctx.fill()
   ctx.fillStyle = ink
-  ctx.font = '700 72px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+  ctx.font = '700 72px "Turret Road", system-ui, sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(letter, 64, 68)

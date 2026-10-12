@@ -116,8 +116,8 @@ const setBackTextUv = (matrix, rot, skewX, skewY) => {
 
 const textLift = 0.00
 
-const tipFont = '800 64px "Oxanium", system-ui, sans-serif'
-const tipKickerFont = '600 32px "Oxanium", system-ui, sans-serif'
+const tipFont = '800 64px "Turret Road", system-ui, sans-serif'
+const tipKickerFont = '700 32px "Turret Road", system-ui, sans-serif'
 
 const makeTipTexture = (title, kicker, color, bg) => {
   const canvas = document.createElement('canvas')
