@@ -614,7 +614,7 @@ export default function IndividualHelix({
       {isHover && showTips && title && !mutePointer && (
         <RugTip title={title} kicker={kicker} color={colors.accent} bg={colors.bg} tipY={tipY} tipZ={tipZ} slot={slot} tipCarryRef={tipCarryRef} anchor={tipAnchor} index={index} baseRotation={baseRotation} radius={radius} poseRef={poseRef} />
       )}
-      {corners.map((pt, i) => (
+      {!isMobile && corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>
           <mesh>
             <sphereGeometry args={[isSel ? 0.0055 : 0.004, 12, 12]} />

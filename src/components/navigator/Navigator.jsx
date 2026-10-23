@@ -156,10 +156,11 @@ export default function Navigator({ sections }) {
   const heroTextBack = { skewX: -0.61, skewY: -0.07, rotDeg: 57 }
   const [scrollPoseT, setScrollPoseT] = useState(0)
   const canvasRef = useRef(null)
-  const helixWrapRef = useRef(null)
   const mobileFitRef = useRef(1)
   const [mobileFit, setMobileFit] = useState(1)
   const selectedIndexRef = useRef(0)
+  const pendingSelectRef = useRef(0)
+  const selectTimerRef = useRef(0)
   const scrollLockRef = useRef(false)
   const scrollTargetRef = useRef(null)
   const poseRef = useRef({
@@ -191,6 +192,16 @@ export default function Navigator({ sections }) {
   const headerParallaxRef = useRef({ el: null, last: null })
   const mobileHeaderRef = useRef('origin')
   const mobileHeaderTRef = useRef(0)
+  const mobileHeaderTargetRef = useRef(0)
+  const mobileHeaderRafRef = useRef(0)
+  const mobileFontRef = useRef(0)
+  const mobileViewRef = useRef(0)
+  const mobileScrollbarRef = useRef(0)
+  const mobileNudgeRef = useRef(Number.NaN)
+  const mobileSpanRef = useRef(Number.NaN)
+  const mobileFitTimerRef = useRef(0)
+  const mobilePinClearedRef = useRef(false)
+  const mobileAnchorsRef = useRef({ key: '', at: 0, tops: null, range: 0 })
   const expandedHeaderRef = useRef(0)
   const expandedRowRef = useRef(0)
   const compactHeaderRef = useRef(0)
@@ -202,6 +213,8 @@ export default function Navigator({ sections }) {
   const clickAnimRef = useRef(null)
   const clickPoseDuration = 0.85
   const poseRange = () => {
+    const cached = mobileAnchorsRef.current.range
+    if (isMobile && cached > 0) return cached
     const first = document.getElementById(helixSections[0]?.id)
     const height = first instanceof HTMLElement ? first.offsetHeight : 0
     return Math.max(1, height || window.innerHeight)
@@ -311,6 +324,10 @@ export default function Navigator({ sections }) {
       }
     }
     if (mode === 'menu') {
+      if (mobileHeaderRafRef.current) {
+        cancelAnimationFrame(mobileHeaderRafRef.current)
+        mobileHeaderRafRef.current = 0
+      }
       document.body.style.overflow = 'hidden'
       root.style.setProperty('--mobile-header-t', '0')
       mobileHeaderTRef.current = 0
@@ -323,19 +340,32 @@ export default function Navigator({ sections }) {
     requestAnimationFrame(() => syncHeaderHeightRef.current())
   }
 
-  const applyMobileHeaderPose = (scrollY) => {
-    if (!isMobile) return
-    if (mobileHeaderRef.current === 'menu') return
-    const t = Math.min(1, Math.max(0, scrollY / poseRange()))
-    mobileHeaderTRef.current = t
+  const stepMobileHeaderRef = useRef(() => {})
+  stepMobileHeaderRef.current = () => {
+    mobileHeaderRafRef.current = 0
+    if (!isMobile || mobileHeaderRef.current === 'menu') return
+    const target = mobileHeaderTargetRef.current
+    const current = mobileHeaderTRef.current
+    const next = Math.abs(target - current) < 0.004 ? target : current + (target - current) * 0.2
+    mobileHeaderTRef.current = next
     const root = document.documentElement
-    root.style.setProperty('--mobile-header-t', `${t}`)
+    root.style.setProperty('--mobile-header-t', `${next}`)
     const start = expandedHeaderRef.current
     const end = compactHeaderRef.current
     if (start > 0 && end > 0) {
-      root.style.setProperty('--mobile-header-bg', `${start + (end - start) * t}px`)
+      root.style.setProperty('--mobile-header-bg', `${start + (end - start) * next}px`)
     }
-    setMobileHeaderMode(t <= 0 ? 'origin' : t >= 1 ? 'scrolled' : 'tween')
+    setMobileHeaderMode(next <= 0.001 ? 'origin' : next >= 0.999 ? 'scrolled' : 'tween')
+    if (next !== target) mobileHeaderRafRef.current = requestAnimationFrame(() => stepMobileHeaderRef.current())
+  }
+
+  const applyMobileHeaderPose = (scrollY) => {
+    if (!isMobile) return
+    if (mobileHeaderRef.current === 'menu') return
+    mobileHeaderTargetRef.current = Math.min(1, Math.max(0, scrollY / poseRange()))
+    if (!mobileHeaderRafRef.current) {
+      mobileHeaderRafRef.current = requestAnimationFrame(() => stepMobileHeaderRef.current())
+    }
   }
 
   applyMobileHeaderPoseRef.current = applyMobileHeaderPose
@@ -348,6 +378,8 @@ export default function Navigator({ sections }) {
       stage.style.removeProperty('transform')
       stage.style.removeProperty('--content-left')
       content.style.removeProperty('transform')
+      content.style.removeProperty('width')
+      content.style.removeProperty('right')
       document.documentElement.style.removeProperty('--chrome-item-rot')
       if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
       const track = document.querySelector('.content-track')
@@ -355,8 +387,14 @@ export default function Navigator({ sections }) {
       return
     }
     const left = poseParamsRef.current?.contentLeft ?? contentLeft
+    const viewW = poseParamsRef.current?.view.w ?? document.documentElement.clientWidth
+    const theta = (contentRot * Math.PI) / 180
+    const cos = Math.cos(theta)
+    const cover = (viewW - (offsetX + left)) / (cos > 0.2 ? cos : 1)
     stage.style.transform = `translate3d(${offsetX}px, 0, 0)`
     stage.style.setProperty('--content-left', `${left}px`)
+    content.style.right = 'auto'
+    content.style.width = `${Math.ceil(Math.max(viewW - left, cover))}px`
     content.style.transform = `rotate(${contentRot}deg) translate3d(0, ${contentY}vh, 0)`
   }
 
@@ -406,6 +444,7 @@ export default function Navigator({ sections }) {
   }
 
   const applyPortfolioTitlePin = (contentY) => {
+    if (isMobile && mobilePinClearedRef.current) return
     const cache = portfolioPinRef.current
     if (!cache.block) measurePortfolioPin()
     const { block, cards } = cache
@@ -422,13 +461,16 @@ export default function Navigator({ sections }) {
     const contentTop = isMobile && content instanceof HTMLElement ? content.offsetTop : 0
     const y = isMobile ? window.scrollY : contentY
     const title = block.querySelector(':scope > .portfolio-title')
-    const titleBand = title instanceof HTMLElement
+    const titlePos = title instanceof HTMLElement ? getComputedStyle(title).position : ''
+    const titleBand = title instanceof HTMLElement && titlePos !== 'absolute'
       ? title.offsetHeight + (parseFloat(getComputedStyle(title).marginBottom) || 0)
       : 0
     const gap = 96
     const tab = cards[0].querySelector('.portfolio-tab')
     const tabHeight = tab instanceof HTMLElement ? tab.offsetHeight : 0
+    if (!isMobile && tabHeight) block.style.setProperty('--portfolio-tab-h', `${tabHeight}px`)
     if (isMobile) {
+      mobilePinClearedRef.current = true
       cards.forEach((card) => {
         if (card.style.marginTop) card.style.removeProperty('margin-top')
         if (card.style.transform) card.style.removeProperty('transform')
@@ -440,10 +482,34 @@ export default function Navigator({ sections }) {
         if (title.style.transform) title.style.removeProperty('transform')
         if (title.style.zIndex) title.style.removeProperty('z-index')
       }
+      cards.forEach((card) => {
+        const item = card.querySelector('.portfolio-tab')
+        if (item instanceof HTMLElement && item.style.left) item.style.removeProperty('left')
+        if (item instanceof HTMLElement) item.classList.remove('is-active')
+      })
       return
     }
+    mobilePinClearedRef.current = false
+    const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    const blockCs = getComputedStyle(block)
+    const remPx = (name) => {
+      const raw = blockCs.getPropertyValue(name).trim()
+      const n = parseFloat(raw)
+      if (!n) return 0
+      return raw.endsWith('rem') ? n * rootPx : n
+    }
+    const overlap = remPx('--octagon-cut') || 12
+    let tabX = remPx('--octagon-cut') + remPx('--portfolio-label')
+    cards.forEach((card) => {
+      const item = card.querySelector('.portfolio-tab')
+      if (!(item instanceof HTMLElement)) return
+      const left = `${Math.round(tabX)}px`
+      if (item.style.left !== left) item.style.left = left
+      tabX += item.offsetWidth - overlap
+    })
     const titleGap = titleBand
-    const stick = headerPx + titleGap + tabHeight
+    const stickPad = Math.round(1.5 * rootPx)
+    const stick = headerPx + titleGap + tabHeight + stickPad
     cards.forEach((card) => {
       const height = `${Math.max(220, Math.round(viewport - stick - gap))}px`
       const margin = `${tabHeight}px`
@@ -451,27 +517,45 @@ export default function Navigator({ sections }) {
       if (card.style.marginTop !== margin) card.style.marginTop = margin
     })
     const last = cards.length - 1
+    const origin = (el) => {
+      const node = el instanceof HTMLElement ? el : block
+      return contentBoxTop(node)
+    }
     const prevArrive = last > 0
-      ? contentTop + cards[last - 1].offsetTop - stick
+      ? origin(cards[last - 1]) - stick
       : 0
-    const arriveY = contentTop + cards[last].offsetTop - stick
+    const arriveY = origin(cards[last]) - stick
     const dwell = Math.max(0, arriveY - prevArrive)
     const pad = `${Math.round(dwell)}px`
     if (block.style.paddingBottom !== pad) block.style.paddingBottom = pad
     const release = Math.max(0, y - arriveY - dwell)
     cards.forEach((card, index) => {
-      const natural = contentTop + card.offsetTop - y
+      const natural = origin(card) - y
       const pin = Math.max(0, stick - natural)
       const dy = pin - release
       const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
       if (card.style.transform !== next) card.style.transform = next
       card.style.zIndex = String(index + 1)
     })
+    let front = -1
+    if (release <= 1.5) {
+      cards.forEach((card, index) => {
+        if (origin(card) - y <= stick + 1.5) front = index
+      })
+    }
+    cards.forEach((card, index) => {
+      const tabEl = card.querySelector('.portfolio-tab')
+      if (tabEl instanceof HTMLElement) tabEl.classList.toggle('is-active', index === front)
+    })
     if (title instanceof HTMLElement) {
-      const natural = contentTop + title.offsetTop - y
-      const pin = Math.max(0, headerPx - natural)
+      const anchor = titlePos === 'absolute' ? origin(title) : contentTop + title.offsetTop
+      const natural = contentTop + anchor - y
+      const pinLine = titlePos === 'absolute' ? headerPx + tabHeight + stickPad : headerPx
+      const pin = Math.max(0, pinLine - natural)
       const dy = pin - release
-      const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
+      const next = titlePos === 'absolute'
+        ? `translate3d(0, calc(-100% + 1px + ${dy}px), 0)`
+        : dy ? `translate3d(0, ${dy}px, 0)` : ''
       if (title.style.transform !== next) title.style.transform = next
       title.style.zIndex = String(cards.length + 1)
     }
@@ -523,6 +607,13 @@ export default function Navigator({ sections }) {
     return y
   }
 
+  const contentBoxTop = (el) => {
+    const content = document.querySelector('.content')
+    if (!(el instanceof HTMLElement)) return 0
+    if (!(content instanceof HTMLElement)) return el.offsetTop
+    return layoutTop(el) - layoutTop(content)
+  }
+
   const mobileSectionAnchor = (section) => {
     if (section.id === 'header') return 0
     const tab = section.querySelector(':scope > .portfolio-tab')
@@ -538,13 +629,30 @@ export default function Navigator({ sections }) {
   }
 
   const mobileIndexAt = (scrollY) => {
+    const t = mobileHeaderTRef.current
+    const key = t <= 0.001 ? '0' : t >= 0.999 ? '1' : 'm'
+    const cache = mobileAnchorsRef.current
+    const now = performance.now()
+    const fresh = cache.tops && cache.key === key && (key !== 'm' || now - cache.at < 120)
+    let tops = cache.tops
+    if (!fresh) {
+      tops = []
+      for (let i = 0; i < helixSections.length; i += 1) {
+        const section = document.getElementById(helixSections[i].id)
+        tops.push(section instanceof HTMLElement ? mobileSectionAnchor(section) : 0)
+      }
+      const first = document.getElementById(helixSections[0]?.id)
+      const height = first instanceof HTMLElement ? first.offsetHeight : 0
+      cache.range = Math.max(1, height || window.innerHeight)
+      cache.tops = tops
+      cache.key = key
+      cache.at = now
+    }
     let index = 0
     let start = 0
     let nextTop = Infinity
-    for (let i = 0; i < helixSections.length; i += 1) {
-      const section = document.getElementById(helixSections[i].id)
-      if (!(section instanceof HTMLElement)) continue
-      const top = mobileSectionAnchor(section)
+    for (let i = 0; i < tops.length; i += 1) {
+      const top = tops[i]
       if (top <= scrollY + 1) {
         index = i
         start = top
@@ -578,7 +686,7 @@ export default function Navigator({ sections }) {
       for (let i = 0; i < helixSections.length; i += 1) {
         const section = document.getElementById(helixSections[i].id)
         if (!(section instanceof HTMLElement)) continue
-        const top = section.offsetTop
+        const top = contentBoxTop(section)
         if (top <= contentY) index = i
         else if (nextTop === Infinity) nextTop = top
       }
@@ -626,7 +734,11 @@ export default function Navigator({ sections }) {
       stage.style.removeProperty('--content-left')
       stage.style.removeProperty('padding-bottom')
     }
-    if (content instanceof HTMLElement) content.style.removeProperty('transform')
+    if (content instanceof HTMLElement) {
+      content.style.removeProperty('transform')
+      content.style.removeProperty('width')
+      content.style.removeProperty('right')
+    }
     document.querySelectorAll('.portfolio-block > section').forEach((card) => {
       if (card instanceof HTMLElement) card.style.removeProperty('transform')
     })
@@ -675,7 +787,11 @@ export default function Navigator({ sections }) {
         stage.style.removeProperty('--content-left')
         stage.style.removeProperty('padding-bottom')
       }
-      if (content instanceof HTMLElement) content.style.removeProperty('transform')
+      if (content instanceof HTMLElement) {
+        content.style.removeProperty('transform')
+        content.style.removeProperty('width')
+        content.style.removeProperty('right')
+      }
       if (track instanceof HTMLElement) track.style.removeProperty('transform')
       if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
       document.querySelectorAll('.portfolio-block > section').forEach((card) => {
@@ -760,6 +876,10 @@ export default function Navigator({ sections }) {
     if (circle instanceof HTMLElement) circle.addEventListener('click', onCircle)
     if (overlay instanceof HTMLElement) overlay.addEventListener('click', onOverlay)
     return () => {
+      if (mobileHeaderRafRef.current) {
+        cancelAnimationFrame(mobileHeaderRafRef.current)
+        mobileHeaderRafRef.current = 0
+      }
       ro.disconnect()
       syncHeaderHeightRef.current = () => {}
       if (circle instanceof HTMLElement) circle.removeEventListener('click', onCircle)
@@ -856,8 +976,8 @@ export default function Navigator({ sections }) {
       for (let i = 0; i < helixSections.length; i += 1) {
         const section = document.getElementById(helixSections[i].id)
         if (!(section instanceof HTMLElement)) continue
-        if (section.offsetTop <= probe && section.offsetTop >= bestTop) {
-          bestTop = section.offsetTop
+        if (contentBoxTop(section) <= probe && contentBoxTop(section) >= bestTop) {
+          bestTop = contentBoxTop(section)
           best = i
         }
       }
@@ -889,6 +1009,25 @@ export default function Navigator({ sections }) {
         return
       }
       const next = indexFromScroll(scrollY)
+      if (isMobile) {
+        pendingSelectRef.current = next
+        if (next === selectedIndexRef.current) {
+          if (selectTimerRef.current) {
+            window.clearTimeout(selectTimerRef.current)
+            selectTimerRef.current = 0
+          }
+          return
+        }
+        if (selectTimerRef.current) window.clearTimeout(selectTimerRef.current)
+        selectTimerRef.current = window.setTimeout(() => {
+          selectTimerRef.current = 0
+          const pending = pendingSelectRef.current
+          if (pending === selectedIndexRef.current) return
+          selectedIndexRef.current = pending
+          setSelectedIndex(pending)
+        }, 140)
+        return
+      }
       if (next === selectedIndexRef.current) return
       selectedIndexRef.current = next
       setSelectedIndex(next)
@@ -1019,6 +1158,9 @@ export default function Navigator({ sections }) {
     }
 
     const onResize = () => {
+      mobileAnchorsRef.current.tops = null
+      mobileAnchorsRef.current.range = 0
+      mobileViewRef.current = 0
       syncSpacer()
       lenisRef.current?.resize()
     }
@@ -1053,12 +1195,21 @@ export default function Navigator({ sections }) {
       window.removeEventListener('pointerdown', onPointerDown)
       window.removeEventListener('keydown', onKeyedScroll)
       ro.disconnect()
+      if (selectTimerRef.current) {
+        window.clearTimeout(selectTimerRef.current)
+        selectTimerRef.current = 0
+      }
       spacer.style.removeProperty('height')
     }
   }, [isMobile, helixSections])
 
   const setSelectedIndexAndScroll = (index) => {
     orbitModeRef.current = 'click'
+    if (selectTimerRef.current) {
+      window.clearTimeout(selectTimerRef.current)
+      selectTimerRef.current = 0
+    }
+    pendingSelectRef.current = index
     selectedIndexRef.current = index
     setSelectedIndex(index)
     const id = helixSections[index]?.id
@@ -1066,7 +1217,7 @@ export default function Navigator({ sections }) {
     const section = document.getElementById(id)
     if (!section) return
     if (!isMobile) {
-      const top = clampScrollRef.current(section.offsetTop / scrollSpeed)
+      const top = clampScrollRef.current(contentBoxTop(section) / scrollSpeed)
       scrollLockRef.current = true
       scrollTargetRef.current = top
       targetScrollRef.current = top
@@ -1097,54 +1248,66 @@ export default function Navigator({ sections }) {
     window.scrollTo({ top, behavior: 'smooth' })
   }
 
-  const stepSection = (delta) => {
-    const current = selectedIndexRef.current
-    const next = current + delta
-    if (next < 0) {
-      setSelectedIndexAndScroll(0)
-      return
+  useEffect(() => {
+    const onClick = (event) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const tab = target.closest('.portfolio-tab')
+      if (!(tab instanceof HTMLElement)) return
+      const section = tab.closest('section')
+      if (!(section instanceof HTMLElement)) return
+      const index = helixSections.findIndex((entry) => entry.id === section.id)
+      if (index < 0) return
+      setSelectedIndexAndScroll(index)
     }
-    if (next >= helixSections.length) {
-      setSelectedIndexAndScroll(helixSections.length - 1)
-      return
-    }
-    setSelectedIndexAndScroll(next)
-  }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [helixSections, isMobile])
 
   const reportHelixBounds = (bounds) => {
-    const el = helixWrapRef.current
-    if (el) {
-      el.style.setProperty('--helix-left', `${bounds.left}px`)
-      el.style.setProperty('--helix-right', `${bounds.right}px`)
-      const lineY = bounds.leftY - 2
-      el.style.setProperty('--helix-left-y', `${lineY}px`)
-      el.style.setProperty('--helix-right-y', `${lineY}px`)
-    }
     if (!isMobile || bounds.width < 1) return
-    const logo = document.querySelector('.mobile-header-logo')
-    const font = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-    const logoBox = logo instanceof HTMLElement ? logo.getBoundingClientRect() : null
-    const reserved = logoBox && logoBox.width > 0 ? logoBox.right : (0.5 + 1.75) * font
-    document.documentElement.style.setProperty('--logo-span', `${reserved}px`)
-    const pad = 1.5 * font
-    const gap = 3 * font
+    const vw = window.innerWidth
+    if (vw !== mobileViewRef.current) {
+      mobileViewRef.current = vw
+      mobileScrollbarRef.current = Math.max(0, vw - document.documentElement.clientWidth)
+      mobileFontRef.current = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    }
+    const font = mobileFontRef.current || 16
+    const t = mobileHeaderTRef.current
+    const compact = compactHeaderRef.current || 4.75 * font
+    const reserved = (0.5 + 0.5 * t) * font + 1.75 * font + (compact - 3.75 * font) * t
+    const root = document.documentElement
+    if (reserved !== mobileSpanRef.current) {
+      mobileSpanRef.current = reserved
+      root.style.setProperty('--logo-span', `${reserved}px`)
+    }
+    const pad = font
+    const gap = 2.5 * font
     const tipInset = 0.7 * font * 2 / 12
-    const desiredRight = window.innerWidth - pad - tipInset - gap
+    const desiredRight = vw - pad - tipInset - gap
     const maxWidth = Math.max(1, desiredRight - reserved - gap)
-    const t = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-t')) || 0
-    const heroNudge = window.innerWidth / 2 - (bounds.left + bounds.right) / 2
-    const headerNudge = desiredRight - bounds.right
+    const headerRight = vw - mobileScrollbarRef.current - 0.75 * font
+    const heroNudge = vw / 2 - (bounds.left + bounds.right) / 2
+    const headerNudge = headerRight - bounds.right
     const nudge = heroNudge + (headerNudge - heroNudge) * t
-    document.documentElement.style.setProperty('--helix-nudge', `${nudge}px`)
+    if (nudge !== mobileNudgeRef.current) {
+      mobileNudgeRef.current = nudge
+      root.style.setProperty('--helix-nudge', `${nudge}px`)
+    }
     const fit = mobileFitRef.current
     const full = bounds.width / fit
-    const next = Math.min(1, maxWidth / full)
+    const next = Math.min(1.25, (maxWidth * 1.25) / full)
     if (Math.abs(next - fit) > 0.004) {
       mobileFitRef.current = next
       const fitted = helixMobile.scale * next
       if (poseParamsRef.current) poseParamsRef.current.mobileScale = fitted
       poseRef.current.scale = fitted
-      setMobileFit(next)
+      if (!mobileFitTimerRef.current) {
+        mobileFitTimerRef.current = window.setTimeout(() => {
+          mobileFitTimerRef.current = 0
+          setMobileFit(mobileFitRef.current)
+        }, 180)
+      }
     }
   }
 
@@ -1153,17 +1316,7 @@ export default function Navigator({ sections }) {
       className={`navigator${isMobile ? ' is-mobile' : ' is-desktop'}`}
       data-selected-index={selectedIndex}
     >
-      <div className="navigator-helix" ref={helixWrapRef}>
-        <button
-          type="button"
-          className="navigator-arrow is-prev"
-          aria-label="Previous section"
-          onClick={() => stepSection(-1)}
-        >
-          <svg viewBox="0 0 12 20" aria-hidden="true">
-            <path d="M10 1.5 L2 10 L10 18.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-        </button>
+      <div className="navigator-helix">
         <div className="canvas" ref={canvasRef}>
         <Canvas
           gl={{ alpha: true, antialias: true }}
@@ -1202,16 +1355,6 @@ export default function Navigator({ sections }) {
           </Suspense>
         </Canvas>
         </div>
-        <button
-          type="button"
-          className="navigator-arrow is-next"
-          aria-label="Next section"
-          onClick={() => stepSection(1)}
-        >
-          <svg viewBox="0 0 12 20" aria-hidden="true">
-            <path d="M2 1.5 L10 10 L2 18.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-        </button>
       </div>
       <aside className={`debug-sliders${showDebug ? ' is-open' : ''}`}>
         <div className="debug-group">

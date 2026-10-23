@@ -274,7 +274,7 @@ export default function CanvasScene({
       hoveredOnceRef.current = true
       lastHoverRef.current = now
     }
-    if (orbitModeRef?.current === 'click') autoSpinRef.current = false
+    if (orbitModeRef?.current === 'click' || isMobile) autoSpinRef.current = false
     else if (
       hoveredOnceRef.current &&
       !autoSpinRef.current &&
@@ -352,25 +352,17 @@ export default function CanvasScene({
       if (boundPts.length >= 4) {
         let left = Infinity
         let right = -Infinity
-        let top = Infinity
-        let bottom = -Infinity
         for (let i = 0; i < boundPts.length; i += 2) {
           const x = boundPts[i]
-          const y = boundPts[i + 1]
           if (x < left) left = x
           if (x > right) right = x
-          if (y < top) top = y
-          if (y > bottom) bottom = y
         }
         if (right > left) {
           const stroke = 1.2
-          const mid = (top + bottom) / 2
           onHelixBounds({
             left: left - stroke,
             right: right + stroke,
             width: right - left + stroke * 2,
-            leftY: mid,
-            rightY: mid,
           })
         }
       }
@@ -458,7 +450,7 @@ export default function CanvasScene({
             setHoveredPlaneIdx={setHoveredPlaneIdx}
             showTips={!isMobile && showTips}
             showSecondary={!isMobile}
-            showLabel={!isMobile}
+            showLabel
             textFront={textFront}
             textBack={textBack}
             poseRef={poseRef}

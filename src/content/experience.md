@@ -1,4 +1,4 @@
-# Experience {#experience-title}
+# Experience
 
 <svg class="experience-pyramid" viewBox="0 0 308.0 270.5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <path class="experience-pyramid-face" d="M75.2 89.8L66.5 74.6L84.0 74.6Z" style="animation-delay:0.0s;animation-duration:6.4s"/>

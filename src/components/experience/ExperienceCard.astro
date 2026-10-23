@@ -1,24 +1,42 @@
 ---
-const { name, field, logo = false, entries } = Astro.props;
+const { name, field, logo = false, entries, points = [], side = null, nested = false } = Astro.props;
+const split = points.length > 0 || Boolean(side);
+const present = entries.some((entry) => entry.type === 'start' && entry.label === 'Present');
+const shortShaft = present && entries[1]?.type === 'role' && entries[1].lines.length === 1 && Boolean(entries[1].end);
+const logoUrl = logo === true ? '/logo-a.svg' : logo || '';
 ---
 
-<div class="experience-card">
+<div class:list={['experience-card', { 'experience-card-split': split, 'experience-card-nested': nested }]}>
+  <div class="experience-body">
   <div class="experience-head">
-    {logo && <span class="experience-logo" aria-hidden="true"></span>}
+    {logoUrl && <span class:list={['experience-logo', { 'experience-logo-mark': logo !== true }]} style={`--experience-logo: url("${logoUrl}")`} aria-hidden="true"></span>}
     <div class="experience-org">
       <h2 class="experience-org-name">{name}</h2>
-      <p class="experience-org-field">{field}</p>
+      {field && <p class="experience-org-field">{field}</p>}
     </div>
   </div>
-  <ol class="experience-track">
-    <li class="experience-mark">
-      <span class="experience-arrow" aria-hidden="true"></span>
+  <ol class:list={['experience-track', { 'experience-shaft-short': shortShaft }]}>
+    <li class:list={['experience-mark', { 'experience-mark-present': present }]}>
+      <span class="experience-arrow" aria-hidden="true">
+        {present && (
+          <svg viewBox="0 0 16 11" aria-hidden="true">
+            <polyline points="5,10.2 0.9,10.2 8,0.75 15.1,10.2 11,10.2" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="miter" stroke-linecap="butt" />
+          </svg>
+        )}
+      </span>
     </li>
     {entries.map((entry) => {
       if (entry.type === 'start') {
         return (
-          <li class="experience-mark experience-mark-fill">
+          <li class:list={['experience-mark', 'experience-mark-fill', { 'experience-mark-present': entry.label === 'Present' }]}>
             <time class="experience-when" datetime={entry.datetime}>{entry.label}</time>
+            <span class="experience-spine" aria-hidden="true"></span>
+          </li>
+        );
+      }
+      if (entry.type === 'tick') {
+        return (
+          <li class="experience-step experience-tick">
             <span class="experience-spine" aria-hidden="true"></span>
           </li>
         );
@@ -41,17 +59,45 @@ const { name, field, logo = false, entries } = Astro.props;
               {entry.lines.map((line, index) => {
                 const text = typeof line === 'string' ? line : line.text;
                 const plain = typeof line === 'object' && line.plain;
+                const parts = typeof line === 'object' && line.parts;
                 return (
                   <>
                     {index > 0 && <br />}
-                    {plain ? <span class="experience-role-plain">{text}</span> : text}
+                    {parts
+                      ? parts.map((part) => (typeof part === 'string' ? part : <span class:list={{ 'experience-role-small': part.small }}>{part.text}</span>))
+                      : plain ? <span class="experience-role-plain">{text}</span> : text}
                   </>
                 );
               })}
             </span>
           </p>
+          {entry.logo && (
+            <span class="experience-role-logo" style={`--experience-logo: url("${entry.logo}")`} aria-hidden="true"></span>
+          )}
         </li>
       );
     })}
   </ol>
+  </div>
+  {points.length > 0 && (
+    <div class="experience-points">
+      {points.some((point) => typeof point === 'object' && point.items)
+        ? points.map((group) => (
+            <div class="experience-points-group">
+              <p class="experience-points-title">{group.title}</p>
+              <ul>
+                {group.items.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+          ))
+        : (
+            <ul>
+              {points.map((point) => (
+                <li>{typeof point === 'object' && point.href ? <a href={point.href}>{point.text}</a> : point}</li>
+              ))}
+            </ul>
+          )}
+    </div>
+  )}
+  {side && <Astro.self {...side} nested />}
 </div>

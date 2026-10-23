@@ -31,49 +31,6 @@
   min-height: 0;
 }
 
-.navigator-arrow {
-  display: none;
-}
-
-.navigator.is-mobile .navigator-arrow {
-  display: flex;
-  align-items: center;
-  position: absolute;
-  z-index: 2;
-  width: 1.5rem;
-  height: 1.75rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--accent-color);
-  transform: translateY(-50%);
-  cursor: pointer;
-}
-
-.navigator.is-mobile .navigator-arrow svg {
-  width: 0.7rem;
-  height: 1.15rem;
-  flex: 0 0 auto;
-}
-
-.navigator.is-mobile .navigator-arrow.is-prev {
-  top: var(--helix-left-y, calc(50% - 8px));
-  left: calc(var(--helix-left, 12px) - 0.7rem * 2 / 12 - 3rem);
-  justify-content: flex-start;
-}
-
-.navigator.is-mobile .navigator-arrow.is-next {
-  top: var(--helix-right-y, calc(50% - 8px));
-  right: calc(100% - var(--helix-right, calc(100% - 12px)) - 0.7rem * 2 / 12 - 3rem);
-  justify-content: flex-end;
-}
-
-.navigator.is-mobile .navigator-arrow:disabled {
-  opacity: 0.28;
-  cursor: default;
-}
-
 .canvas {
   position: relative;
   width: 100%;
@@ -127,7 +84,6 @@
   overflow: hidden;
   transform: translate(63px, -41px);
   opacity: calc(1 - var(--mobile-header-t, 0));
-  transition: opacity 0.18s ease;
 }
 
 .navigator.is-mobile .navigator-list {
@@ -199,7 +155,6 @@
 html[data-mobile-header="tween"] .navigator.is-mobile .navigator-labels,
 html[data-mobile-header="scrolled"] .navigator.is-mobile .navigator-labels {
   pointer-events: none;
-  opacity: 0;
 }
 
 .debug-sliders {

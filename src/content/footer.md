@@ -1,1 +1,1 @@
-# Footer {#footer-title}
+# Footer

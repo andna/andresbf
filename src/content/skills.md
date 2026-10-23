@@ -1,4 +1,4 @@
-# Skills / Achievements {#skills-title}
+# Skills / Achievements
 
 <svg class="skills-cubes" viewBox="0 0 232 192" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path class="skills-cubes-face" d="M178.797 156.29V179.136L198.6 167.712V144.865L178.797 156.29Z" style="animation-delay:0.0s;animation-duration:9.6s"/>
