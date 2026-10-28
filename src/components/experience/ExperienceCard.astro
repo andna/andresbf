@@ -4,6 +4,8 @@ const split = points.length > 0 || Boolean(side);
 const present = entries.some((entry) => entry.type === 'start' && entry.label === 'Present');
 const shortShaft = present && entries[1]?.type === 'role' && entries[1].lines.length === 1 && Boolean(entries[1].end);
 const logoUrl = logo === true ? '/logo-a.svg' : logo || '';
+const grouped = points.some((point) => typeof point === 'object' && point.items);
+const groupOffsets = grouped ? points.map((_, index) => points.slice(0, index).reduce((sum, group) => sum + group.items.length + 1, 0)) : [];
 ---
 
 <div class:list={['experience-card', { 'experience-card-split': split, 'experience-card-nested': nested }]}>
@@ -80,24 +82,36 @@ const logoUrl = logo === true ? '/logo-a.svg' : logo || '';
   </ol>
   </div>
   {points.length > 0 && (
-    <div class="experience-points">
-      {points.some((point) => typeof point === 'object' && point.items)
-        ? points.map((group) => (
-            <div class="experience-points-group">
-              <p class="experience-points-title">{group.title}</p>
+    <details class="experience-points" name="experience-points">
+      <summary class="experience-points-toggle">
+        <span class="experience-points-prompt" aria-hidden="true">&gt;</span>
+        <span class="experience-points-command">Working on...</span>
+      </summary>
+      <div class="experience-points-output">
+        <div class="experience-points-bar">
+          <span>{name}</span>
+          <button type="button" class="experience-points-close" aria-label="Close">[x]</button>
+        </div>
+        {grouped
+          ? points.map((group, groupIndex) => (
+              <div class="experience-points-group">
+                <p class="experience-points-title" style={`--i: ${groupOffsets[groupIndex]}`}>{group.title}</p>
+                <ul>
+                  {group.items.map((item, index) => (
+                    <li style={`--i: ${groupOffsets[groupIndex] + index + 1}`}>{typeof item === 'object' && item.href ? <a href={item.href}>{item.text}</a> : item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          : (
               <ul>
-                {group.items.map((item) => <li>{item}</li>)}
+                {points.map((point, index) => (
+                  <li style={`--i: ${index}`}>{typeof point === 'object' && point.href ? <a href={point.href}>{point.text}</a> : point}</li>
+                ))}
               </ul>
-            </div>
-          ))
-        : (
-            <ul>
-              {points.map((point) => (
-                <li>{typeof point === 'object' && point.href ? <a href={point.href}>{point.text}</a> : point}</li>
-              ))}
-            </ul>
-          )}
-    </div>
+            )}
+      </div>
+    </details>
   )}
   {side && <Astro.self {...side} nested />}
 </div>

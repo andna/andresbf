@@ -92,6 +92,56 @@ for (const article of articles) {
                       <ExperienceCard {...job} />
                     ))}
                   </div>
+                  <form class="experience-colors">
+                    <label>Title <input type="color" data-var="--exp-title" value="#ffffff" /></label>
+                    <label>Company <input type="color" data-var="--exp-org" value="#34c4dd" /></label>
+                    <label>Field <input type="color" data-var="--exp-field" value="#2b727c" /></label>
+                    <label>Dates <input type="color" data-var="--exp-date" value="#ffffff" /></label>
+                    <label>Roles <input type="color" data-var="--exp-role" value="#9adce8" /></label>
+                    <label>Secondary lines <input type="color" data-var="--exp-plain" value="#9adce8" /></label>
+                    <label>Bullet headings <input type="color" data-var="--exp-heading" value="#9adce8" /></label>
+                    <label>Bullets <input type="color" data-var="--exp-bullet" value="#9adce8" /></label>
+                    <label>Links <input type="color" data-var="--exp-link" value="#9adce8" /></label>
+                  </form>
+                  <script>
+                    const experience = document.getElementById('experience');
+                    document.querySelectorAll('.experience-colors input').forEach((input) => {
+                      input.addEventListener('input', () => {
+                        experience.style.setProperty(input.dataset.var, input.value);
+                      });
+                    });
+
+                    const closePoints = (except) => {
+                      document.querySelectorAll('.experience-points[open]').forEach((details) => {
+                        if (details !== except) details.open = false;
+                      });
+                    };
+
+                    document.addEventListener('click', (event) => {
+                      const target = event.target instanceof Element ? event.target : null;
+                      if (target?.closest('.experience-points-close')) {
+                        closePoints(null);
+                        return;
+                      }
+                      closePoints(target?.closest('.experience-points') ?? null);
+                    });
+
+                    document.addEventListener('keydown', (event) => {
+                      if (event.key === 'Escape') closePoints(null);
+                    });
+
+                    document.querySelectorAll('.experience-points').forEach((details) => {
+                      const output = details.querySelector('.experience-points-output');
+                      details.addEventListener('toggle', () => {
+                        output.classList.remove('is-typing');
+                        if (!details.open) return;
+                        requestAnimationFrame(() => {
+                          void output.offsetWidth;
+                          output.classList.add('is-typing');
+                        });
+                      });
+                    });
+                  </script>
                 </section>
               );
             }

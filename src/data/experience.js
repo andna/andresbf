@@ -32,9 +32,10 @@ export const experienceJobs = [
     name: 'Wealth2B',
     field: 'Investing Products',
     points: [
-      'AI Ticket/BugFix DevOps pipeline',
-      'UX & Product Consultor',
-      { text: 'GenAI Videos', href: '#' },
+      {
+        title: 'Working on:',
+        items: ['AI Ticket/BugFix DevOps pipeline', 'UX & Product Consultor', { text: 'GenAI Videos', href: '#' }],
+      },
     ],
     entries: [
       { type: 'start', label: 'Present' },

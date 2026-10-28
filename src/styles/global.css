@@ -280,8 +280,7 @@ body {
   left: 42%;
   width: min(72%, 18rem);
   margin-top: 0;
-  transform: rotate(180deg);
-  visibility: hidden;
+  transform: none;
 }
 
 .experience-pyramid-mesh,
@@ -346,6 +345,26 @@ body {
   opacity: 0;
 }
 
+#experience {
+  --exp-title: var(--text-color);
+  --exp-org: var(--accent-color);
+  --exp-field: color-mix(in srgb, var(--accent-color) 50%, var(--bg-color) 50%);
+  --exp-date: var(--text-color);
+  --exp-role: oklch(from color-mix(in oklch, var(--secondary-color) 30%, var(--text-color) 70%) l calc(c / 0.3) h);
+  --exp-plain: var(--exp-role);
+  --exp-heading: var(--exp-role);
+  --exp-bullet: var(--exp-role);
+  --exp-link: var(--exp-bullet);
+}
+
+html[data-theme="dark"] #experience {
+  --exp-org: var(--secondary-color);
+}
+
+#experience > h1 {
+  color: var(--exp-title);
+}
+
 #experience.is-animated .experience-pyramid-face {
   animation-name: experience-pyramid-lit;
   animation-timing-function: ease-in-out;
@@ -374,6 +393,37 @@ body {
   --notch: 0.15rem;
   width: min(100%, 30rem);
   margin-top: 0.5rem;
+}
+
+.experience-colors {
+  position: fixed;
+  z-index: 40;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  background: color-mix(in srgb, var(--bg-color) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-color) 25%, transparent);
+  color: var(--text-color);
+  font-size: 0.72rem;
+  pointer-events: auto;
+}
+
+.experience-colors label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.experience-colors input {
+  width: 2rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
 }
 
 .experience-list {
@@ -497,8 +547,94 @@ body {
 }
 
 .experience-points {
+  --corner: 0.65rem;
+  --line: 1.15px;
   width: 100%;
   max-width: 22rem;
+}
+
+.experience-points-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.7rem;
+  border: var(--line) dashed color-mix(in srgb, var(--secondary-color) 55%, transparent);
+  color: var(--exp-heading);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.18;
+  list-style: none;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.experience-points-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.experience-points-toggle:hover,
+.experience-points-toggle:focus-visible,
+.experience-points[open] > .experience-points-toggle {
+  border-style: solid;
+  border-color: var(--secondary-color);
+  background: color-mix(in srgb, var(--secondary-color) 10%, transparent);
+  outline: none;
+}
+
+.experience-points-prompt {
+  color: var(--secondary-color);
+  font-weight: 800;
+  transition: transform 0.2s ease;
+}
+
+.experience-points[open] .experience-points-prompt {
+  transform: rotate(90deg);
+}
+
+.experience-points-output {
+  margin-top: 0.6rem;
+  padding: 0.8rem 0.9rem 0.85rem 0;
+  background:
+    linear-gradient(var(--secondary-color) 0 0) left top / var(--corner) var(--line),
+    linear-gradient(var(--secondary-color) 0 0) left top / var(--line) var(--corner),
+    linear-gradient(var(--secondary-color) 0 0) right top / var(--corner) var(--line),
+    linear-gradient(var(--secondary-color) 0 0) right top / var(--line) var(--corner),
+    linear-gradient(var(--secondary-color) 0 0) left bottom / var(--corner) var(--line),
+    linear-gradient(var(--secondary-color) 0 0) left bottom / var(--line) var(--corner),
+    linear-gradient(var(--secondary-color) 0 0) right bottom / var(--corner) var(--line),
+    linear-gradient(var(--secondary-color) 0 0) right bottom / var(--line) var(--corner);
+  background-repeat: no-repeat;
+}
+
+.experience-points-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+  padding: 0 0 0.45rem 0.75rem;
+  border-bottom: var(--line) dashed color-mix(in srgb, var(--secondary-color) 45%, transparent);
+  color: var(--secondary-color);
+  font-size: 0.78rem;
+  line-height: 1.18;
+}
+
+.experience-points-close {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.experience-points-close:hover,
+.experience-points-close:focus-visible {
+  color: var(--exp-heading);
+  outline: none;
 }
 
 .experience-points ul {
@@ -513,14 +649,56 @@ body {
 
 .content .experience-points-title {
   margin: 0 0 0.25rem;
-  color: oklch(from color-mix(in oklch, var(--secondary-color) 30%, var(--text-color) 70%) l calc(c / 0.3) h);
+  padding-left: 0.75rem;
+  color: var(--exp-heading);
   font-size: 0.98rem;
   font-weight: 500;
   line-height: 1.18;
+  opacity: 0.45;
+}
+
+.content .experience-points-title::before {
+  content: "// ";
+}
+
+.experience-points-output:not(.is-typing) :is(.experience-points-title, li) {
+  clip-path: inset(0 100% 0 0);
+}
+
+.experience-points-output.is-typing :is(.experience-points-title, li) {
+  animation: experience-type 0.34s steps(9, end) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 80ms);
+}
+
+@keyframes experience-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+#experience .experience-list {
+  position: relative;
+  isolation: isolate;
+}
+
+#experience .experience-list::before {
+  content: "";
+  position: absolute;
+  inset: -2.5rem;
+  z-index: -1;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--secondary-color) 28%, transparent) 0.9px, transparent 1.3px);
+  background-size: 1.25rem 1.25rem;
+  -webkit-mask: radial-gradient(closest-side, #000 35%, transparent);
+  mask: radial-gradient(closest-side, #000 35%, transparent);
+  pointer-events: none;
 }
 
 .content .experience-points a {
-  color: inherit;
+  color: var(--exp-link);
   text-decoration: underline;
   text-underline-offset: 0.18em;
 }
@@ -533,7 +711,7 @@ body {
   position: relative;
   margin: 0;
   padding-left: 1.1rem;
-  color: oklch(from color-mix(in oklch, var(--secondary-color) 30%, var(--text-color) 70%) l calc(c / 0.3) h);
+  color: var(--exp-bullet);
   font-size: 0.98rem;
   font-weight: 500;
   line-height: 1.18;
@@ -544,14 +722,12 @@ body {
 }
 
 .content .experience-points li::before {
-  content: "";
+  content: ">";
   position: absolute;
   left: 0;
-  top: 0.42em;
-  width: 0.32rem;
-  height: 0.32rem;
-  border-radius: 50%;
-  background: currentColor;
+  top: 0;
+  color: var(--secondary-color);
+  font-weight: 800;
 }
 
 .experience-card + .experience-card {
@@ -592,7 +768,7 @@ body {
 
 .content .experience-org-name {
   margin: 0;
-  color: var(--accent-color);
+  color: var(--exp-org);
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1.05;
@@ -600,7 +776,7 @@ body {
 
 .content .experience-org-field {
   margin: 0.18rem 0 0;
-  color: color-mix(in srgb, var(--accent-color) 50%, var(--bg-color) 50%);
+  color: var(--exp-field);
   font-size: 0.82rem;
   font-weight: 500;
   line-height: 1.2;
@@ -650,8 +826,7 @@ body {
   grid-column: 1;
   justify-self: stretch;
   margin: 0;
-  color: var(--text-color);
-  font-size: 0.92rem;
+  color: var(--exp-date);
   font-weight: 500;
   line-height: 1.05;
   text-align: right;
@@ -690,13 +865,14 @@ body {
   margin: 0;
   padding-left: 1.1rem;
   min-height: 2.65lh;
-  color: oklch(from color-mix(in oklch, var(--secondary-color) 30%, var(--text-color) 70%) l calc(c / 0.3) h);
+  color: var(--exp-role);
   font-size: 1.08rem;
   font-weight: 800;
   line-height: 1.18;
 }
 
 .content .experience-role-plain {
+  color: var(--exp-plain);
   font-weight: 400;
 }
 
@@ -780,7 +956,7 @@ body {
 }
 
 html[data-theme="dark"] .content .experience-org-name {
-  color: var(--secondary-color);
+  color: var(--exp-org);
 }
 
 .me-planet-land,
@@ -1135,7 +1311,8 @@ html[data-theme="dark"] .content .experience-org-name {
 @media (prefers-reduced-motion: reduce) {
   #me.is-animated .me-planet-pulse,
   #skills.is-animated .skills-cubes-face,
-  #experience.is-animated .experience-pyramid-face {
+  #experience.is-animated .experience-pyramid-face,
+  .experience-points-output.is-typing :is(.experience-points-title, li) {
     animation: none;
   }
 
@@ -1222,6 +1399,9 @@ html[data-theme="dark"] .content .experience-org-name {
   }
 
   .content section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     min-height: 100vh;
     padding: 3rem 5rem 5rem 2.5rem;
   }
@@ -1238,22 +1418,60 @@ html[data-theme="dark"] .content .experience-org-name {
   }
 
   .experience-pyramid {
-    top: -0.25rem;
-    left: 38%;
+    top: 5rem;
+    left: calc(50% + 11.5rem);
     right: auto;
-    width: min(18rem, 28%);
+    width: min(16rem, 24%);
+    transform: translate(-50%, -50%);
   }
 
   #experience > h1 {
     position: absolute;
     z-index: 1;
-    top: 1.75rem;
-    left: calc(50% + 1.625rem);
+    top: 2.65rem;
+    bottom: auto;
+    left: calc(50% - 1rem);
     margin: 0;
+    color: var(--exp-title);
   }
 
   #experience .experience-list {
     margin-top: 0;
+  }
+
+  .experience-list > .experience-card-split:nth-child(2) {
+    position: relative;
+  }
+
+  .experience-list > .experience-card-split:has(.experience-points[open]) {
+    z-index: 5;
+  }
+
+  .experience-points-output {
+    position: absolute;
+    z-index: 1;
+    top: calc(100% + 1.75rem);
+    left: calc(100% - 2.75rem);
+    width: 21rem;
+    margin: 0;
+    padding: 0.85rem 1.1rem 1rem 0.35rem;
+    background-color: color-mix(in srgb, var(--bg-color) 92%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+  }
+
+  .experience-list > .experience-card-split:nth-child(2) .experience-points-output {
+    left: -6rem;
+  }
+
+  #experience :is(.experience-body, .experience-points-toggle, .experience-card-nested) {
+    transition: opacity 0.25s ease;
+  }
+
+  #experience:has(.experience-points[open]) :is(.experience-body, .experience-points:not([open]) > .experience-points-toggle, .experience-card-nested) {
+    opacity: 0.2;
   }
 
   .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .chrome, .portfolio-tab) {
