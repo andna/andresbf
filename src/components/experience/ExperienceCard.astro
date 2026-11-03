@@ -1,5 +1,5 @@
 ---
-const { name, field, logo = false, entries, points = [], side = null, nested = false } = Astro.props;
+const { name, url = '', field, logo = false, entries, points = [], side = null, nested = false } = Astro.props;
 const split = points.length > 0 || Boolean(side);
 const present = entries.some((entry) => entry.type === 'start' && entry.label === 'Present');
 const shortShaft = present && entries[1]?.type === 'role' && entries[1].lines.length === 1 && Boolean(entries[1].end);
@@ -13,7 +13,7 @@ const groupOffsets = grouped ? points.map((_, index) => points.slice(0, index).r
   <div class="experience-head">
     {logoUrl && <span class:list={['experience-logo', { 'experience-logo-mark': logo !== true }]} style={`--experience-logo: url("${logoUrl}")`} aria-hidden="true"></span>}
     <div class="experience-org">
-      <h2 class="experience-org-name">{name}</h2>
+      <h2 class="experience-org-name">{url ? <a href={url} target="_blank" rel="noopener noreferrer">{name}</a> : name}</h2>
       {field && <p class="experience-org-field">{field}</p>}
     </div>
   </div>
@@ -62,11 +62,13 @@ const groupOffsets = grouped ? points.map((_, index) => points.slice(0, index).r
                 const text = typeof line === 'string' ? line : line.text;
                 const plain = typeof line === 'object' && line.plain;
                 const parts = typeof line === 'object' && line.parts;
+                const href = typeof line === 'object' && line.href;
                 return (
                   <>
                     {index > 0 && <br />}
                     {parts
                       ? parts.map((part) => (typeof part === 'string' ? part : <span class:list={{ 'experience-role-small': part.small }}>{part.text}</span>))
+                      : href ? <a class="experience-role-link" href={href} target="_blank" rel="noopener noreferrer">{text}</a>
                       : plain ? <span class="experience-role-plain">{text}</span> : text}
                   </>
                 );
@@ -98,7 +100,14 @@ const groupOffsets = grouped ? points.map((_, index) => points.slice(0, index).r
                 <p class="experience-points-title" style={`--i: ${groupOffsets[groupIndex]}`}>{group.title}</p>
                 <ul>
                   {group.items.map((item, index) => (
-                    <li style={`--i: ${groupOffsets[groupIndex] + index + 1}`}>{typeof item === 'object' && item.href ? <a href={item.href}>{item.text}</a> : item}</li>
+                    <li style={`--i: ${groupOffsets[groupIndex] + index + 1}`}>
+                      {typeof item === 'object' ? (item.href ? <a href={item.href} target="_blank" rel="noopener noreferrer">{item.text}</a> : item.text) : item}
+                      {typeof item === 'object' && item.items && (
+                        <ul class="experience-points-sub">
+                          {item.items.map((sub) => <li style={`--i: ${groupOffsets[groupIndex] + index + 1.5}`}>{sub}</li>)}
+                        </ul>
+                      )}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -106,7 +115,7 @@ const groupOffsets = grouped ? points.map((_, index) => points.slice(0, index).r
           : (
               <ul>
                 {points.map((point, index) => (
-                  <li style={`--i: ${index}`}>{typeof point === 'object' && point.href ? <a href={point.href}>{point.text}</a> : point}</li>
+                  <li style={`--i: ${index}`}>{typeof point === 'object' && point.href ? <a href={point.href} target="_blank" rel="noopener noreferrer">{point.text}</a> : point}</li>
                 ))}
               </ul>
             )}

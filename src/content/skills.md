@@ -1,5 +1,3 @@
-# Skills / Achievements
-
 <svg class="skills-cubes" viewBox="0 0 232 192" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path class="skills-cubes-face" d="M178.797 156.29V179.136L198.6 167.712V144.865L178.797 156.29Z" style="animation-delay:0.0s;animation-duration:9.6s"/>
     <path class="skills-cubes-face" d="M178.8 131.713L198.602 143.137V120.291L178.8 108.866V131.713Z" style="animation-delay:0.95s;animation-duration:9.6s"/>
@@ -18,8 +16,58 @@
     <path class="skills-cubes-mesh" fill-rule="evenodd" clip-rule="evenodd" d="M74.6494 23.5674L74.9004 23.7109V47.1318L94.8496 35.5674L95.0996 35.4229L115.899 47.4229L136.7 35.4229L157.75 47.5674L158 47.7109V120.289L157.75 120.433L137.2 132.288V156.289L136.95 156.433L116.149 168.433L115.9 168.577L94.8506 156.433L94.5996 156.289V107.711L94.8506 107.567L115.4 95.7109V72.8643L95.3496 84.4316L95.3506 84.4326L74.6504 96.4326L74.4004 96.5771L54.0996 84.8643V108.289L53.8496 108.433L32.7998 120.577L11.75 108.433L11.5 108.289V83.7109L11.75 83.5674L32.2998 71.7109V23.7109L32.5498 23.5674L53.3506 11.5674L53.5996 11.4229L74.6494 23.5674ZM116.398 144.29V167.135L136.2 155.711V132.865L116.398 144.29ZM95.5996 155.711L115.398 167.134V144.286L95.5996 132.863V155.711ZM116.398 120.29V143.136L136.2 131.712L136.203 131.709V108.863L116.398 120.29ZM95.5996 131.71L115.398 143.132V120.286L95.5996 108.863V131.71ZM137.203 108.284V131.133L157 119.711V96.8633L137.203 108.284ZM96.0996 107.999L115.901 119.423L135.7 108.001L115.898 96.5762L96.0996 107.999ZM12.5 107.711L32.3008 119.135V96.2881L12.5 84.8652V107.711ZM33.3008 96.2881V119.134L53.0996 107.712V84.8652L33.3008 96.2881ZM116.4 95.7119L136.203 107.137V84.291L116.4 72.8662V95.7119ZM137.203 84.2852V107.131L157 95.7109V72.8633L137.203 84.2852ZM12.999 83.999L32.7998 95.4229L52.6006 84L32.7998 72.5762L12.999 83.999ZM54.1016 83.7119L73.8984 95.1328V72.2861L54.1016 60.8652V83.7119ZM74.8984 72.2881V95.1318L94.6016 83.7109V60.8662L74.8984 72.2881ZM116.398 71.1357L116.4 71.1348V71.7119L136.203 83.1367V60.291L116.398 48.8652V71.1357ZM33.2998 71.7109L53.1016 83.1348V60.2881L33.2998 48.8643V71.7109ZM95.6016 60.2881V83.1338L115.398 71.7119V48.8662L95.6016 60.2881ZM137.203 60.2852V83.1309L157 71.7109V48.8633L137.203 60.2852ZM73.9004 48.8682V48.8652L54.6016 59.999L74.3984 71.4209L94.1006 59.999L74.3984 48.5781L73.9004 48.8682ZM95.0986 60H95.1016L95.0996 59.9971L95.0986 60ZM75.3945 47.999L95.1006 59.4229L114.9 48L95.1006 36.5771L75.3945 47.999ZM116.898 48L136.698 59.4229L156.499 47.999L136.699 36.5762L116.898 48ZM33.2998 47.7109L53.1016 59.1348V36.2881L33.2998 24.8643V47.7109ZM54.1016 36.2881V59.1338L73.9004 47.7119V24.8652L54.1016 36.2881ZM33.7998 23.999L53.6006 35.4229L73.4004 24L53.5996 12.5762L33.7998 23.999Z"/>
   </svg>
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nec ante. Sed lacinia, urna non tincidunt mattis, tortor neque adipiscing diam, a cursus ipsum ante quis turpis.
-
-Nulla facilisi. Ut fringilla. Suspendisse potenti. Nunc feugiat mi a tellus consequat imperdiet. Vestibulum sapien. Proin quam. Etiam ultrices.
-
-Suspendisse in justo eu magna luctus suscipit. Sed lectus. Integer euismod lacus luctus magna. Quisque cursus, metus vitae pharetra auctor, sem massa mattis sem.
+<ul class="skill-cloud">
+  <li class="skill-cloud-lead">
+    <ul>
+      <li data-w="4"><span class="skill-emoji" aria-hidden="true">🖥️</span><span>Frontend</span></li>
+      <li data-w="2"><span class="skill-emoji" aria-hidden="true">💫</span><span>Motion</span></li>
+      <li data-w="1"><span class="skill-emoji" aria-hidden="true">🖱️</span><span>UI</span></li>
+      <li class="skill-cloud-title">Skills</li>
+    </ul>
+  </li>
+  <li data-w="4"><span class="skill-emoji" aria-hidden="true">⚛️</span><span>React</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🖌️</span><span>CSS</span></li>
+  <li data-w="4"><span class="skill-emoji" aria-hidden="true">🧊</span><span>3D</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">✏️</span><span>UX</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🔷</span><span>TypeScript</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🔄</span><span>Redux</span></li>
+  <li data-w="4"><span class="skill-emoji" aria-hidden="true">🤖</span><span>AI</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🔺</span><span>Next.js</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🌈</span><span>Shaders</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🟣</span><span>GraphQL</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🌐</span><span>WebGL</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">📦</span><span>Product</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🔭</span><span>R3F</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">⚙️</span><span>DevOps</span></li>
+  <li data-w="4"><span class="skill-emoji" aria-hidden="true">🥽</span><span>XR</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🪟</span><span>Interfaces</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">👁️</span><span>Vision</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🌀</span><span>Blender</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🏗️</span><span>Architecture</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🖐️</span><span>Interaction</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">📊</span><span>Data</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🗂️</span><span>Systems</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🧠</span><span>GenAI</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🎞️</span><span>Animation</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">📈</span><span>Graphs</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🧪</span><span>Prototyping</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🎲</span><span>Three.js</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🎯</span><span>Design</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🔀</span><span>Pipelines</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">👓</span><span>AR</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🧩</span><span>State</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">🌿</span><span>Git</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🎨</span><span>Figma</span></li>
+  <li data-w="1"><span class="skill-emoji" aria-hidden="true">⚡</span><span>Vite</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🟢</span><span>Node</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🛰️</span><span>Agents</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🚀</span><span>Astro</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">♿</span><span>A11y</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🧬</span><span>LLM</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🌌</span><span>Spatial</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🎬</span><span>Framer</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">📡</span><span>Realtime</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">📐</span><span>Layout</span></li>
+  <li data-w="2"><span class="skill-emoji" aria-hidden="true">🪄</span><span>GSAP</span></li>
+  <li data-w="3"><span class="skill-emoji" aria-hidden="true">🧭</span><span>Strategy</span></li>
+</ul>

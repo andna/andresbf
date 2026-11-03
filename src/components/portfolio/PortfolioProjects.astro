@@ -1,0 +1,119 @@
+---
+const { projects = [] } = Astro.props
+---
+
+<div class="portfolio-projects">
+  {projects.map((project) => (
+    <article class="project-card">
+      <h2 class="project-title">{project.title}</h2>
+      <p class="project-line">{project.line}</p>
+      <div class="project-carousel">
+        <button type="button" class="project-carousel-nav" data-dir="-1" aria-label="Previous image"></button>
+        <div class="project-carousel-track">
+          {project.images.map((src, index) => (
+            <img src={src} alt={`${project.title}, image ${index + 1}`} draggable="false" />
+          ))}
+        </div>
+        <button type="button" class="project-carousel-nav" data-dir="1" aria-label="Next image"></button>
+      </div>
+    </article>
+  ))}
+</div>
+
+<script>
+  document.querySelectorAll('.project-carousel').forEach((carousel) => {
+    const track = carousel.querySelector('.project-carousel-track')
+    const distance = () => {
+      const slide = track.querySelector('img')
+      if (!(slide instanceof HTMLElement)) return track.clientWidth
+      const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0
+      return slide.getBoundingClientRect().width + gap
+    }
+    carousel.querySelectorAll('.project-carousel-nav').forEach((button) => {
+      button.addEventListener('click', () => {
+        track.scrollBy({ left: Number(button.dataset.dir) * distance(), behavior: 'smooth' })
+      })
+    })
+    let originX = 0
+    let originScroll = 0
+    let dragging = false
+    let dragged = false
+    track.addEventListener('pointerdown', (event) => {
+      dragging = true
+      dragged = false
+      originX = event.clientX
+      originScroll = track.scrollLeft
+      track.setPointerCapture(event.pointerId)
+    })
+    track.addEventListener('pointermove', (event) => {
+      if (!dragging) return
+      if (Math.abs(event.clientX - originX) > 4) dragged = true
+      track.scrollLeft = originScroll - (event.clientX - originX)
+    })
+    const stop = () => {
+      dragging = false
+    }
+    track.addEventListener('pointerup', stop)
+    track.addEventListener('pointercancel', stop)
+    track.addEventListener('click', (event) => {
+      if (dragged) return
+      const images = [...track.querySelectorAll('img')]
+      const index = images.findIndex((image) => {
+        const box = image.getBoundingClientRect()
+        return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom
+      })
+      if (index < 0) return
+      const card = track.closest('.project-card')
+      openProjectDialog(images.map((image) => ({ src: image.src, alt: image.alt })), index, {
+        title: card.querySelector('.project-title').textContent,
+        line: card.querySelector('.project-line').textContent,
+      })
+    })
+  })
+
+  const dialog = document.getElementById('project-dialog')
+  const dialogImage = dialog.querySelector('img')
+  const dialogTitle = dialog.querySelector('.project-dialog-title')
+  const dialogLine = dialog.querySelector('.project-dialog-line')
+  let dialogSlides = []
+  let dialogIndex = 0
+
+  const showDialogSlide = (next) => {
+    dialogIndex = (next + dialogSlides.length) % dialogSlides.length
+    dialogImage.src = dialogSlides[dialogIndex].src
+    dialogImage.alt = dialogSlides[dialogIndex].alt
+  }
+
+  const openProjectDialog = (slides, index, copy) => {
+    dialogSlides = slides
+    dialogTitle.textContent = copy.title
+    dialogLine.textContent = copy.line
+    showDialogSlide(index)
+    if (!dialog.open) dialog.showModal()
+  }
+
+  dialog.querySelectorAll('.project-carousel-nav').forEach((button) => {
+    button.addEventListener('click', () => {
+      showDialogSlide(dialogIndex + Number(button.dataset.dir))
+    })
+  })
+
+  dialog.querySelector('.project-dialog-close').addEventListener('click', () => {
+    dialog.close()
+  })
+
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close()
+  })
+
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowRight') {
+      showDialogSlide(dialogIndex + 1)
+      event.preventDefault()
+    }
+    if (event.key === 'ArrowLeft') {
+      showDialogSlide(dialogIndex - 1)
+      event.preventDefault()
+    }
+  })
+</script>

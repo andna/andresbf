@@ -1,16 +1,20 @@
 export const experienceJobs = [
   {
     name: '.monks',
+    url: 'https://www.monks.com',
     field: 'IT Services & Consulting',
     logo: '/logo-monks.svg',
     points: [
       {
         title: 'Working on:',
-        items: ['Tech stack migrations.', 'React, redux, Next.js.', 'Architecture AI skill pipelines.'],
+        items: [
+          { text: 'Tech stack migrations', items: ['React, Next.js, Redux, GraphQL'] },
+          { text: 'AI skill documentation pipelines', href: '#' },
+        ],
       },
       {
         title: 'With clients such as:',
-        items: ['Walmart', 'GreatWolf Lodges', 'BB&B'],
+        items: ['Walmart', 'Great Wolf Lodge', 'Bed Bath & Beyond'],
       },
     ],
     entries: [
@@ -20,7 +24,7 @@ export const experienceJobs = [
       {
         type: 'role',
         lines: [
-          { parts: [{ text: 'Senior', small: true }] },
+          'Senior',
           'Frontend Dev',
           { text: 'Contractor', plain: true },
         ],
@@ -30,11 +34,12 @@ export const experienceJobs = [
   },
   {
     name: 'Wealth2B',
-    field: 'Investing Products',
+    url: 'https://wealth2b.com/',
+    field: 'Investing APIs',
     points: [
       {
         title: 'Working on:',
-        items: ['AI Ticket/BugFix DevOps pipeline', 'UX & Product Consultor', { text: 'GenAI Videos', href: '#' }],
+        items: ['DevOps bugfix AI pipeline', 'Product & UX consulting', { text: 'GenAI videos', href: '#' }],
       },
     ],
     entries: [
@@ -48,6 +53,7 @@ export const experienceJobs = [
   },
   {
     name: 'Quiena Inversiones',
+    url: 'https://www.linkedin.com/company/quiena',
     field: 'Wealth Management',
     logo: true,
     side: {
@@ -56,13 +62,13 @@ export const experienceJobs = [
         { type: 'start', label: 'Jan 2015', datetime: '2015-01' },
         {
           type: 'role',
-          lines: ['Halliburton', { text: 'Content', plain: true }, { text: 'Manager', plain: true }],
+          lines: [{ text: 'Halliburton', href: 'https://www.halliburton.com' }, { text: 'Content', plain: true }, { text: 'Manager', plain: true }],
           logo: '/logo-a.svg',
         },
         { type: 'gap', label: 'Jun 2014', datetime: '2014-06' },
         {
           type: 'role',
-          lines: ['Átiko7', { text: 'Wordpress', plain: true }, { text: '& Blender', plain: true }],
+          lines: [{ text: 'Átiko7', href: 'https://www.atiko7.com/' }, { text: 'Wordpress', plain: true }, { text: '& Blender', plain: true }],
           logo: '/logo-a.svg',
           end: { label: 'Jan 2014', datetime: '2014-01' },
         },

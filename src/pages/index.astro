@@ -7,24 +7,18 @@ import { Content as Header } from '../content/header.md';
 import { Content as Me } from '../content/me.md';
 import { Content as Experience } from '../content/experience.md';
 import { Content as Skills } from '../content/skills.md';
-import { Content as Portfolio1 } from '../content/portfolio.md';
-import { Content as Portfolio2 } from '../content/portfolio-2.md';
-import { Content as Portfolio3 } from '../content/portfolio-3.md';
-import { Content as Portfolio4 } from '../content/portfolio-4.md';
 import { Content as Education } from '../content/education.md';
 import { Content as Footer } from '../content/footer.md';
 import ExperienceCard from '../components/experience/ExperienceCard.astro';
+import PortfolioProjects from '../components/portfolio/PortfolioProjects.astro';
 import { experienceJobs } from '../data/experience.js';
+import { portfolioProjects } from '../data/portfolio.js';
 
 const contentById = {
   header: Header,
   me: Me,
   skills: Skills,
   experience: Experience,
-  'portfolio-1': Portfolio1,
-  'portfolio-2': Portfolio2,
-  'portfolio-3': Portfolio3,
-  'portfolio-4': Portfolio4,
   education: Education,
   footer: Footer,
 };
@@ -76,7 +70,7 @@ for (const article of articles) {
                   {group.items.map(({ id, Content }, index) => (
                     <section id={id} style={`--tab-index: ${index}`}>
                       <button type="button" class="portfolio-tab">{sections.find((section) => section.id === id)?.title ?? ''}</button>
-                      <Content />
+                      <PortfolioProjects projects={portfolioProjects[id]} />
                     </section>
                   ))}
                 </div>
@@ -119,6 +113,7 @@ for (const article of articles) {
 
                     document.addEventListener('click', (event) => {
                       const target = event.target instanceof Element ? event.target : null;
+                      if (target?.closest('#experience a[href="#"]')) event.preventDefault();
                       if (target?.closest('.experience-points-close')) {
                         closePoints(null);
                         return;
@@ -155,5 +150,101 @@ for (const article of articles) {
       </main>
     </div>
     <div class="scroll-spacer" aria-hidden="true"></div>
+    <dialog class="project-dialog" id="project-dialog">
+      <button type="button" class="project-dialog-close" aria-label="Close">[x]</button>
+      <div class="project-dialog-copy">
+        <h2 class="project-dialog-title"></h2>
+        <p class="project-dialog-line"></p>
+      </div>
+      <div class="project-dialog-frame">
+        <button type="button" class="project-carousel-nav" data-dir="-1" aria-label="Previous image"></button>
+        <img alt="" />
+        <button type="button" class="project-carousel-nav" data-dir="1" aria-label="Next image"></button>
+      </div>
+    </dialog>
+    <script is:inline>
+      (() => {
+        const skillCloud = document.querySelector('.skill-cloud');
+        if (!skillCloud) return;
+        const entries = [];
+        const measure = () => {
+          const prev = new Map(entries.map((entry) => [entry.item, entry]));
+          const items = [...skillCloud.querySelectorAll('li:not(.skill-cloud-lead):not(.skill-cloud-title)')];
+          const rows = [];
+          items.forEach((item) => {
+            const mid = item.offsetTop + item.offsetHeight / 2;
+            const left = item.offsetLeft;
+            const row = rows.find((entry) => Math.abs(entry.mid - mid) < 22);
+            if (row) {
+              row.items.push({ item, left });
+              row.mid = (row.mid * (row.items.length - 1) + mid) / row.items.length;
+            } else {
+              rows.push({ mid, items: [{ item, left }] });
+            }
+          });
+          rows.sort((a, b) => a.mid - b.mid);
+          const rowDenom = Math.max(rows.length - 1, 1);
+          entries.length = 0;
+          rows.forEach((row, rowIndex) => {
+            row.items.sort((a, b) => a.left - b.left);
+            const colDenom = Math.max(row.items.length - 1, 1);
+            row.items.forEach(({ item }, colIndex) => {
+              const d = (rowIndex / rowDenom + (1 - colIndex / colDenom)) / 2;
+              const old = prev.get(item);
+              const emoji = old?.emoji ?? item.querySelector('.skill-emoji');
+              const state = {
+                item,
+                emoji,
+                d,
+                hover: old?.hover ?? 0,
+                hovered: old?.hovered ?? false,
+              };
+              item.onpointerenter = () => {
+                state.hovered = true;
+              };
+              item.onpointerleave = () => {
+                state.hovered = false;
+              };
+              entries.push(state);
+            });
+          });
+        };
+        measure();
+        document.fonts?.ready.then(measure);
+        new ResizeObserver(measure).observe(skillCloud);
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const halfWidth = 0.22;
+        const pad = 0.14;
+        const duration = 3200;
+        let lastTime = performance.now();
+        const tick = (now) => {
+          const dt = Math.min((now - lastTime) / 1000, 0.1);
+          lastTime = now;
+          const progress = (now % duration) / duration;
+          const center = -pad + progress * (1 + pad * 2);
+          entries.forEach((entry) => {
+            const targetHover = entry.hovered ? 1 : 0;
+            entry.hover += (targetHover - entry.hover) * Math.min(1, dt * 10);
+            if (Math.abs(targetHover - entry.hover) < 0.002) entry.hover = targetHover;
+            let wave = 0.22;
+            if (!reduceMotion.matches) {
+              const dist = Math.abs(entry.d - center) / halfWidth;
+              if (dist < 1) {
+                wave = 0.22 + 0.68 * 0.5 * (1 + Math.cos(Math.PI * dist));
+              }
+            }
+            const opacity = wave + (1 - wave) * entry.hover;
+            const color = Math.max((wave - 0.22) / 0.68, entry.hover);
+            entry.item.style.opacity = opacity.toFixed(3);
+            if (entry.emoji) {
+              entry.emoji.style.filter = `grayscale(${(1 - color).toFixed(3)})`;
+            }
+          });
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      })();
+    </script>
   </div>
 </Layout>

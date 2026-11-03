@@ -475,6 +475,7 @@ export default function Navigator({ sections }) {
         if (card.style.marginTop) card.style.removeProperty('margin-top')
         if (card.style.transform) card.style.removeProperty('transform')
         if (card.style.minHeight) card.style.removeProperty('min-height')
+        if (card.style.height) card.style.removeProperty('height')
         if (card.style.zIndex) card.style.removeProperty('z-index')
       })
       if (block.style.paddingBottom) block.style.removeProperty('padding-bottom')
@@ -499,12 +500,18 @@ export default function Navigator({ sections }) {
       return raw.endsWith('rem') ? n * rootPx : n
     }
     const overlap = remPx('--octagon-cut') || 12
-    let tabX = remPx('--octagon-cut') + remPx('--portfolio-label')
+    const cardBorder = parseFloat(getComputedStyle(cards[0]).borderLeftWidth) || 0
+    let tabX = -cardBorder
     cards.forEach((card) => {
       const item = card.querySelector('.portfolio-tab')
       if (!(item instanceof HTMLElement)) return
       const left = `${Math.round(tabX)}px`
       if (item.style.left !== left) item.style.left = left
+      const tabBorder = parseFloat(getComputedStyle(item).borderLeftWidth) || 0
+      const gapStart = `${Math.round(tabX) + cardBorder + tabBorder}px`
+      const gapEnd = `${Math.round(tabX) + cardBorder + item.offsetWidth - tabBorder}px`
+      if (card.style.getPropertyValue('--tab-gap-start') !== gapStart) card.style.setProperty('--tab-gap-start', gapStart)
+      if (card.style.getPropertyValue('--tab-gap-end') !== gapEnd) card.style.setProperty('--tab-gap-end', gapEnd)
       tabX += item.offsetWidth - overlap
     })
     const titleGap = titleBand
@@ -513,7 +520,8 @@ export default function Navigator({ sections }) {
     cards.forEach((card) => {
       const height = `${Math.max(220, Math.round(viewport - stick - gap))}px`
       const margin = `${tabHeight}px`
-      if (card.style.minHeight !== height) card.style.minHeight = height
+      if (card.style.height !== height) card.style.height = height
+      if (card.style.minHeight) card.style.removeProperty('min-height')
       if (card.style.marginTop !== margin) card.style.marginTop = margin
     })
     const last = cards.length - 1
@@ -554,7 +562,7 @@ export default function Navigator({ sections }) {
       const pin = Math.max(0, pinLine - natural)
       const dy = pin - release
       const next = titlePos === 'absolute'
-        ? `translate3d(0, calc(-100% + 1px + ${dy}px), 0)`
+        ? `translate3d(0, calc(-100% - 0.4rem + ${dy}px), 0)`
         : dy ? `translate3d(0, ${dy}px, 0)` : ''
       if (title.style.transform !== next) title.style.transform = next
       title.style.zIndex = String(cards.length + 1)
@@ -1091,7 +1099,13 @@ export default function Navigator({ sections }) {
 
     const takeOverWithWheel = (event) => {
       if (event.ctrlKey) return
+      if (document.querySelector('.project-dialog[open]')) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        return
+      }
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      if (event.target instanceof Element && event.target.closest('.project-carousel-track') && Math.abs(event.deltaX) > Math.abs(event.deltaY)) return
       wheelAtRef.current = performance.now()
       const interrupt = orbitModeRef.current === 'click' || clickAnimRef.current
       orbitModeRef.current = 'scroll'
@@ -1112,7 +1126,11 @@ export default function Navigator({ sections }) {
       event.stopImmediatePropagation()
     }
 
-    const onUserScrollIntent = () => {
+    const onUserScrollIntent = (event) => {
+      if (document.querySelector('.project-dialog[open]')) {
+        event.preventDefault()
+        return
+      }
       unlockScroll()
     }
 
@@ -1132,6 +1150,10 @@ export default function Navigator({ sections }) {
         event.key === 'End' ||
         event.key === ' '
       ) {
+        if (document.querySelector('.project-dialog[open]')) {
+          event.preventDefault()
+          return
+        }
         orbitModeRef.current = 'scroll'
         unlockScroll()
       }
@@ -1173,7 +1195,7 @@ export default function Navigator({ sections }) {
     window.addEventListener('scrollend', onScrollEnd)
     window.addEventListener('resize', onResize)
     window.addEventListener('wheel', takeOverWithWheel, { capture: true, passive: false })
-    window.addEventListener('touchmove', onUserScrollIntent, { passive: true })
+    window.addEventListener('touchmove', onUserScrollIntent, { passive: false })
     window.addEventListener('pointerdown', onPointerDown)
     window.addEventListener('keydown', onKeyedScroll)
     const ro = new ResizeObserver(syncSpacer)
