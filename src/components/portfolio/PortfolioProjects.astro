@@ -89,7 +89,12 @@ const { projects = [] } = Astro.props
     dialogTitle.textContent = copy.title
     dialogLine.textContent = copy.line
     showDialogSlide(index)
+    dialog.classList.remove('is-typing')
     if (!dialog.open) dialog.showModal()
+    requestAnimationFrame(() => {
+      void dialog.offsetWidth
+      dialog.classList.add('is-typing')
+    })
   }
 
   dialog.querySelectorAll('.project-carousel-nav').forEach((button) => {
@@ -116,4 +121,14 @@ const { projects = [] } = Astro.props
       event.preventDefault()
     }
   })
+
+  const reveal = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        entry.target.classList.toggle('is-inview', entry.isIntersecting)
+      })
+    },
+    { threshold: 0.18, rootMargin: '0px 0px -8% 0px' }
+  )
+  document.querySelectorAll('.project-card, .portfolio-block > section').forEach((card) => reveal.observe(card))
 </script>

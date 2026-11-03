@@ -66,10 +66,25 @@ for (const article of articles) {
             if (group.kind === 'portfolio') {
               return (
                 <div class="portfolio-block">
-                  <h1 class="portfolio-title"><span>Portfolio</span></h1>
-                  {group.items.map(({ id, Content }, index) => (
-                    <section id={id} style={`--tab-index: ${index}`}>
-                      <button type="button" class="portfolio-tab">{sections.find((section) => section.id === id)?.title ?? ''}</button>
+                  <div class="portfolio-chrome">
+                    <div class="portfolio-tabs" role="tablist" aria-label="Portfolio">
+                      {group.items.map(({ id }, index) => (
+                        <button
+                          type="button"
+                          class="portfolio-tab"
+                          role="tab"
+                          data-portfolio-target={id}
+                          style={`--tab-index: ${index}`}
+                        >
+                          {sections.find((section) => section.id === id)?.title ?? ''}
+                        </button>
+                      ))}
+                    </div>
+                    <h1 class="portfolio-title"><span>Portfolio</span></h1>
+                  </div>
+                  {group.items.map(({ id }) => (
+                    <section id={id}>
+                      <h2 class="portfolio-section-label">{sections.find((section) => section.id === id)?.title ?? ''}</h2>
                       <PortfolioProjects projects={portfolioProjects[id]} />
                     </section>
                   ))}
@@ -225,7 +240,8 @@ for (const article of articles) {
           const center = -pad + progress * (1 + pad * 2);
           entries.forEach((entry) => {
             const targetHover = entry.hovered ? 1 : 0;
-            entry.hover += (targetHover - entry.hover) * Math.min(1, dt * 10);
+            const hoverRate = entry.hovered ? 12 : 1.6;
+            entry.hover += (targetHover - entry.hover) * Math.min(1, dt * hoverRate);
             if (Math.abs(targetHover - entry.hover) < 0.002) entry.hover = targetHover;
             let wave = 0.22;
             if (!reduceMotion.matches) {

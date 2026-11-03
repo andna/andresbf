@@ -129,16 +129,40 @@ body {
   margin: 0 0 0.75rem;
 }
 
-.content .portfolio-block section {
-  min-height: calc(100vh - 8rem);
+.portfolio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.portfolio-chrome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.portfolio-tabs {
+  display: none;
+}
+
+.portfolio-section-label {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.1;
 }
 
 .portfolio-block section {
   --octagon-cut: 0.75rem;
   background-color: var(--bg-color);
-  border: 1px solid var(--accent-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 42%, transparent);
   border-radius: var(--octagon-cut);
   corner-shape: bevel;
+  transition: border-color 0.55s ease;
+}
+
+.portfolio-block section.is-inview {
+  border-color: var(--accent-color);
 }
 
 .portfolio-block .portfolio-title {
@@ -148,7 +172,7 @@ body {
   justify-content: space-between;
   gap: 1rem;
   margin: 0;
-  padding: 2rem 1.25rem 1rem;
+  padding: 2rem 1.25rem 0;
   background-color: var(--bg-color);
   font-size: 1.25rem;
 }
@@ -166,6 +190,21 @@ body {
   gap: 0.25rem;
   width: 100%;
   min-width: 0;
+  opacity: 0.42;
+  transition: opacity 0.55s ease;
+}
+
+.project-card.is-inview {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card,
+  .portfolio-block section {
+    opacity: 1;
+    border-color: var(--accent-color);
+    transition: none;
+  }
 }
 
 .content .project-title {
@@ -173,6 +212,10 @@ body {
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.15;
+}
+
+.content .project-card + .project-card .project-title {
+  margin-top: 1.5rem;
 }
 
 .content .project-line {
@@ -259,7 +302,7 @@ body {
 }
 
 .project-dialog {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 0.85rem;
   width: min(92vw, 70rem);
@@ -273,6 +316,10 @@ body {
   background: color-mix(in srgb, var(--bg-color) 94%, transparent);
   overflow: hidden;
   pointer-events: auto;
+}
+
+.project-dialog[open] {
+  display: flex;
 }
 
 .project-dialog::backdrop {
@@ -290,6 +337,7 @@ body {
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
+  --i: 0;
 }
 
 .project-dialog-close:hover,
@@ -307,6 +355,7 @@ body {
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.15;
+  --i: 1;
 }
 
 .project-dialog-line {
@@ -314,6 +363,20 @@ body {
   color: color-mix(in srgb, var(--text-color) 72%, transparent);
   font-size: 0.95rem;
   line-height: 1.3;
+  --i: 2;
+}
+
+.project-dialog:not(.is-typing) :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+  clip-path: inset(0 100% 0 0);
+}
+
+.project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+  animation: experience-type 0.72s steps(12, end) both;
+  animation-delay: calc(var(--i, 0) * 160ms + 90ms);
+}
+
+.project-dialog.is-typing .project-dialog-frame img {
+  animation-duration: 0.42s;
 }
 
 .project-dialog-frame {
@@ -323,6 +386,14 @@ body {
   align-items: center;
   flex: 1;
   min-height: 0;
+}
+
+.project-dialog-frame .project-carousel-nav {
+  --i: 3;
+}
+
+.project-dialog-frame img {
+  --i: 3;
 }
 
 .project-dialog .project-carousel-nav {
@@ -352,27 +423,28 @@ body {
 }
 
 .portfolio-tab {
-  --tab-reveal: 0.9rem;
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: calc(var(--octagon-cut) + var(--tab-index) * var(--tab-reveal));
-  transform: translateY(calc(-100% + 1px));
-  min-width: 4.5rem;
-  padding: 0.15rem 0.9rem 0.1rem;
-  background-color: var(--bg-color);
-  border: 1px solid var(--accent-color);
-  border-bottom: 0;
-  border-radius: var(--octagon-cut) var(--octagon-cut) 0 0;
+  position: relative;
+  min-width: 0;
+  padding: 0.35rem 0.9rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
   corner-shape: bevel;
   font-family: inherit;
-  font-size: 2rem;
+  font-size: 1.1rem;
   font-weight: 500;
   line-height: 1.1;
-  color: inherit;
+  color: color-mix(in srgb, var(--accent-color) 35%, transparent);
   text-align: center;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.portfolio-tab:hover,
+.portfolio-tab.is-active {
+  color: var(--accent-color);
+  border-color: color-mix(in srgb, var(--accent-color) 55%, transparent);
+  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
 }
 
 .header-hero {
@@ -1342,11 +1414,8 @@ html[data-theme="dark"] .content .experience-org-name {
 
   .portfolio-block section,
   .content .portfolio-block section {
-    min-height: calc(100vh - var(--chrome-header));
-    background: none;
-    border: 0;
-    border-radius: 0;
-    corner-shape: initial;
+    min-height: 0;
+    padding: 1rem 1.1rem 1.2rem;
   }
 
   .portfolio-block .portfolio-title {
@@ -1354,7 +1423,15 @@ html[data-theme="dark"] .content .experience-org-name {
     padding: 2rem 1.25rem 0;
     background: none;
     font-size: 2rem;
-    margin: 0 0 1rem;
+    margin: 0;
+  }
+
+  .portfolio-chrome {
+    gap: 0.35rem;
+  }
+
+  .portfolio-tabs {
+    display: none;
   }
 
   .portfolio-tab {
@@ -1366,7 +1443,7 @@ html[data-theme="dark"] .content .experience-org-name {
     min-width: 0;
     max-width: none;
     padding: 0;
-    margin: 0 0 0.75rem;
+    margin: 0;
     background: none;
     border: 0;
     border-radius: 0;
@@ -1590,8 +1667,13 @@ html[data-theme="dark"] .content .experience-org-name {
   #skills.is-animated .skills-cubes-face,
   .skill-cloud li:not(.skill-cloud-title),
   #experience.is-animated .experience-pyramid-face,
-  .experience-points-output.is-typing :is(.experience-points-title, li) {
+  .experience-points-output.is-typing :is(.experience-points-title, li),
+  .project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
     animation: none;
+  }
+
+  .project-dialog :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+    clip-path: none;
   }
 
   .header-parallax {
@@ -1791,7 +1873,7 @@ html[data-theme="dark"] .content .experience-org-name {
     opacity: 0.2;
   }
 
-  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .chrome, .portfolio-tab, .project-carousel) {
+  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .chrome, .portfolio-tab, .portfolio-chrome, .project-carousel) {
     pointer-events: auto;
   }
 
@@ -1843,106 +1925,103 @@ html[data-theme="dark"] .content .experience-org-name {
 
   .portfolio-block {
     --octagon-cut: 0.75rem;
-    --portfolio-label: 8.75rem;
-    --portfolio-tab-h: 2.6rem;
     position: relative;
-    display: flow-root;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
     margin-right: 5rem;
   }
 
-  .portfolio-block .portfolio-title {
-    position: absolute;
-    z-index: 2;
-    top: var(--portfolio-tab-h);
-    left: auto;
-    right: var(--octagon-cut);
-    width: var(--portfolio-label);
-    justify-content: flex-end;
+  .portfolio-chrome {
+    z-index: 4;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
     margin: 0;
-    padding: 0.15rem 0 0.1rem 0.4rem;
+    padding: 0.55rem 1rem 0.6rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--octagon-cut);
+    corner-shape: bevel;
+    box-sizing: border-box;
+    transition: border-top-left-radius 0.35s ease, border-top-right-radius 0.35s ease;
+  }
+
+  .portfolio-chrome.is-stuck {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .portfolio-chrome + section {
+    margin-top: calc(-1 * var(--octagon-cut));
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .portfolio-block section.is-clipped {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .portfolio-block > section + section {
+    margin-top: 1.35rem;
+  }
+
+  .portfolio-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+  }
+
+  .portfolio-block .portfolio-title {
+    position: static;
+    order: -1;
+    width: auto;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0.2rem 0.15rem;
     background: none;
     font-size: 2rem;
     font-weight: 500;
     line-height: 1.1;
-    transform: translateY(calc(-100% - 0.4rem));
+    transform: none;
+  }
+
+  .portfolio-section-label {
+    display: none;
   }
 
   .portfolio-block section {
-    justify-content: flex-start;
-    gap: 0.55rem;
-    padding-top: 1.15rem;
-    padding-bottom: 1.15rem;
-    border-top-left-radius: 0;
-    border-top-color: transparent;
+    gap: 0.75rem;
+    min-height: 0;
+    padding: calc(1.15rem + var(--octagon-cut)) 1.25rem 1.3rem;
+    transition: border-color 0.55s ease, border-top-left-radius 0.35s ease, border-top-right-radius 0.35s ease;
   }
 
   .portfolio-projects {
-    flex: 1;
-    gap: 0.65rem;
-    min-height: 0;
+    gap: 1.35rem;
   }
 
   .project-card {
-    flex: 1;
+    flex: none;
     min-height: 0;
   }
 
   .project-carousel {
-    flex: 1;
-    min-height: 0;
-    margin-top: 0.2rem;
+    flex: none;
+    margin-top: 0.45rem;
   }
 
   .project-carousel-track {
-    height: 100%;
-  }
-
-  .portfolio-block section::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    right: calc(var(--octagon-cut) - 1px);
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      var(--accent-color) var(--tab-gap-start, 0px),
-      transparent var(--tab-gap-start, 0px) var(--tab-gap-end, 0px),
-      var(--accent-color) var(--tab-gap-end, 0px)
-    );
-    pointer-events: none;
-  }
-
-  .portfolio-block section::after {
-    content: "";
-    position: absolute;
-    top: -1px;
-    right: -1px;
-    width: var(--octagon-cut);
-    height: var(--octagon-cut);
-    background: linear-gradient(
-      to top right,
-      transparent calc(50% - 1.2px),
-      var(--accent-color) calc(50% - 1.2px) calc(50% - 0.1px),
-      transparent calc(50% - 0.1px)
-    );
-    pointer-events: none;
+    height: 15rem;
   }
 
   .portfolio-tab {
-    width: max-content;
-    min-width: 0;
-    left: calc(var(--tab-index) * var(--tab-reveal));
-    padding: 0.45rem 1.25rem calc(0.35rem + 1px);
-    top: auto;
-    bottom: 100%;
-    transform: none;
-    font-size: 1.25rem;
-    color: color-mix(in srgb, var(--accent-color) 30%, transparent);
-  }
-
-  .portfolio-tab:hover,
-  .portfolio-tab.is-active {
-    color: var(--accent-color);
+    padding: 0.45rem 1.05rem;
+    font-size: 1.2rem;
   }
 }

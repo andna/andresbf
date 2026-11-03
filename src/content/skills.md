@@ -19,10 +19,10 @@
 <ul class="skill-cloud">
   <li class="skill-cloud-lead">
     <ul>
-      <li data-w="4"><span class="skill-emoji" aria-hidden="true">🖥️</span><span>Frontend</span></li>
-      <li data-w="2"><span class="skill-emoji" aria-hidden="true">💫</span><span>Motion</span></li>
-      <li data-w="1"><span class="skill-emoji" aria-hidden="true">🖱️</span><span>UI</span></li>
       <li class="skill-cloud-title">Skills</li>
+      <li data-w="1"><span class="skill-emoji" aria-hidden="true">🖱️</span><span>UI</span></li>
+      <li data-w="2"><span class="skill-emoji" aria-hidden="true">💫</span><span>Motion</span></li>
+      <li data-w="4"><span class="skill-emoji" aria-hidden="true">🖥️</span><span>Frontend</span></li>
     </ul>
   </li>
   <li data-w="4"><span class="skill-emoji" aria-hidden="true">⚛️</span><span>React</span></li>

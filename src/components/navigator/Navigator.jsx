@@ -211,6 +211,7 @@ export default function Navigator({ sections }) {
   const orbitModeRef = useRef('scroll')
   const wheelAtRef = useRef(0)
   const clickAnimRef = useRef(null)
+  const portfolioTabHoldRef = useRef(null)
   const clickPoseDuration = 0.85
   const poseRange = () => {
     const cached = mobileAnchorsRef.current.range
@@ -433,139 +434,83 @@ export default function Navigator({ sections }) {
     const cache = portfolioPinRef.current
     const block = document.querySelector('.portfolio-block')
     cache.block = block instanceof HTMLElement ? block : null
+    cache.chrome = cache.block?.querySelector(':scope > .portfolio-chrome')
     cache.cards = cache.block
       ? [...cache.block.querySelectorAll(':scope > section')]
       : []
+    cache.tabs = cache.chrome instanceof HTMLElement
+      ? [...cache.chrome.querySelectorAll('.portfolio-tab')]
+      : []
+    if (cache.chrome instanceof HTMLElement) cache.chrome.style.removeProperty('transform')
     cache.cards.forEach((card) => {
       card.style.removeProperty('transform')
+      card.style.removeProperty('height')
+      card.style.removeProperty('min-height')
+      card.style.removeProperty('margin-top')
+      card.style.removeProperty('z-index')
     })
-    const title = cache.block?.querySelector(':scope > .portfolio-title')
-    if (title instanceof HTMLElement) title.style.removeProperty('transform')
+    if (cache.block instanceof HTMLElement) cache.block.style.removeProperty('padding-bottom')
   }
 
   const applyPortfolioTitlePin = (contentY) => {
     if (isMobile && mobilePinClearedRef.current) return
     const cache = portfolioPinRef.current
     if (!cache.block) measurePortfolioPin()
-    const { block, cards } = cache
+    const { block, cards, chrome, tabs } = cache
     if (!(block instanceof HTMLElement) || !cards.length) return
-    const content = document.querySelector('.content')
-    const headerPx = isMobile
-      ? (compactHeaderRef.current
-          || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-bg'))
-          || 0)
-      : 0
-    const viewport = isMobile
-      ? window.innerHeight
-      : content instanceof HTMLElement ? content.clientHeight : window.innerHeight
-    const contentTop = isMobile && content instanceof HTMLElement ? content.offsetTop : 0
     const y = isMobile ? window.scrollY : contentY
-    const title = block.querySelector(':scope > .portfolio-title')
-    const titlePos = title instanceof HTMLElement ? getComputedStyle(title).position : ''
-    const titleBand = title instanceof HTMLElement && titlePos !== 'absolute'
-      ? title.offsetHeight + (parseFloat(getComputedStyle(title).marginBottom) || 0)
-      : 0
-    const gap = 96
-    const tab = cards[0].querySelector('.portfolio-tab')
-    const tabHeight = tab instanceof HTMLElement ? tab.offsetHeight : 0
-    if (!isMobile && tabHeight) block.style.setProperty('--portfolio-tab-h', `${tabHeight}px`)
     if (isMobile) {
       mobilePinClearedRef.current = true
+      if (chrome instanceof HTMLElement) {
+        if (chrome.style.transform) chrome.style.removeProperty('transform')
+        chrome.classList.remove('is-stuck')
+      }
       cards.forEach((card) => {
         if (card.style.marginTop) card.style.removeProperty('margin-top')
         if (card.style.transform) card.style.removeProperty('transform')
         if (card.style.minHeight) card.style.removeProperty('min-height')
         if (card.style.height) card.style.removeProperty('height')
         if (card.style.zIndex) card.style.removeProperty('z-index')
+        card.classList.remove('is-clipped')
       })
       if (block.style.paddingBottom) block.style.removeProperty('padding-bottom')
-      if (title instanceof HTMLElement) {
-        if (title.style.transform) title.style.removeProperty('transform')
-        if (title.style.zIndex) title.style.removeProperty('z-index')
-      }
-      cards.forEach((card) => {
-        const item = card.querySelector('.portfolio-tab')
-        if (item instanceof HTMLElement && item.style.left) item.style.removeProperty('left')
+      tabs.forEach((item) => {
         if (item instanceof HTMLElement) item.classList.remove('is-active')
       })
       return
     }
     mobilePinClearedRef.current = false
-    const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-    const blockCs = getComputedStyle(block)
-    const remPx = (name) => {
-      const raw = blockCs.getPropertyValue(name).trim()
-      const n = parseFloat(raw)
-      if (!n) return 0
-      return raw.endsWith('rem') ? n * rootPx : n
-    }
-    const overlap = remPx('--octagon-cut') || 12
-    const cardBorder = parseFloat(getComputedStyle(cards[0]).borderLeftWidth) || 0
-    let tabX = -cardBorder
+    const stick = 0
+    const origin = (el) => contentBoxTop(el instanceof HTMLElement ? el : block)
     cards.forEach((card) => {
-      const item = card.querySelector('.portfolio-tab')
-      if (!(item instanceof HTMLElement)) return
-      const left = `${Math.round(tabX)}px`
-      if (item.style.left !== left) item.style.left = left
-      const tabBorder = parseFloat(getComputedStyle(item).borderLeftWidth) || 0
-      const gapStart = `${Math.round(tabX) + cardBorder + tabBorder}px`
-      const gapEnd = `${Math.round(tabX) + cardBorder + item.offsetWidth - tabBorder}px`
-      if (card.style.getPropertyValue('--tab-gap-start') !== gapStart) card.style.setProperty('--tab-gap-start', gapStart)
-      if (card.style.getPropertyValue('--tab-gap-end') !== gapEnd) card.style.setProperty('--tab-gap-end', gapEnd)
-      tabX += item.offsetWidth - overlap
-    })
-    const titleGap = titleBand
-    const stickPad = Math.round(1.5 * rootPx)
-    const stick = headerPx + titleGap + tabHeight + stickPad
-    cards.forEach((card) => {
-      const height = `${Math.max(220, Math.round(viewport - stick - gap))}px`
-      const margin = `${tabHeight}px`
-      if (card.style.height !== height) card.style.height = height
+      if (card.style.height) card.style.removeProperty('height')
       if (card.style.minHeight) card.style.removeProperty('min-height')
-      if (card.style.marginTop !== margin) card.style.marginTop = margin
+      if (card.style.marginTop) card.style.removeProperty('margin-top')
+      if (card.style.transform) card.style.removeProperty('transform')
+      if (card.style.zIndex) card.style.removeProperty('z-index')
     })
-    const last = cards.length - 1
-    const origin = (el) => {
-      const node = el instanceof HTMLElement ? el : block
-      return contentBoxTop(node)
-    }
-    const prevArrive = last > 0
-      ? origin(cards[last - 1]) - stick
-      : 0
-    const arriveY = origin(cards[last]) - stick
-    const dwell = Math.max(0, arriveY - prevArrive)
-    const pad = `${Math.round(dwell)}px`
-    if (block.style.paddingBottom !== pad) block.style.paddingBottom = pad
-    const release = Math.max(0, y - arriveY - dwell)
-    cards.forEach((card, index) => {
-      const natural = origin(card) - y
-      const pin = Math.max(0, stick - natural)
+    if (block.style.paddingBottom) block.style.paddingBottom = ''
+    if (chrome instanceof HTMLElement) {
+      const chromeH = chrome.offsetHeight
+      const pin = Math.max(0, stick - (origin(block) - y))
+      const end = origin(block) + block.offsetHeight - chromeH - stick
+      const release = Math.max(0, y - end)
       const dy = pin - release
       const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
-      if (card.style.transform !== next) card.style.transform = next
-      card.style.zIndex = String(index + 1)
-    })
-    let front = -1
-    if (release <= 1.5) {
+      if (chrome.style.transform !== next) chrome.style.transform = next
+      chrome.classList.toggle('is-stuck', dy > 0.5 || (y >= origin(block) - 1 && y <= end))
+      const stuck = chrome.classList.contains('is-stuck')
+      const probe = stick + chromeH
+      let front = -1
       cards.forEach((card, index) => {
-        if (origin(card) - y <= stick + 1.5) front = index
+        const top = origin(card) - y
+        if (top <= probe + 1) front = index
+        card.classList.toggle('is-clipped', top < probe)
       })
-    }
-    cards.forEach((card, index) => {
-      const tabEl = card.querySelector('.portfolio-tab')
-      if (tabEl instanceof HTMLElement) tabEl.classList.toggle('is-active', index === front)
-    })
-    if (title instanceof HTMLElement) {
-      const anchor = titlePos === 'absolute' ? origin(title) : contentTop + title.offsetTop
-      const natural = contentTop + anchor - y
-      const pinLine = titlePos === 'absolute' ? headerPx + tabHeight + stickPad : headerPx
-      const pin = Math.max(0, pinLine - natural)
-      const dy = pin - release
-      const next = titlePos === 'absolute'
-        ? `translate3d(0, calc(-100% - 0.4rem + ${dy}px), 0)`
-        : dy ? `translate3d(0, ${dy}px, 0)` : ''
-      if (title.style.transform !== next) title.style.transform = next
-      title.style.zIndex = String(cards.length + 1)
+      const hold = portfolioTabHoldRef.current
+      tabs.forEach((item, index) => {
+        if (item instanceof HTMLElement) item.classList.toggle('is-active', hold != null ? index === hold : stuck && index === front)
+      })
     }
   }
 
@@ -624,15 +569,13 @@ export default function Navigator({ sections }) {
 
   const mobileSectionAnchor = (section) => {
     if (section.id === 'header') return 0
-    const tab = section.querySelector(':scope > .portfolio-tab')
     const heading = section.querySelector('h1, h2')
-    const title = tab instanceof HTMLElement ? tab : heading instanceof HTMLElement ? heading : section
+    const title = heading instanceof HTMLElement ? heading : section
     const pad = parseFloat(getComputedStyle(section).paddingTop) || 0
     const headerPx = compactHeaderRef.current
       || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-bg'))
       || 0
-    let top = layoutTop(title)
-    if (title === tab && getComputedStyle(title).position === 'absolute') top -= title.offsetHeight - 1
+    const top = layoutTop(title)
     return Math.max(0, top - headerPx - pad)
   }
 
@@ -750,8 +693,8 @@ export default function Navigator({ sections }) {
     document.querySelectorAll('.portfolio-block > section').forEach((card) => {
       if (card instanceof HTMLElement) card.style.removeProperty('transform')
     })
-    const portfolioTitle = document.querySelector('.portfolio-block > .portfolio-title')
-    if (portfolioTitle instanceof HTMLElement) portfolioTitle.style.removeProperty('transform')
+    const portfolioChrome = document.querySelector('.portfolio-block > .portfolio-chrome')
+    if (portfolioChrome instanceof HTMLElement) portfolioChrome.style.removeProperty('transform')
     const parallax = document.querySelector('.header-parallax')
     if (parallax instanceof HTMLElement) parallax.style.removeProperty('transform')
   }, [])
@@ -805,8 +748,8 @@ export default function Navigator({ sections }) {
       document.querySelectorAll('.portfolio-block > section').forEach((card) => {
         if (card instanceof HTMLElement) card.style.removeProperty('transform')
       })
-      const portfolioTitle = document.querySelector('.portfolio-block > .portfolio-title')
-      if (portfolioTitle instanceof HTMLElement) portfolioTitle.style.removeProperty('transform')
+      const portfolioChrome = document.querySelector('.portfolio-block > .portfolio-chrome')
+      if (portfolioChrome instanceof HTMLElement) portfolioChrome.style.removeProperty('transform')
       if (parallax instanceof HTMLElement) parallax.style.removeProperty('transform')
       portfolioPinRef.current.block = null
       headerParallaxRef.current.last = null
@@ -978,13 +921,15 @@ export default function Navigator({ sections }) {
       const maxY = document.documentElement.scrollHeight - viewport
       if (maxY > 0 && scrollY >= maxY - 2) return helixSections.length - 1
       if (isMobile) return mobileIndexAtRef.current(scrollY).index
-      const probe = scrollY * scrollSpeed + viewport * 0.33
+      const chrome = document.querySelector('.portfolio-chrome')
+      const stuck = chrome instanceof HTMLElement && chrome.classList.contains('is-stuck')
+      const probe = scrollY * scrollSpeed + (stuck ? chrome.offsetHeight : viewport * 0.33)
       let best = 0
       let bestTop = -Infinity
       for (let i = 0; i < helixSections.length; i += 1) {
         const section = document.getElementById(helixSections[i].id)
         if (!(section instanceof HTMLElement)) continue
-        if (contentBoxTop(section) <= probe && contentBoxTop(section) >= bestTop) {
+        if (contentBoxTop(section) <= probe + 1 && contentBoxTop(section) >= bestTop) {
           bestTop = contentBoxTop(section)
           best = i
         }
@@ -1056,8 +1001,10 @@ export default function Navigator({ sections }) {
           syncSelection(y)
           if (u >= 1) {
             clickAnimRef.current = null
+            portfolioTabHoldRef.current = null
             visualRafRef.current = 0
             unlockScroll()
+            applyScrollVisualsRef.current(visualScrollRef.current)
             return
           }
           visualRafRef.current = requestAnimationFrame(step)
@@ -1110,6 +1057,7 @@ export default function Navigator({ sections }) {
       const interrupt = orbitModeRef.current === 'click' || clickAnimRef.current
       orbitModeRef.current = 'scroll'
       clickAnimRef.current = null
+      portfolioTabHoldRef.current = null
       scrollLockRef.current = false
       scrollTargetRef.current = null
       if (isMobile) return
@@ -1236,10 +1184,20 @@ export default function Navigator({ sections }) {
     setSelectedIndex(index)
     const id = helixSections[index]?.id
     if (!id) return
+    const tabs = [...document.querySelectorAll('.portfolio-block .portfolio-tab')]
+    const tabIndex = tabs.findIndex((tab) => tab.dataset.portfolioTarget === id)
+    portfolioTabHoldRef.current = tabIndex >= 0 ? tabIndex : null
     const section = document.getElementById(id)
     if (!section) return
     if (!isMobile) {
-      const top = clampScrollRef.current(contentBoxTop(section) / scrollSpeed)
+      const chrome = document.querySelector('.portfolio-block > .portfolio-chrome')
+      const chromeH = section.closest('.portfolio-block') && chrome instanceof HTMLElement
+        ? chrome.offsetHeight
+        : 0
+      const cut = chrome instanceof HTMLElement
+        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--octagon-cut')) * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) || 12
+        : 0
+      const top = clampScrollRef.current((contentBoxTop(section) - Math.max(0, chromeH - cut)) / scrollSpeed)
       scrollLockRef.current = true
       scrollTargetRef.current = top
       targetScrollRef.current = top
@@ -1276,9 +1234,9 @@ export default function Navigator({ sections }) {
       if (!(target instanceof Element)) return
       const tab = target.closest('.portfolio-tab')
       if (!(tab instanceof HTMLElement)) return
-      const section = tab.closest('section')
-      if (!(section instanceof HTMLElement)) return
-      const index = helixSections.findIndex((entry) => entry.id === section.id)
+      const id = tab.dataset.portfolioTarget || tab.closest('section')?.id
+      if (!id) return
+      const index = helixSections.findIndex((entry) => entry.id === id)
       if (index < 0) return
       setSelectedIndexAndScroll(index)
     }
