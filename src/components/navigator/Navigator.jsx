@@ -460,23 +460,24 @@ export default function Navigator({ sections }) {
     if (!(block instanceof HTMLElement) || !cards.length) return
     const y = isMobile ? window.scrollY : contentY
     if (isMobile) {
-      mobilePinClearedRef.current = true
       if (chrome instanceof HTMLElement) {
         if (chrome.style.transform) chrome.style.removeProperty('transform')
-        chrome.classList.remove('is-stuck')
+        const stick = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-bg')) || 0
+        const chromeBox = chrome.getBoundingClientRect()
+        const stuck = chromeBox.top <= stick + 1 && chromeBox.bottom > stick
+        chrome.classList.toggle('is-stuck', stuck)
+        const probe = chromeBox.bottom
+        let front = -1
+        cards.forEach((card, index) => {
+          const top = card.getBoundingClientRect().top
+          if (top <= probe + 1) front = index
+          card.classList.toggle('is-clipped', top < probe)
+        })
+        const hold = portfolioTabHoldRef.current
+        tabs.forEach((item, index) => {
+          if (item instanceof HTMLElement) item.classList.toggle('is-active', hold != null ? index === hold : stuck && index === front)
+        })
       }
-      cards.forEach((card) => {
-        if (card.style.marginTop) card.style.removeProperty('margin-top')
-        if (card.style.transform) card.style.removeProperty('transform')
-        if (card.style.minHeight) card.style.removeProperty('min-height')
-        if (card.style.height) card.style.removeProperty('height')
-        if (card.style.zIndex) card.style.removeProperty('z-index')
-        card.classList.remove('is-clipped')
-      })
-      if (block.style.paddingBottom) block.style.removeProperty('padding-bottom')
-      tabs.forEach((item) => {
-        if (item instanceof HTMLElement) item.classList.remove('is-active')
-      })
       return
     }
     mobilePinClearedRef.current = false
@@ -575,8 +576,18 @@ export default function Navigator({ sections }) {
     const headerPx = compactHeaderRef.current
       || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-bg'))
       || 0
+    let cover = headerPx
+    if (section.closest('.portfolio-block')) {
+      const chrome = document.querySelector('.portfolio-block > .portfolio-chrome')
+      const chromeH = chrome instanceof HTMLElement ? chrome.offsetHeight : 0
+      const font = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      const cut = chrome instanceof HTMLElement
+        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--octagon-cut')) * font || 12
+        : 0
+      return Math.max(0, layoutTop(section) - (headerPx + Math.max(0, chromeH - cut)))
+    }
     const top = layoutTop(title)
-    return Math.max(0, top - headerPx - pad)
+    return Math.max(0, top - cover - pad)
   }
 
   const mobileIndexAt = (scrollY) => {
@@ -900,7 +911,7 @@ export default function Navigator({ sections }) {
     if (!(label instanceof HTMLElement) || !(kicker instanceof HTMLElement) || !(logo instanceof HTMLElement)) return
     const section = helixSections[selectedIndex]
     label.textContent = mobileLogoLabel(section)
-    kicker.textContent = section?.kicker === 'Portfolio' ? 'Portfolio' : ''
+    kicker.textContent = ''
     logo.classList.toggle('is-contact', section?.title === 'Contact')
   }, [selectedIndex, helixSections])
 
@@ -1238,6 +1249,10 @@ export default function Navigator({ sections }) {
       if (!id) return
       const index = helixSections.findIndex((entry) => entry.id === id)
       if (index < 0) return
+      document.querySelectorAll('.portfolio-block .portfolio-tab').forEach((item) => {
+        if (item instanceof HTMLElement) item.classList.toggle('is-active', item === tab)
+      })
+      tab.blur()
       setSelectedIndexAndScroll(index)
     }
     document.addEventListener('click', onClick)

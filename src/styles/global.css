@@ -26,6 +26,36 @@ html[data-theme="dark"] {
   --helix-hero-width: 60vw;
 }
 
+@property --bevel-tl {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --bevel-tr {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --bevel-br {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --bevel-bl {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --bevel-line {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
 html,
 body {
   margin: 0;
@@ -130,9 +160,14 @@ body {
 }
 
 .portfolio-block {
+  --octagon-cut: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0;
+}
+
+.portfolio-block > section + section {
+  margin-top: 1.35rem;
 }
 
 .portfolio-chrome {
@@ -152,17 +187,76 @@ body {
   line-height: 1.1;
 }
 
+.portfolio-block section,
+.portfolio-chrome,
+.portfolio-tab,
+.project-dialog,
+.project-carousel-nav,
+.project-carousel-track img,
+.experience-list > .experience-card-split > .experience-points > .experience-points-toggle {
+  --bevel-w: 1px;
+  --bevel-tl: var(--bevel);
+  --bevel-tr: var(--bevel);
+  --bevel-br: var(--bevel);
+  --bevel-bl: var(--bevel);
+  clip-path: polygon(
+    var(--bevel-tl) 0,
+    calc(100% - var(--bevel-tr)) 0,
+    100% var(--bevel-tr),
+    100% calc(100% - var(--bevel-br)),
+    calc(100% - var(--bevel-br)) 100%,
+    var(--bevel-bl) 100%,
+    0 calc(100% - var(--bevel-bl)),
+    0 var(--bevel-tl)
+  );
+}
+
+.portfolio-block section::before,
+.portfolio-chrome::before,
+.portfolio-tab::before,
+.project-dialog::before,
+.project-carousel-nav::after,
+.experience-list > .experience-card-split > .experience-points > .experience-points-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bevel-line);
+  pointer-events: none;
+  clip-path: polygon(
+    var(--bevel-tl) 0,
+    calc(100% - var(--bevel-tr)) 0,
+    100% var(--bevel-tr),
+    100% calc(100% - var(--bevel-br)),
+    calc(100% - var(--bevel-br)) 100%,
+    var(--bevel-bl) 100%,
+    0 calc(100% - var(--bevel-bl)),
+    0 var(--bevel-tl),
+    var(--bevel-tl) 0,
+    calc(var(--bevel-tl) + var(--bevel-w) * 0.414) var(--bevel-w),
+    var(--bevel-w) calc(var(--bevel-tl) + var(--bevel-w) * 0.414),
+    var(--bevel-w) calc(100% - var(--bevel-bl) - var(--bevel-w) * 0.414),
+    calc(var(--bevel-bl) + var(--bevel-w) * 0.414) calc(100% - var(--bevel-w)),
+    calc(100% - var(--bevel-br) - var(--bevel-w) * 0.414) calc(100% - var(--bevel-w)),
+    calc(100% - var(--bevel-w)) calc(100% - var(--bevel-br) - var(--bevel-w) * 0.414),
+    calc(100% - var(--bevel-w)) calc(var(--bevel-tr) + var(--bevel-w) * 0.414),
+    calc(100% - var(--bevel-tr) - var(--bevel-w) * 0.414) var(--bevel-w),
+    calc(var(--bevel-tl) + var(--bevel-w) * 0.414) var(--bevel-w)
+  );
+}
+
+.experience-list > .experience-card-split > .experience-points > .experience-points-toggle::before {
+  content: none;
+}
+
 .portfolio-block section {
-  --octagon-cut: 0.75rem;
+  --bevel: var(--octagon-cut);
+  --bevel-line: color-mix(in srgb, var(--accent-color) 42%, transparent);
   background-color: var(--bg-color);
-  border: 1px solid color-mix(in srgb, var(--accent-color) 42%, transparent);
-  border-radius: var(--octagon-cut);
-  corner-shape: bevel;
-  transition: border-color 0.55s ease;
+  transition: --bevel-line 0.55s ease;
 }
 
 .portfolio-block section.is-inview {
-  border-color: var(--accent-color);
+  --bevel-line: var(--accent-color);
 }
 
 .portfolio-block .portfolio-title {
@@ -180,7 +274,7 @@ body {
 .portfolio-projects {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.35rem;
   width: 100%;
 }
 
@@ -202,7 +296,7 @@ body {
   .project-card,
   .portfolio-block section {
     opacity: 1;
-    border-color: var(--accent-color);
+    --bevel-line: var(--accent-color);
     transition: none;
   }
 }
@@ -255,24 +349,27 @@ body {
 }
 
 .project-carousel-track img {
+  --bevel: 0.45rem;
   flex: 0 0 78%;
   width: 78%;
   height: 100%;
   object-fit: cover;
   scroll-snap-align: start;
-  border: 1px solid color-mix(in srgb, var(--accent-color) 55%, transparent);
-  border-radius: 0.45rem;
-  corner-shape: bevel;
   pointer-events: none;
   user-select: none;
+  filter:
+    drop-shadow(1px 0 0 color-mix(in srgb, var(--accent-color) 55%, transparent))
+    drop-shadow(-1px 0 0 color-mix(in srgb, var(--accent-color) 55%, transparent))
+    drop-shadow(0 1px 0 color-mix(in srgb, var(--accent-color) 55%, transparent))
+    drop-shadow(0 -1px 0 color-mix(in srgb, var(--accent-color) 55%, transparent));
 }
 
 .project-carousel-nav {
+  --bevel: 0.3rem;
+  --bevel-line: color-mix(in srgb, var(--secondary-color) 70%, transparent);
   position: relative;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--secondary-color) 70%, transparent);
-  border-radius: 0.3rem;
-  corner-shape: bevel;
+  border: 0;
   background: transparent;
   color: var(--secondary-color);
   cursor: pointer;
@@ -310,9 +407,9 @@ body {
   height: min(84vh, 46rem);
   margin: auto;
   padding: 1.15rem 1.15rem 1.15rem;
-  border: 1px solid var(--accent-color);
-  border-radius: 0.5rem;
-  corner-shape: bevel;
+  --bevel: 0.5rem;
+  --bevel-line: var(--accent-color);
+  border: 0;
   background: color-mix(in srgb, var(--bg-color) 94%, transparent);
   overflow: hidden;
   pointer-events: auto;
@@ -423,13 +520,13 @@ body {
 }
 
 .portfolio-tab {
+  --bevel: 0.45rem;
+  --bevel-line: transparent;
   position: relative;
   min-width: 0;
   padding: 0.35rem 0.9rem;
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: 0.45rem;
-  corner-shape: bevel;
+  border: 0;
   font-family: inherit;
   font-size: 1.1rem;
   font-weight: 500;
@@ -440,11 +537,18 @@ body {
   cursor: pointer;
 }
 
-.portfolio-tab:hover,
 .portfolio-tab.is-active {
   color: var(--accent-color);
-  border-color: color-mix(in srgb, var(--accent-color) 55%, transparent);
   background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+  --bevel-line: color-mix(in srgb, var(--accent-color) 55%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .portfolio-tab:hover {
+    color: var(--accent-color);
+    background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+    --bevel-line: color-mix(in srgb, var(--accent-color) 55%, transparent);
+  }
 }
 
 .header-hero {
@@ -573,6 +677,7 @@ body {
   box-sizing: border-box;
   list-style: none;
   color: var(--text-color);
+  overflow: visible;
 }
 
 .skill-cloud li {
@@ -586,6 +691,8 @@ body {
   color: inherit;
   cursor: default;
   opacity: 0.22;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .skill-emoji {
@@ -1380,6 +1487,12 @@ html[data-theme="dark"] .content .experience-org-name {
     max-width: 100%;
   }
 
+  .skill-cloud-lead > ul {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
   .me-planet,
   .skills-cubes,
   .experience-pyramid {
@@ -1415,44 +1528,61 @@ html[data-theme="dark"] .content .experience-org-name {
   .portfolio-block section,
   .content .portfolio-block section {
     min-height: 0;
-    padding: 1rem 1.1rem 1.2rem;
+    padding: calc(1.15rem + var(--octagon-cut)) 1.25rem 1.3rem;
   }
 
   .portfolio-block .portfolio-title {
-    display: block;
-    padding: 2rem 1.25rem 0;
-    background: none;
-    font-size: 2rem;
-    margin: 0;
-  }
-
-  .portfolio-chrome {
-    gap: 0.35rem;
-  }
-
-  .portfolio-tabs {
     display: none;
   }
 
-  .portfolio-tab {
-    position: static;
-    z-index: auto;
-    top: auto;
-    left: auto;
-    transform: none;
-    min-width: 0;
-    max-width: none;
-    padding: 0;
+  .portfolio-chrome {
+    position: sticky;
+    top: var(--mobile-header-bg, var(--chrome-header));
+    z-index: 6;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.35rem;
     margin: 0;
-    background: none;
+    padding: 0.55rem 0.4rem 0.6rem;
+    background-color: var(--bg-color);
+    --bevel: var(--octagon-cut);
+    --bevel-line: var(--accent-color);
     border: 0;
-    border-radius: 0;
-    corner-shape: initial;
-    font-size: 1.25rem;
-    font-weight: 500;
-    line-height: 1.2;
-    text-align: left;
-    white-space: normal;
+    box-sizing: border-box;
+    transition: --bevel-tl 0.35s ease, --bevel-tr 0.35s ease;
+  }
+
+  .portfolio-chrome.is-stuck {
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
+  }
+
+  .portfolio-chrome + section {
+    margin-top: calc(-1 * var(--octagon-cut));
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
+  }
+
+  .portfolio-block section.is-clipped {
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
+  }
+
+  .portfolio-block section {
+    transition: --bevel-line 0.55s ease, --bevel-tl 0.35s ease, --bevel-tr 0.35s ease;
+  }
+
+  .portfolio-tabs {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .portfolio-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
   }
 
   .shell::before {
@@ -1842,13 +1972,18 @@ html[data-theme="dark"] .content .experience-org-name {
     position: relative;
     gap: 0.55rem;
     padding: 0.55rem 1rem 0.55rem 0.85rem;
-    border: var(--line) solid var(--secondary-color);
-    border-radius: 0.5rem;
-    corner-shape: bevel;
+    border: 0;
+    --bevel: 0.5rem;
+    --bevel-w: var(--line);
+    --bevel-line: var(--secondary-color);
     background: color-mix(in srgb, var(--secondary-color) 12%, transparent);
     color: var(--exp-heading);
     font-size: 0.95rem;
     transition: background-color 0.2s ease;
+  }
+
+  .experience-list > .experience-card-split > .experience-points > .experience-points-toggle::before {
+    content: "";
   }
 
   .experience-list > .experience-card-split > .experience-points > .experience-points-toggle:hover,
@@ -1928,7 +2063,6 @@ html[data-theme="dark"] .content .experience-org-name {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0;
     margin-right: 5rem;
   }
 
@@ -1942,31 +2076,28 @@ html[data-theme="dark"] .content .experience-org-name {
     margin: 0;
     padding: 0.55rem 1rem 0.6rem;
     background-color: var(--bg-color);
-    border: 1px solid var(--accent-color);
-    border-radius: var(--octagon-cut);
-    corner-shape: bevel;
+    --bevel: var(--octagon-cut);
+    --bevel-line: var(--accent-color);
+    border: 0;
     box-sizing: border-box;
-    transition: border-top-left-radius 0.35s ease, border-top-right-radius 0.35s ease;
+    position: relative;
+    transition: --bevel-tl 0.35s ease, --bevel-tr 0.35s ease;
   }
 
   .portfolio-chrome.is-stuck {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
   }
 
   .portfolio-chrome + section {
     margin-top: calc(-1 * var(--octagon-cut));
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
   }
 
   .portfolio-block section.is-clipped {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-  }
-
-  .portfolio-block > section + section {
-    margin-top: 1.35rem;
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
   }
 
   .portfolio-tabs {
@@ -1999,11 +2130,7 @@ html[data-theme="dark"] .content .experience-org-name {
     gap: 0.75rem;
     min-height: 0;
     padding: calc(1.15rem + var(--octagon-cut)) 1.25rem 1.3rem;
-    transition: border-color 0.55s ease, border-top-left-radius 0.35s ease, border-top-right-radius 0.35s ease;
-  }
-
-  .portfolio-projects {
-    gap: 1.35rem;
+    transition: --bevel-line 0.55s ease, --bevel-tl 0.35s ease, --bevel-tr 0.35s ease;
   }
 
   .project-card {
