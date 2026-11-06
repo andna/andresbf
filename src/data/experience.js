@@ -3,7 +3,7 @@ export const experienceJobs = [
     name: '.monks',
     url: 'https://www.monks.com',
     field: 'IT Services & Consulting',
-    logo: '/logo-monks.svg',
+    logo: true,
     points: [
       {
         title: 'Working on:',
@@ -36,6 +36,7 @@ export const experienceJobs = [
     name: 'Wealth2B',
     url: 'https://wealth2b.com/',
     field: 'Investing APIs',
+    logo: true,
     points: [
       {
         title: 'Working on:',
