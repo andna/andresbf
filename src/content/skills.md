@@ -1,3 +1,5 @@
+# Skills
+
 <svg class="skills-cubes" viewBox="0 0 232 192" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path class="skills-cubes-face" d="M178.797 156.29V179.136L198.6 167.712V144.865L178.797 156.29Z" style="animation-delay:0.0s;animation-duration:9.6s"/>
     <path class="skills-cubes-face" d="M178.8 131.713L198.602 143.137V120.291L178.8 108.866V131.713Z" style="animation-delay:0.95s;animation-duration:9.6s"/>
@@ -19,7 +21,6 @@
 <ul class="skill-cloud">
   <li class="skill-cloud-lead">
     <ul>
-      <li class="skill-cloud-title">Skills</li>
       <li data-w="1"><span class="skill-emoji" aria-hidden="true">🖱️</span><span>UI</span></li>
       <li data-w="2"><span class="skill-emoji" aria-hidden="true">💫</span><span>Motion</span></li>
       <li data-w="4"><span class="skill-emoji" aria-hidden="true">🖥️</span><span>Frontend</span></li>

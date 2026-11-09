@@ -66,6 +66,7 @@ for (const article of articles) {
             if (group.kind === 'portfolio') {
               return (
                 <div class="portfolio-block">
+                  <h1 class="portfolio-heading">Portfolio</h1>
                   <div class="portfolio-chrome">
                     <div class="portfolio-tabs" role="tablist" aria-label="Portfolio">
                       {group.items.map(({ id }, index) => (
@@ -101,25 +102,7 @@ for (const article of articles) {
                       <ExperienceCard {...job} />
                     ))}
                   </div>
-                  <form class="experience-colors">
-                    <label>Title <input type="color" data-var="--exp-title" value="#ffffff" /></label>
-                    <label>Company <input type="color" data-var="--exp-org" value="#34c4dd" /></label>
-                    <label>Field <input type="color" data-var="--exp-field" value="#2b727c" /></label>
-                    <label>Dates <input type="color" data-var="--exp-date" value="#ffffff" /></label>
-                    <label>Roles <input type="color" data-var="--exp-role" value="#9adce8" /></label>
-                    <label>Secondary lines <input type="color" data-var="--exp-plain" value="#9adce8" /></label>
-                    <label>Bullet headings <input type="color" data-var="--exp-heading" value="#9adce8" /></label>
-                    <label>Bullets <input type="color" data-var="--exp-bullet" value="#9adce8" /></label>
-                    <label>Links <input type="color" data-var="--exp-link" value="#9adce8" /></label>
-                  </form>
                   <script>
-                    const experience = document.getElementById('experience');
-                    document.querySelectorAll('.experience-colors input').forEach((input) => {
-                      input.addEventListener('input', () => {
-                        experience.style.setProperty(input.dataset.var, input.value);
-                      });
-                    });
-
                     const closePoints = (except) => {
                       document.querySelectorAll('.experience-points[open]').forEach((details) => {
                         if (details !== except) details.open = false;

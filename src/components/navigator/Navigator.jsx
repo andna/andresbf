@@ -474,6 +474,10 @@ export default function Navigator({ sections }) {
           card.classList.toggle('is-clipped', top < probe)
         })
         const hold = portfolioTabHoldRef.current
+        const current = hold != null ? hold : stuck ? front : -1
+        cards.forEach((card, index) => {
+          card.classList.toggle('is-current', index === current)
+        })
         tabs.forEach((item, index) => {
           if (item instanceof HTMLElement) item.classList.toggle('is-active', hold != null ? index === hold : stuck && index === front)
         })
@@ -509,6 +513,10 @@ export default function Navigator({ sections }) {
         card.classList.toggle('is-clipped', top < probe)
       })
       const hold = portfolioTabHoldRef.current
+      const current = hold != null ? hold : stuck ? front : -1
+      cards.forEach((card, index) => {
+        card.classList.toggle('is-current', index === current)
+      })
       tabs.forEach((item, index) => {
         if (item instanceof HTMLElement) item.classList.toggle('is-active', hold != null ? index === hold : stuck && index === front)
       })
