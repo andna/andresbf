@@ -16,6 +16,6 @@
     </div>
   </div>
   <div class="header-title-container">
-    <h1 id="header-title">andrés<br>bastidas<br>fierro</h1>
+    <h1 id="header-title"><span class="header-name">and<br>res</span></h1>
   </div>
 </div>

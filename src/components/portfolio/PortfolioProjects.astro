@@ -5,8 +5,13 @@ const { projects = [] } = Astro.props
 <div class="portfolio-projects">
   {projects.map((project) => (
     <article class="project-card">
-      <h2 class="project-title">{project.title}</h2>
-      <p class="project-line">{project.line}</p>
+      <div class="project-copy">
+        <div class="project-copy-text">
+          <h2 class="project-title">{project.title}</h2>
+          <p class="project-line">{project.line}</p>
+        </div>
+        <button type="button" class="project-note" aria-label={`About ${project.title}`}>?</button>
+      </div>
       <div class="project-carousel">
         <button type="button" class="project-carousel-nav" data-dir="-1" aria-label="Previous image"></button>
         <div class="project-carousel-track">
@@ -30,7 +35,8 @@ const { projects = [] } = Astro.props
       return slide.getBoundingClientRect().width + gap
     }
     carousel.querySelectorAll('.project-carousel-nav').forEach((button) => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation()
         track.scrollBy({ left: Number(button.dataset.dir) * distance(), behavior: 'smooth' })
       })
     })
@@ -55,16 +61,15 @@ const { projects = [] } = Astro.props
     }
     track.addEventListener('pointerup', stop)
     track.addEventListener('pointercancel', stop)
-    track.addEventListener('click', (event) => {
+    const card = carousel.closest('.project-card')
+    card.addEventListener('click', (event) => {
       if (dragged) return
       const images = [...track.querySelectorAll('img')]
-      const index = images.findIndex((image) => {
+      const hit = images.findIndex((image) => {
         const box = image.getBoundingClientRect()
         return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom
       })
-      if (index < 0) return
-      const card = track.closest('.project-card')
-      openProjectDialog(images.map((image) => ({ src: image.src, alt: image.alt })), index, {
+      openProjectDialog(images.map((image) => ({ src: image.src, alt: image.alt })), hit < 0 ? 0 : hit, {
         title: card.querySelector('.project-title').textContent,
         line: card.querySelector('.project-line').textContent,
       })
