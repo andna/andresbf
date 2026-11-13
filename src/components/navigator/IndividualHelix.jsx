@@ -511,7 +511,9 @@ export default function IndividualHelix({
     viewDir.current.copy(camera.position).sub(worldPos.current).normalize()
     worldNormal.current.set(0, 0, 1).transformDirection(group.matrixWorld)
     const facing = worldNormal.current.dot(viewDir.current)
-    const close = THREE.MathUtils.smoothstep(facing, -0.08, 0.08)
+    // A wide window so outlines/labels fade gradually as a rug turns to its back;
+    // ±0.08 squeezed the whole fade into a couple of frames at the end of a rotation.
+    const close = THREE.MathUtils.smoothstep(facing, -0.3, 0.3)
     const fade = 0.3 + 0.7 * close
     outline.material.transparent = true
     outline.material.opacity = fade
