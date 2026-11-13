@@ -612,6 +612,24 @@ export default function Navigator({ sections }) {
     return layoutTop(el) - layoutTop(content)
   }
 
+  // Scroll position (content px) where a section "rests": where a click parks it and
+  // where the helix rotation lands on that section's whole step. Portfolio cards rest
+  // below the sticky chrome and its stick offset, so they need that offset subtracted.
+  const portfolioOffsetRef = useRef(null)
+  const portfolioOffset = () => {
+    if (portfolioOffsetRef.current != null) return portfolioOffsetRef.current
+    const chrome = document.querySelector('.portfolio-block > .portfolio-chrome')
+    if (!(chrome instanceof HTMLElement)) return 0
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    const style = getComputedStyle(chrome)
+    const cut = parseFloat(style.getPropertyValue('--octagon-cut')) * fontSize || 12
+    const stick = parseFloat(style.getPropertyValue('--portfolio-stick')) * fontSize || 0
+    portfolioOffsetRef.current = stick + Math.max(0, chrome.offsetHeight - cut)
+    return portfolioOffsetRef.current
+  }
+  const sectionRestY = (section) =>
+    contentBoxTop(section) - (section.closest('.portfolio-block') ? portfolioOffset() : 0)
+
   const mobileSectionAnchor = (section) => {
     if (section.id === 'header') return 0
     const heading = section.querySelector('h1, h2')
@@ -683,25 +701,31 @@ export default function Navigator({ sections }) {
     let index = 0
     let start = 0
     let nextTop = Infinity
+    let animIndex = 0
     if (isMobile) {
       const at = mobileIndexAt(scrollY)
       index = at.index
       start = at.start
       nextTop = at.nextTop
+      animIndex = index
     } else {
+      // Rotation interpolates between rest positions, so it turns evenly and reaches a
+      // whole step exactly where a click on that rug parks the page.
       for (let i = 0; i < helixSections.length; i += 1) {
         const section = document.getElementById(helixSections[i].id)
         if (!(section instanceof HTMLElement)) continue
-        const top = contentBoxTop(section)
-        if (top <= contentY) index = i
-        else if (nextTop === Infinity) nextTop = top
+        if (contentBoxTop(section) <= contentY) animIndex = i
+        const rest = sectionRestY(section)
+        if (rest <= contentY + 0.5) {
+          index = i
+          start = rest
+          nextTop = Infinity
+        } else if (nextTop === Infinity) nextTop = rest
       }
-      const current = document.getElementById(helixSections[index]?.id)
-      start = current instanceof HTMLElement ? current.offsetTop : 0
     }
     const span = Math.max(1, nextTop - start)
     scrollIndexRef.current = index + Math.min(1, Math.max(0, (contentY - start) / span))
-    syncSectionAnimation(index)
+    syncSectionAnimation(animIndex)
     applyPortfolioTitlePin(isMobile ? scrollY : contentY)
     applyHeaderParallax(isMobile ? scrollY : contentY)
     if (isMobile && mobileHeaderRef.current !== 'menu') {
@@ -713,8 +737,11 @@ export default function Navigator({ sections }) {
       if (canvasRef.current) canvasRef.current.style.removeProperty('clip-path')
       return
     }
+    // Smoothstep: a linear, clamped mapping stopped the stage/helix dead (~15px/frame)
+    // the moment the hero-to-Me transition finished.
+    const raw = Math.min(1, Math.max(0, contentY / poseRange()))
     const t = poseOverride == null
-      ? Math.min(1, Math.max(0, contentY / poseRange()))
+      ? raw * raw * (3 - 2 * raw)
       : Math.min(1, Math.max(0, poseOverride))
     applyVisualPose(t)
     if ((t <= 0 && poseBucketRef.current !== 0) || (t >= 1 && poseBucketRef.current !== 6)) {
@@ -940,10 +967,11 @@ export default function Navigator({ sections }) {
     }
     place()
     document.fonts.ready.then(place)
-    const ro = new ResizeObserver(place)
-    ro.observe(content)
+    // Window resize, not a ResizeObserver on .content: the hero pose changes the
+    // content's width every frame, which re-ran this measurement ~40 times per transition.
+    window.addEventListener('resize', place)
     return () => {
-      ro.disconnect()
+      window.removeEventListener('resize', place)
       title.style.removeProperty('top')
       title.style.removeProperty('max-width')
       heading.style.removeProperty('font-size')
@@ -1068,6 +1096,7 @@ export default function Navigator({ sections }) {
     const clampScroll = (y) => Math.min(scrollLimit(), Math.max(0, y))
 
     const syncSpacer = () => {
+      portfolioOffsetRef.current = null
       measurePortfolioPinRef.current()
       if (isMobile) {
         spacer.style.removeProperty('height')
@@ -1254,6 +1283,7 @@ export default function Navigator({ sections }) {
 
     const onResize = () => {
       stickPx = null
+      portfolioOffsetRef.current = null
       mobileAnchorsRef.current.tops = null
       mobileAnchorsRef.current.range = 0
       mobileViewRef.current = 0
@@ -1316,18 +1346,7 @@ export default function Navigator({ sections }) {
     const section = document.getElementById(id)
     if (!section) return
     if (!isMobile) {
-      const chrome = document.querySelector('.portfolio-block > .portfolio-chrome')
-      const chromeH = section.closest('.portfolio-block') && chrome instanceof HTMLElement
-        ? chrome.offsetHeight
-        : 0
-      const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-      const cut = chrome instanceof HTMLElement
-        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--octagon-cut')) * fontSize || 12
-        : 0
-      const stick = chrome instanceof HTMLElement
-        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--portfolio-stick')) * fontSize || 0
-        : 0
-      const top = clampScrollRef.current((contentBoxTop(section) - stick - Math.max(0, chromeH - cut)) / scrollSpeed)
+      const top = clampScrollRef.current(sectionRestY(section) / scrollSpeed)
       scrollLockRef.current = true
       scrollTargetRef.current = top
       targetScrollRef.current = top
