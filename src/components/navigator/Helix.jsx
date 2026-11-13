@@ -1,4 +1,4 @@
-import IndividualHelix from './IndividualHelix.jsx'
+import IndividualHelix, { TipWarmup } from './IndividualHelix.jsx'
 import HelixGizmo from './HelixGizmo.jsx'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
@@ -154,6 +154,7 @@ export default function Helix({
 
   return (
     <>
+      <TipWarmup />
       {showSecondary && (
         <HelixGizmo
           midY={gizmoMidY}

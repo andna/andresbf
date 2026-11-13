@@ -1,5 +1,6 @@
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { PerformanceMonitor } from '@react-three/drei'
 import CanvasScene from './CanvasScene.jsx'
 import { helixPlaneY } from './Helix.jsx'
 import { hexToRgb, rgbToHex, readThemeColors } from '../../theme.js'
@@ -51,8 +52,35 @@ const diagonalBandClip = (w, h, rotDeg, halfFrac) => {
 const helixCenter = { scale: 0.95, offsetPx: [0, 0] }
 const helixMobile = { scale: 0.25, offsetPx: [0, 0] }
 
+// Canvas resolution is the main cost on machines without a GPU, so the cap is
+// lower there and the monitor below steps the resolution up or down at runtime.
+const DPR_MAX = 1.5
+const DPR_MAX_SOFTWARE = 1
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|software|softpipe/i
+
+// Software WebGL (SwiftShader, llvmpipe) is detected once, before the Canvas
+// is created, because `gl` props are only applied at creation time.
+function detectSoftwareGL() {
+  if (typeof document === 'undefined') return false
+  try {
+    const probe = document.createElement('canvas')
+    const gl = probe.getContext('webgl')
+    if (!gl) return false
+    const ext = gl.getExtension('WEBGL_debug_renderer_info')
+    const renderer = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER))
+    gl.getExtension('WEBGL_lose_context')?.loseContext()
+    return SOFTWARE_RENDERER.test(renderer)
+  } catch {
+    return false
+  }
+}
+
 export default function Navigator({ sections }) {
   const helixSections = sections
+  const [softwareGL] = useState(detectSoftwareGL)
+  const dprMax = softwareGL ? DPR_MAX_SOFTWARE : DPR_MAX
+  const [dpr, setDpr] = useState(dprMax)
+  const glProps = useMemo(() => ({ alpha: true, antialias: !softwareGL }), [softwareGL])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [hoveredPlaneIdx, setHoveredPlaneIdx] = useState(-1)
   const [showTips, setShowTips] = useState(false)
@@ -467,12 +495,14 @@ export default function Navigator({ sections }) {
         const stuck = chromeBox.top <= stick + 1 && chromeBox.bottom > stick
         chrome.classList.toggle('is-stuck', stuck)
         const probe = chromeBox.bottom
+        // Read every card first, then write classes: toggling a class between reads
+        // forces a synchronous layout per card on every scroll frame.
+        const tops = cards.map((card) => card.getBoundingClientRect().top)
         let front = -1
-        cards.forEach((card, index) => {
-          const top = card.getBoundingClientRect().top
+        tops.forEach((top, index) => {
           if (top <= probe + 1) front = index
-          card.classList.toggle('is-clipped', top < probe)
         })
+        cards.forEach((card, index) => card.classList.toggle('is-clipped', tops[index] < probe))
         const hold = portfolioTabHoldRef.current
         const current = hold != null ? hold : stuck ? front : -1
         cards.forEach((card, index) => {
@@ -506,12 +536,13 @@ export default function Navigator({ sections }) {
       chrome.classList.toggle('is-stuck', dy > 0.5 || (y >= origin(block) - 1 && y <= end))
       const stuck = chrome.classList.contains('is-stuck')
       const probe = stick + chromeH
+      // Same batching as the mobile branch: one layout pass, then class writes.
+      const tops = cards.map((card) => origin(card) - y)
       let front = -1
-      cards.forEach((card, index) => {
-        const top = origin(card) - y
+      tops.forEach((top, index) => {
         if (top <= probe + 1) front = index
-        card.classList.toggle('is-clipped', top < probe)
       })
+      cards.forEach((card, index) => card.classList.toggle('is-clipped', tops[index] < probe))
       const hold = portfolioTabHoldRef.current
       const current = hold != null ? hold : stuck ? front : -1
       cards.forEach((card, index) => {
@@ -976,6 +1007,10 @@ export default function Navigator({ sections }) {
 
     const syncSelection = (scrollY) => {
       if (orbitModeRef.current === 'click' || scrollLockRef.current) {
+        // While the click tween runs it unlocks itself when it finishes. Unlocking
+        // early (within 4px of the target) handed the last ~100ms to the slower scroll
+        // lerp and the scroll-driven camera, which made the end of the move stutter.
+        if (clickAnimRef.current) return
         const target = scrollTargetRef.current
         if (target != null && Math.abs(scrollY - target) < 4) unlockScroll()
         return
@@ -1322,10 +1357,11 @@ export default function Navigator({ sections }) {
       <div className="navigator-helix">
         <div className="canvas" ref={canvasRef}>
         <Canvas
-          gl={{ alpha: true, antialias: true }}
-          dpr={[1, 2]}
+          gl={glProps}
+          dpr={dpr}
           style={{ background: 'transparent', width: '100%', height: '100%' }}
         >
+          {/* TEMP-PM */}
           <Suspense fallback={null}>
             <CanvasScene
               orthoZoom={orthoZoom}

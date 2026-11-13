@@ -23,9 +23,10 @@ const getLogo = () => {
   return logoPromise
 }
 
-const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew, markScale = 1) => {
-  const { accent, bg } = colors
-  const face = isBack ? skew.back : skew.front
+// The mark is drawn in white and tinted by the material color, so changing the
+// selection only swaps a color instead of repainting and re-uploading textures.
+const drawMark = (canvas, logo, isBack, showLabel, skew, markScale = 1) => {
+  const face = skew.front
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
@@ -40,7 +41,7 @@ const drawMark = (canvas, logo, isSel, isBack, showLabel, colors, skew, markScal
   const stampCtx = stamp.getContext('2d')
   stampCtx.drawImage(logo, 0, 0, size, size)
   stampCtx.globalCompositeOperation = 'source-in'
-  stampCtx.fillStyle = isSel ? bg : accent
+  stampCtx.fillStyle = '#ffffff'
   stampCtx.fillRect(0, 0, size, size)
 
   ctx.save()
@@ -155,6 +156,23 @@ const makeTipTexture = (title, kicker, color, bg) => {
   return { tex, aspect: w / h }
 }
 
+// Tooltip text never changes per section, so each texture is drawn once and reused:
+// the tooltip mounts and unmounts as planes pass under the pointer, and redrawing
+// plus re-uploading the texture each time caused visible hitches.
+const tipCache = new Map()
+const tipFontsReady = () => document.fonts.check(tipFont) && document.fonts.check(tipKickerFont)
+const getTipTexture = (title, kicker, color, bg) => {
+  const key = `${title}\u0000${kicker ?? ''}\u0000${color}\u0000${bg}`
+  const fontsReady = tipFontsReady()
+  const cached = tipCache.get(key)
+  if (cached && (cached.fontsReady || !fontsReady)) return cached
+  // Redraw once the web font has loaded; the fallback-font version is replaced.
+  cached?.tex.dispose()
+  const next = { ...makeTipTexture(title, kicker, color, bg), fontsReady }
+  tipCache.set(key, next)
+  return next
+}
+
 const desktopTipY = [
   -0.53, // C1
   -0.31, // C3
@@ -187,8 +205,7 @@ function tipFor(index, angle, baseRotation, radius) {
 }
 
 function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, anchor = [0, 0, 0], index, baseRotation, radius, poseRef }) {
-  const [tipMap, setTipMap] = useState(null)
-  const mapRef = useRef(null)
+  const [tipMap, setTipMap] = useState(() => getTipTexture(title, kicker, color, bg))
   const groupRef = useRef()
   const lineRef = useRef()
   const boxRef = useRef()
@@ -217,24 +234,17 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
 
   useEffect(() => {
     let cancelled = false
-    const paint = () => {
-      if (cancelled) return
-      const next = makeTipTexture(title, kicker, color, bg)
-      mapRef.current?.tex.dispose()
-      mapRef.current = next
-      setTipMap(next)
+    const apply = () => {
+      if (!cancelled) setTipMap(getTipTexture(title, kicker, color, bg))
     }
-    paint()
-    Promise.all([document.fonts.load(tipFont), document.fonts.load(tipKickerFont)]).then(paint)
+    apply()
+    if (!tipFontsReady()) {
+      Promise.all([document.fonts.load(tipFont), document.fonts.load(tipKickerFont)]).then(apply)
+    }
     return () => {
       cancelled = true
     }
   }, [title, kicker, color, bg])
-
-  useEffect(() => () => {
-    mapRef.current?.tex.dispose()
-    mapRef.current = null
-  }, [])
 
   useLayoutEffect(() => {
     const carry = tipCarryRef.current
@@ -327,14 +337,15 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
         depthWrite={false}
         raycast={() => null}
       />
+      {/* Shader programs for these stay alive via TipWarmup, so hovering doesn't recompile them. */}
       <Billboard position={anchor}>
         <mesh raycast={() => null} renderOrder={8}>
           <circleGeometry args={[0.016, 28]} />
-          <meshBasicMaterial ref={dotMatRef} color={color} transparent opacity={0.5} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
+          <meshBasicMaterial ref={dotMatRef} dispose={null} color={color} transparent opacity={0.5} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
         </mesh>
         <mesh raycast={() => null} renderOrder={9}>
           <ringGeometry args={[0.016, 0.021, 28]} />
-          <meshBasicMaterial ref={dotRingRef} color={bg} transparent opacity={0.5} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
+          <meshBasicMaterial ref={dotRingRef} dispose={null} color={bg} transparent opacity={0.5} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
         </mesh>
       </Billboard>
       <group ref={boxGroupRef}>
@@ -342,11 +353,52 @@ function RugTip({ title, kicker, color, bg, tipY, tipZ, slot, tipCarryRef, ancho
           {tipMap && (
             <mesh ref={boxRef} scale={slide.current ? 1 : 0.02} raycast={() => null} renderOrder={10}>
               <planeGeometry args={[boxW, boxH]} />
-              <meshBasicMaterial map={tipMap.tex} transparent depthTest={false} depthWrite toneMapped={false} side={THREE.DoubleSide} />
+              <meshBasicMaterial map={tipMap.tex} dispose={null} transparent depthTest={false} depthWrite toneMapped={false} side={THREE.DoubleSide} />
             </mesh>
           )}
         </Billboard>
       </group>
+    </group>
+  )
+}
+
+// Invisible, always-mounted copies of the tooltip's materials. three.js frees a shader
+// program once no live material uses it, so without these the tooltip's shaders were
+// recompiled (a visible freeze) every time a tooltip appeared after the last one closed.
+// Mounting them up front also moves the first compile to page load instead of first hover.
+const warmPoints = [[0, 0, 0], [0, 0, 0]]
+let warmMap
+const getWarmMap = () => {
+  if (!warmMap) {
+    warmMap = new THREE.CanvasTexture(document.createElement('canvas'))
+    warmMap.colorSpace = THREE.SRGBColorSpace
+  }
+  return warmMap
+}
+
+export function TipWarmup() {
+  return (
+    <group scale={0} raycast={() => null}>
+      <Line
+        points={warmPoints}
+        dashed
+        dashSize={0.04}
+        gapSize={0.02}
+        lineWidth={1.5}
+        transparent
+        opacity={0}
+        depthWrite={false}
+        frustumCulled={false}
+        raycast={() => null}
+      />
+      <mesh frustumCulled={false} raycast={() => null}>
+        <planeGeometry args={[0, 0]} />
+        <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh frustumCulled={false} raycast={() => null}>
+        <planeGeometry args={[0, 0]} />
+        <meshBasicMaterial map={getWarmMap()} transparent opacity={0} depthTest={false} depthWrite toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
     </group>
   )
 }
@@ -494,14 +546,16 @@ export default function IndividualHelix({
 
   useEffect(() => {
     let cancelled = false
-    const skew = { front: textFront, back: textBack }
+    // Only the front face bakes its skew into the texture; the back face's skew/rotation
+    // is applied per frame as a UV transform (see setBackTextUv), so it isn't a dependency.
+    const skew = { front: textFront }
     const markScale = cap ? capIconScale : 1
     const paint = (logo) => {
       if (cancelled) return
-      drawMark(texture.image, logo, isSel, false, showLabel, colors, skew, markScale)
+      drawMark(texture.image, logo, false, showLabel, skew, markScale)
       const backCtx = backTexture.image.getContext('2d')
       backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-      drawMark(backTexture.image, logo, isSel, true, showLabel, colors, skew, markScale)
+      drawMark(backTexture.image, logo, true, showLabel, skew, markScale)
       backCtx.setTransform(1, 0, 0, 1, 0, 0)
       texture.needsUpdate = true
       backTexture.needsUpdate = true
@@ -510,7 +564,12 @@ export default function IndividualHelix({
     return () => {
       cancelled = true
     }
-  }, [texture, backTexture, isSel, showLabel, colors, textFront, textBack, cap])
+    // textFront arrives as a new object on every parent render, so depend on its values;
+    // otherwise every plane repaints and re-uploads both textures. textBack is left out
+    // on purpose: it changes when the pose reaches the hero/rest ends, and depending on
+    // it repainted all ~20 label textures on the last frame of those click animations.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [texture, backTexture, showLabel, textFront?.rot, textFront?.skewX, textFront?.skewY, cap])
 
   useEffect(() => () => {
     texture.dispose()
@@ -580,6 +639,7 @@ export default function IndividualHelix({
         <mesh ref={frontLabelRef} geometry={faceGeom} position={[0, 0, textLift]} raycast={() => null}>
           <meshBasicMaterial
             map={texture}
+            color={isSel ? colors.bg : colors.accent}
             transparent
             toneMapped={false}
             side={THREE.FrontSide}
@@ -592,6 +652,7 @@ export default function IndividualHelix({
         <mesh ref={backLabelRef} geometry={faceGeom} position={[0, 0, -textLift]} raycast={() => null}>
           <meshBasicMaterial
             map={backTexture}
+            color={isSel ? colors.bg : colors.accent}
             transparent
             toneMapped={false}
             side={THREE.BackSide}
@@ -616,8 +677,8 @@ export default function IndividualHelix({
       )}
       {!isMobile && corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>
-          <mesh>
-            <sphereGeometry args={[isSel ? 0.0055 : 0.004, 12, 12]} />
+          <mesh scale={isSel ? 0.0055 / 0.004 : 1}>
+            <sphereGeometry args={[0.004, 12, 12]} />
             <meshBasicMaterial
               color={colors.accent}
               transparent
@@ -625,8 +686,9 @@ export default function IndividualHelix({
               depthWrite={false}
             />
           </mesh>
-          {isSel && (
-            <>
+          {/* Kept mounted and toggled with `visible`: unmounting disposes the materials,
+              which makes three.js recompile their shaders on every selection change. */}
+          <group visible={isSel}>
               <mesh>
                 <torusGeometry args={[0.012, 0.00115, 8, 28]} />
                 <meshBasicMaterial color={colors.accent} depthWrite={false} />
@@ -649,8 +711,7 @@ export default function IndividualHelix({
                 <boxGeometry args={[0.00085, 0.024, 0.00085]} />
                 <meshBasicMaterial color={colors.accent} transparent opacity={0.85} depthWrite={false} />
               </mesh>
-            </>
-          )}
+          </group>
         </group>
       ))}
     </group>

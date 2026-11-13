@@ -190,11 +190,16 @@ export default function CanvasScene({
   const hoveredIdxRef = useRef(hoveredPlaneIdx)
   hoveredIdxRef.current = hoveredPlaneIdx
   const autoSpinSpeed = (Math.PI * 2) / 36
+  const hoverSettleMs = 150
   const aimedIndexRef = useRef(0)
   const spinWasRef = useRef(false)
   const pointerRef = useRef({ x: 0, y: 0, t: 0, inside: false })
   const hoverTrackRef = useRef(false)
   const hoverCheckAngleRef = useRef(null)
+  // During auto-spin, a plane must stay under the resting pointer this long before the
+  // hover (and its tooltip) switches, so planes sweeping past don't flicker the tooltip.
+  const pendingHitRef = useRef(null)
+  const pendingSinceRef = useRef(0)
 
   useEffect(() => {
     camRef.current?.up.set(0, 1, 0)
@@ -373,6 +378,7 @@ export default function CanvasScene({
     if (!spinning || !idle) {
       hoverTrackRef.current = false
       hoverCheckAngleRef.current = null
+      pendingHitRef.current = null
     } else if (hoveredIdxRef.current >= 0 || hoverTrackRef.current) {
       hoverTrackRef.current = true
       const lastCheck = hoverCheckAngleRef.current
@@ -390,17 +396,22 @@ export default function CanvasScene({
           selectedIndex,
           hovered: hoveredIdxRef.current,
         })
-        if (hit !== hoveredIdxRef.current) {
-          if (hit < 0) {
-            if (setHoveredPlaneIdx(-1, hoveredIdxRef.current) !== false) {
-              hoveredIdxRef.current = -1
-              document.body.style.cursor = ''
-            }
-          } else {
-            setHoveredPlaneIdx(hit)
-            hoveredIdxRef.current = hit
-            document.body.style.cursor = 'pointer'
+        if (hit !== pendingHitRef.current) {
+          pendingHitRef.current = hit
+          pendingSinceRef.current = now
+        }
+      }
+      const hit = pendingHitRef.current
+      if (hit !== null && hit !== hoveredIdxRef.current && now - pendingSinceRef.current >= hoverSettleMs) {
+        if (hit < 0) {
+          if (setHoveredPlaneIdx(-1, hoveredIdxRef.current) !== false) {
+            hoveredIdxRef.current = -1
+            document.body.style.cursor = ''
           }
+        } else {
+          setHoveredPlaneIdx(hit)
+          hoveredIdxRef.current = hit
+          document.body.style.cursor = 'pointer'
         }
       }
     }
