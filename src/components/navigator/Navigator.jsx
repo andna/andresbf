@@ -1028,6 +1028,7 @@ export default function Navigator({ sections }) {
       if (orbitModeRef.current === 'click') orbitModeRef.current = 'scroll'
     }
 
+    let stickPx = null
     const indexFromScroll = (scrollY) => {
       const viewport = window.innerHeight
       const maxY = document.documentElement.scrollHeight - viewport
@@ -1035,7 +1036,15 @@ export default function Navigator({ sections }) {
       if (isMobile) return mobileIndexAtRef.current(scrollY).index
       const chrome = document.querySelector('.portfolio-chrome')
       const stuck = chrome instanceof HTMLElement && chrome.classList.contains('is-stuck')
-      const probe = scrollY * scrollSpeed + (stuck ? chrome.offsetHeight : viewport * 0.33)
+      // Match the click target, which parks a card below the chrome *and* the stick
+      // offset; without the offset, selection flipped back one card when a click ended.
+      // Measured once (and again on resize) since this runs on every scroll frame.
+      if (stuck && stickPx == null) {
+        stickPx = parseFloat(getComputedStyle(chrome).getPropertyValue('--portfolio-stick')) *
+          (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) || 0
+      }
+      const stick = stuck ? stickPx : 0
+      const probe = scrollY * scrollSpeed + (stuck ? stick + chrome.offsetHeight : viewport * 0.33)
       let best = 0
       let bestTop = -Infinity
       for (let i = 0; i < helixSections.length; i += 1) {
@@ -1244,6 +1253,7 @@ export default function Navigator({ sections }) {
     }
 
     const onResize = () => {
+      stickPx = null
       mobileAnchorsRef.current.tops = null
       mobileAnchorsRef.current.range = 0
       mobileViewRef.current = 0
