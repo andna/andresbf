@@ -2052,7 +2052,10 @@ html[data-theme="dark"] .content .experience-org-name {
   #experience > h1,
   #education > :is(h1, p),
   #footer > :is(h1, p) {
-    width: min(100%, 34rem);
+    /* Not min(100%, …): .content's width animates during the hero-to-Me pose, and a
+       percentage made this text re-wrap every frame (a visible mini layout shift).
+       The viewport-based cap keeps it steady while still fitting narrow windows. */
+    width: min(34rem, calc(100vw - var(--content-left, 50vw) - 3.5rem));
     margin-left: auto;
     margin-right: auto;
   }
