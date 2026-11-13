@@ -485,7 +485,10 @@ export default function Navigator({ sections }) {
       return
     }
     mobilePinClearedRef.current = false
-    const stick = 0
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    const stick = chrome instanceof HTMLElement
+      ? parseFloat(getComputedStyle(chrome).getPropertyValue('--portfolio-stick')) * fontSize || 0
+      : 0
     const origin = (el) => contentBoxTop(el instanceof HTMLElement ? el : block)
     cards.forEach((card) => {
       if (card.style.height) card.style.removeProperty('height')
@@ -503,6 +506,8 @@ export default function Navigator({ sections }) {
       const dy = pin - release
       const next = dy ? `translate3d(0, ${dy}px, 0)` : ''
       if (chrome.style.transform !== next) chrome.style.transform = next
+      const mask = block.querySelector(':scope > .portfolio-stick-mask')
+      if (mask instanceof HTMLElement && mask.style.transform !== next) mask.style.transform = next
       chrome.classList.toggle('is-stuck', dy > 0.5 || (y >= origin(block) - 1 && y <= end))
       const stuck = chrome.classList.contains('is-stuck')
       const probe = stick + chromeH
@@ -855,6 +860,63 @@ export default function Navigator({ sections }) {
       if (circle instanceof HTMLElement) circle.removeEventListener('click', onCircle)
       if (overlay instanceof HTMLElement) overlay.removeEventListener('click', onOverlay)
       clearModeStyles()
+    }
+  }, [isMobile])
+
+  useEffect(() => {
+    const title = document.querySelector('.header-title-container')
+    const content = document.querySelector('.content')
+    const heading = title instanceof HTMLElement ? title.querySelector('h1') : null
+    const name = title instanceof HTMLElement ? title.querySelector('.header-name') : null
+    if (!(title instanceof HTMLElement) || !(content instanceof HTMLElement) || !(heading instanceof HTMLElement) || !(name instanceof HTMLElement)) return undefined
+    if (isMobile) {
+      title.style.removeProperty('top')
+      title.style.removeProperty('max-width')
+      heading.style.removeProperty('font-size')
+      name.style.removeProperty('--name-side')
+      return undefined
+    }
+    const place = () => {
+      title.style.top = '0px'
+      let y = 0
+      let el = title
+      while (el instanceof HTMLElement && el !== content) {
+        y += el.offsetTop
+        el = el.offsetParent
+      }
+      title.style.top = `${-10 - y}px`
+      const stage = document.querySelector('.stage')
+      const rootStyle = getComputedStyle(document.documentElement)
+      const helix = parseFloat(rootStyle.getPropertyValue('--helix-hero-width')) || 0
+      const contentLeft = stage instanceof HTMLElement
+        ? parseFloat(getComputedStyle(stage).getPropertyValue('--content-left')) || 0
+        : 0
+      const available = Math.max(140, (contentLeft || window.innerWidth * 0.5) - helix - 20)
+      title.style.maxWidth = `${available}px`
+      let size = Math.min(window.innerHeight * 0.55, window.innerWidth * 0.22)
+      const probe = document.createElement('canvas').getContext('2d')
+      const family = getComputedStyle(heading).fontFamily
+      const weight = getComputedStyle(heading).fontWeight
+      probe.font = `${weight} ${size}px ${family}`
+      const word = probe.measureText('and').width
+      if (word > available) size *= available / word
+      heading.style.fontSize = `${size}px`
+      probe.font = `${weight} ${size}px ${family}`
+      const resGlyph = probe.measureText('res')
+      const resHeight = resGlyph.actualBoundingBoxAscent + resGlyph.actualBoundingBoxDescent
+      const fierroWidth = probe.measureText('fierro').width
+      name.style.setProperty('--name-side', `${fierroWidth > 0 ? resHeight / fierroWidth : 0.2}`)
+    }
+    place()
+    document.fonts.ready.then(place)
+    const ro = new ResizeObserver(place)
+    ro.observe(content)
+    return () => {
+      ro.disconnect()
+      title.style.removeProperty('top')
+      title.style.removeProperty('max-width')
+      heading.style.removeProperty('font-size')
+      name.style.removeProperty('--name-side')
     }
   }, [isMobile])
 
@@ -1213,10 +1275,14 @@ export default function Navigator({ sections }) {
       const chromeH = section.closest('.portfolio-block') && chrome instanceof HTMLElement
         ? chrome.offsetHeight
         : 0
+      const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
       const cut = chrome instanceof HTMLElement
-        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--octagon-cut')) * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) || 12
+        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--octagon-cut')) * fontSize || 12
         : 0
-      const top = clampScrollRef.current((contentBoxTop(section) - Math.max(0, chromeH - cut)) / scrollSpeed)
+      const stick = chrome instanceof HTMLElement
+        ? parseFloat(getComputedStyle(chrome).getPropertyValue('--portfolio-stick')) * fontSize || 0
+        : 0
+      const top = clampScrollRef.current((contentBoxTop(section) - stick - Math.max(0, chromeH - cut)) / scrollSpeed)
       scrollLockRef.current = true
       scrollTargetRef.current = top
       targetScrollRef.current = top

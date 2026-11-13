@@ -193,16 +193,10 @@ body {
   display: none;
 }
 
-.portfolio-section-label {
-  margin: 0 0 0.75rem;
-  font-size: calc(var(--copy) * 1.25);
-  font-weight: 500;
-  line-height: 1.1;
-}
-
 .portfolio-block section,
 .portfolio-chrome,
 .portfolio-tab,
+.project-note,
 .project-dialog,
 .project-carousel-nav,
 .project-carousel-track img,
@@ -227,6 +221,7 @@ body {
 .portfolio-block section::before,
 .portfolio-chrome::before,
 .portfolio-tab::before,
+.project-note::before,
 .project-dialog::before,
 .project-carousel-nav::after,
 .experience-list > .experience-card-split > .experience-points > .experience-points-toggle::before {
@@ -299,6 +294,7 @@ body {
   min-width: 0;
   opacity: 0.42;
   transition: opacity 0.55s ease;
+  cursor: pointer;
 }
 
 .project-card.is-inview {
@@ -321,8 +317,47 @@ body {
   line-height: 1.15;
 }
 
-.content .project-card + .project-card .project-title {
+.project-copy {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.project-copy-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.content .project-card + .project-card .project-copy {
   margin-top: 1.5rem;
+}
+
+.project-note {
+  --bevel: 0.4rem;
+  --bevel-line: transparent;
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: calc(0.28rem + 1px) 0.5rem calc(0.32rem - 1px);
+  border: 0;
+  background: transparent;
+  color: var(--accent-color);
+  font: inherit;
+  font-size: calc(var(--copy) * 1.15);
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.project-note:hover,
+.project-note:focus-visible {
+  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+  outline: none;
+}
+
+.project-note:active {
+  background: var(--accent-color);
+  color: var(--bg-color);
 }
 
 .content .project-line {
@@ -378,8 +413,8 @@ body {
 }
 
 .project-carousel-nav {
-  --bevel: 0.3rem;
-  --bevel-line: color-mix(in srgb, var(--secondary-color) 70%, transparent);
+  --bevel: 0.45rem;
+  --bevel-line: transparent;
   position: relative;
   padding: 0;
   border: 0;
@@ -396,8 +431,8 @@ body {
   left: 50%;
   width: 0.42rem;
   height: 0.42rem;
-  border-top: 1.5px solid currentColor;
-  border-right: 1.5px solid currentColor;
+  border-top: 3px solid currentColor;
+  border-right: 3px solid currentColor;
   transform: translate(-65%, -50%) rotate(45deg);
 }
 
@@ -406,13 +441,15 @@ body {
 }
 
 .project-carousel-nav:hover,
-.project-carousel-nav:focus-visible {
-  background: color-mix(in srgb, var(--secondary-color) 14%, transparent);
+.project-carousel-nav:focus-visible,
+.project-carousel-nav:active {
+  background: color-mix(in srgb, var(--secondary-color) 28%, transparent);
   outline: none;
 }
 
 .project-dialog {
   display: none;
+  box-sizing: border-box;
   flex-direction: column;
   gap: 0.85rem;
   width: min(92vw, 70rem);
@@ -476,11 +513,11 @@ body {
   --i: 2;
 }
 
-.project-dialog:not(.is-typing) :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+.project-dialog:not(.is-typing) :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
   clip-path: inset(0 100% 0 0);
 }
 
-.project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+.project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
   animation: experience-type 0.72s steps(12, end) both;
   animation-delay: calc(var(--i, 0) * 160ms + 90ms);
 }
@@ -503,7 +540,7 @@ body {
 }
 
 .project-dialog-frame img {
-  --i: 3;
+  --i: 1;
 }
 
 .project-dialog .project-carousel-nav {
@@ -553,14 +590,14 @@ body {
 .portfolio-tab.is-active {
   color: var(--accent-color);
   background: color-mix(in srgb, var(--accent-color) 8%, transparent);
-  --bevel-line: color-mix(in srgb, var(--accent-color) 55%, transparent);
+  --bevel-line: var(--accent-color);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .portfolio-tab:hover {
     color: var(--accent-color);
     background: color-mix(in srgb, var(--accent-color) 8%, transparent);
-    --bevel-line: color-mix(in srgb, var(--accent-color) 55%, transparent);
+    --bevel-line: var(--accent-color);
   }
 }
 
@@ -641,6 +678,19 @@ body {
 .header-hero h1 {
   margin: 0;
   line-height: 0.95;
+}
+
+.header-name::before,
+.header-name::after {
+  display: block;
+}
+
+.header-name::before {
+  content: "bastidas";
+}
+
+.header-name::after {
+  content: "fierro";
 }
 
 .content p {
@@ -1446,6 +1496,29 @@ html[data-theme="dark"] .content .experience-org-name {
     max-width: 100%;
   }
 
+  .project-dialog {
+    inset-inline: 0.75rem;
+    width: auto;
+    max-width: none;
+  }
+
+  .project-dialog-frame {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .project-dialog-frame img {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .project-dialog .project-carousel-nav {
+    grid-row: 2;
+    width: auto;
+    height: 2.6rem;
+  }
+
   .skill-cloud {
     width: min(100%, 28rem);
     margin-inline: auto;
@@ -1658,6 +1731,8 @@ html[data-theme="dark"] .content .experience-org-name {
     flex: 1 1 0;
     min-width: 0;
     text-align: center;
+    --bevel-tl: 0px;
+    --bevel-tr: 0px;
   }
 
   .shell::before {
@@ -1873,11 +1948,11 @@ html[data-theme="dark"] .content .experience-org-name {
   .skill-cloud li:not(.skill-cloud-title),
   #experience.is-animated .experience-pyramid-face,
   .experience-points-output.is-typing :is(.experience-points-title, li),
-  .project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+  .project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
     animation: none;
   }
 
-  .project-dialog :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame .project-carousel-nav, .project-dialog-frame img) {
+  .project-dialog :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
     clip-path: none;
   }
 
@@ -2081,7 +2156,7 @@ html[data-theme="dark"] .content .experience-org-name {
     opacity: 0.2;
   }
 
-  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .chrome, .portfolio-tab, .portfolio-chrome, .project-carousel) {
+  .content :is(h1, h2, h3, h4, h5, h6, p, a, li, img, svg, blockquote, pre, code, strong, em, .chrome, .portfolio-tab, .portfolio-chrome, .project-carousel, .project-note, .project-card) {
     pointer-events: auto;
   }
 
@@ -2118,12 +2193,45 @@ html[data-theme="dark"] .content .experience-org-name {
     gap: 0.75rem;
     width: auto;
     height: auto;
+    min-width: 0;
   }
 
   .header-title-container h1 {
-    position: static;
+    position: relative;
     top: auto;
     left: auto;
+    max-width: 100%;
+    line-height: 0.75;
+    text-align: right;
+  }
+
+  .header-name {
+    position: relative;
+    display: inline-block;
+  }
+
+  .header-name::before,
+  .header-name::after {
+    position: absolute;
+    left: 100%;
+    right: auto;
+    width: max-content;
+    font-size: calc(var(--name-side, 0.2) * 1em);
+    line-height: 0.8;
+    white-space: pre;
+    text-align: right;
+    writing-mode: vertical-rl;
+    text-orientation: sideways;
+  }
+
+  .header-name::before {
+    content: "bas\Atidas";
+    top: 0.75em;
+  }
+
+  .header-name::after {
+    content: "fierro";
+    bottom: 0;
   }
 
   .content #header {
@@ -2133,6 +2241,8 @@ html[data-theme="dark"] .content .experience-org-name {
 
   .portfolio-block {
     --octagon-cut: 0.75rem;
+    --portfolio-stick: 1.5rem;
+    --copy: clamp(0.95rem, 1.7vh, 1.12rem);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -2157,9 +2267,20 @@ html[data-theme="dark"] .content .experience-org-name {
     transition: --bevel-tl 0.35s ease, --bevel-tr 0.35s ease;
   }
 
-  .portfolio-chrome.is-stuck {
-    --bevel-tl: 0px;
-    --bevel-tr: 0px;
+  .portfolio-stick-mask {
+    display: none;
+  }
+
+  .portfolio-chrome.is-stuck ~ .portfolio-stick-mask {
+    display: block;
+    position: absolute;
+    z-index: 3;
+    top: calc(-1 * var(--portfolio-stick));
+    left: 0;
+    right: -5rem;
+    height: calc(var(--portfolio-stick) + var(--octagon-cut) + 2px);
+    background: var(--bg-color);
+    pointer-events: none;
   }
 
   .portfolio-chrome + section {
@@ -2193,10 +2314,6 @@ html[data-theme="dark"] .content .experience-org-name {
     font-weight: 500;
     line-height: 1.1;
     transform: none;
-  }
-
-  .portfolio-section-label {
-    display: none;
   }
 
   .portfolio-block section {

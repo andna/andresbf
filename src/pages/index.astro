@@ -83,9 +83,9 @@ for (const article of articles) {
                     </div>
                     <h1 class="portfolio-title"><span>Portfolio</span></h1>
                   </div>
+                  <div class="portfolio-stick-mask" aria-hidden="true"></div>
                   {group.items.map(({ id }) => (
                     <section id={id}>
-                      <h2 class="portfolio-section-label">{sections.find((section) => section.id === id)?.title ?? ''}</h2>
                       <PortfolioProjects projects={portfolioProjects[id]} />
                     </section>
                   ))}
