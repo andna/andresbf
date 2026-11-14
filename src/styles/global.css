@@ -680,17 +680,19 @@ body {
   line-height: 0.95;
 }
 
-.header-name::before,
-.header-name::after {
-  display: block;
+/* Real text nodes (so the name can be selected and copied). Portrait stacks them as
+   bastidas / and / res / fierro; the landscape rules below hang the surnames sideways. */
+.header-name {
+  display: flex;
+  flex-direction: column;
 }
 
-.header-name::before {
-  content: "bastidas";
+.header-name-bastidas {
+  order: -1;
 }
 
-.header-name::after {
-  content: "fierro";
+.header-name-fierro {
+  order: 1;
 }
 
 .content p {
@@ -2206,18 +2208,30 @@ html[data-theme="dark"] .content .experience-org-name {
     max-width: 100%;
     line-height: 0.75;
     text-align: right;
+    align-self: flex-end;
   }
 
   .header-name {
+    --and-shift: 57px;
     position: relative;
     display: inline-block;
+    line-height: 55%;
   }
 
-  .header-name::before,
-  .header-name::after {
+  .header-name-and,
+  .header-name-res {
+    display: block;
+  }
+
+  .header-name-and {
+    position: relative;
+    right: var(--and-shift);
+  }
+
+  .header-name-bastidas,
+  .header-name-fierro {
     position: absolute;
     left: 100%;
-    right: auto;
     width: max-content;
     font-size: calc(var(--name-side, 0.2) * 1em);
     line-height: 0.8;
@@ -2227,13 +2241,13 @@ html[data-theme="dark"] .content .experience-org-name {
     text-orientation: sideways;
   }
 
-  .header-name::before {
-    content: "bas\Atidas";
-    top: 0.75em;
+  /* "bastidas" sits beside "and" (the top half of the name) and shifts with it. */
+  .header-name-bastidas {
+    bottom: 50%;
+    transform: translateX(calc(-1 * var(--and-shift)));
   }
 
-  .header-name::after {
-    content: "fierro";
+  .header-name-fierro {
     bottom: 0;
   }
 

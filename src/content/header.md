@@ -16,6 +16,6 @@
     </div>
   </div>
   <div class="header-title-container">
-    <h1 id="header-title"><span class="header-name">and<br>res</span></h1>
+    <h1 id="header-title"><span class="header-name"><span class="header-name-and">and</span> <span class="header-name-res">res</span> <span class="header-name-bastidas">bas<br>tidas</span> <span class="header-name-fierro">fierro</span></span></h1>
   </div>
 </div>

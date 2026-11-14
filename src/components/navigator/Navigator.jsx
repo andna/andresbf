@@ -922,6 +922,22 @@ export default function Navigator({ sections }) {
   }, [isMobile])
 
   useEffect(() => {
+    // The name is laid out as separate pieces (and / res / vertical surnames), so a raw
+    // copy would paste them on separate lines; paste it as a normal name instead.
+    const onCopy = (event) => {
+      const selection = window.getSelection()
+      if (!selection || selection.isCollapsed || !event.clipboardData) return
+      const text = selection.toString()
+      const fixed = text.replace(/and\s*res\s*bas\s*tidas\s*fierro/i, 'Andres Bastidas Fierro')
+      if (fixed === text) return
+      event.clipboardData.setData('text/plain', fixed)
+      event.preventDefault()
+    }
+    document.addEventListener('copy', onCopy)
+    return () => document.removeEventListener('copy', onCopy)
+  }, [])
+
+  useEffect(() => {
     const title = document.querySelector('.header-title-container')
     const content = document.querySelector('.content')
     const heading = title instanceof HTMLElement ? title.querySelector('h1') : null
@@ -942,7 +958,6 @@ export default function Navigator({ sections }) {
         y += el.offsetTop
         el = el.offsetParent
       }
-      title.style.top = `${-10 - y}px`
       const stage = document.querySelector('.stage')
       const rootStyle = getComputedStyle(document.documentElement)
       const helix = parseFloat(rootStyle.getPropertyValue('--helix-hero-width')) || 0
@@ -964,6 +979,19 @@ export default function Navigator({ sections }) {
       const resHeight = resGlyph.actualBoundingBoxAscent + resGlyph.actualBoundingBoxDescent
       const fierroWidth = probe.measureText('fierro').width
       name.style.setProperty('--name-side', `${fierroWidth > 0 ? resHeight / fierroWidth : 0.2}`)
+      // Raise the name so the top of the "d" in "and" pokes slightly past the top edge.
+      // The text node's rect is the font's content area; the canvas metrics give how far
+      // below that the "d" glyph actually starts.
+      const andText = name.querySelector('.header-name-and')?.firstChild
+      let glyphTop = 0
+      if (andText) {
+        const range = document.createRange()
+        range.selectNodeContents(andText)
+        const dGlyph = probe.measureText('d')
+        glyphTop = range.getBoundingClientRect().top - title.getBoundingClientRect().top
+          + dGlyph.fontBoundingBoxAscent - dGlyph.actualBoundingBoxAscent
+      }
+      title.style.top = `${-y - glyphTop - size * 0.06}px`
     }
     place()
     document.fonts.ready.then(place)
