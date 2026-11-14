@@ -2179,7 +2179,10 @@ html[data-theme="dark"] .content .experience-org-name {
 
   .header-circle-container {
     position: relative;
-    top: -30vw;
+    /* The hero pose is rotated, so these offsets are along the rotated axes:
+       "left" moves it up the screen, "top" moves it to the right. */
+    left: var(--parallax-nudge-up, 37vw);
+    top: calc(-30vw + var(--parallax-nudge-right, 28vw));
   }
 
   .header-parallax-art {
@@ -2192,6 +2195,7 @@ html[data-theme="dark"] .content .experience-org-name {
 
   .header-title-container {
     position: relative;
+    left: var(--name-nudge-right, 5rem);
     display: flex;
     flex-direction: column;
     align-items: flex-start;

@@ -928,8 +928,21 @@ export default function Navigator({ sections }) {
       const selection = window.getSelection()
       if (!selection || selection.isCollapsed || !event.clipboardData) return
       const text = selection.toString()
-      const fixed = text.replace(/and\s*res\s*bas\s*tidas\s*fierro/i, 'Andres Bastidas Fierro')
-      if (fixed === text) return
+      // Walk the selected text (ignoring line breaks) while it still spells the name, so
+      // pieces glued together without whitespace ("tidasfier") are handled too.
+      const full = 'andresbastidasfierro'
+      let i = text.search(/\S/)
+      const start = i
+      let consumed = 0
+      while (i >= 0 && i < text.length && consumed < full.length) {
+        if (/\s/.test(text[i])) { i++; continue }
+        if (text[i].toLowerCase() !== full[consumed]) break
+        consumed++
+        i++
+      }
+      if (start < 0 || consumed < 6) return
+      const name = consumed > 14 ? 'Andres Bastidas Fierro' : consumed > 6 ? 'Andres Bastidas' : 'Andres'
+      const fixed = text.slice(0, start) + name + text.slice(i)
       event.clipboardData.setData('text/plain', fixed)
       event.preventDefault()
     }
