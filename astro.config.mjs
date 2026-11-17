@@ -6,6 +6,7 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     server: {
+      allowedHosts: ['.trycloudflare.com'],
       watch: {
         usePolling: true,
         interval: 300,
