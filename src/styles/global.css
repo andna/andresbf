@@ -2049,6 +2049,14 @@ html[data-theme="dark"] .content .experience-org-name {
     padding: 3rem 5rem 5rem 2.5rem;
   }
 
+  .content {
+    /* Width the content has once the hero-to-Me pose settles: the stage shifts left by
+       restOffsetXFrac (0.3) of the width, and --content-left is 50vw + 0.28 * min(w, h)
+       (hitBoxNarrowness in Navigator.jsx). Keep these numbers in step with those. */
+    --content-room: calc(80vw - 0.28 * min(100vw, 100vh));
+    --section-pad-x: 7.5rem;
+  }
+
   #me > :is(h1, p),
   #skills > :is(h1, .skill-cloud),
   #experience > h1,
@@ -2057,7 +2065,7 @@ html[data-theme="dark"] .content .experience-org-name {
     /* Not min(100%, …): .content's width animates during the hero-to-Me pose, and a
        percentage made this text re-wrap every frame (a visible mini layout shift).
        The viewport-based cap keeps it steady while still fitting narrow windows. */
-    width: min(34rem, calc(100vw - var(--content-left, 50vw) - 3.5rem));
+    width: min(34rem, calc(var(--content-room) - var(--section-pad-x)));
     margin-left: auto;
     margin-right: auto;
   }
@@ -2181,8 +2189,8 @@ html[data-theme="dark"] .content .experience-org-name {
     position: relative;
     /* The hero pose is rotated, so these offsets are along the rotated axes:
        "left" moves it up the screen, "top" moves it to the right. */
-    left: var(--parallax-nudge-up, 37vw);
-    top: calc(-30vw + var(--parallax-nudge-right, 28vw));
+    left: var(--parallax-nudge-up, 10vw);
+    top: calc(-30vw + var(--parallax-nudge-right, -12vw));
   }
 
   .header-parallax-art {
@@ -2195,7 +2203,7 @@ html[data-theme="dark"] .content .experience-org-name {
 
   .header-title-container {
     position: relative;
-    left: var(--name-nudge-right, 5rem);
+    left: var(--name-nudge-right, -4rem);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -2361,5 +2369,18 @@ html[data-theme="dark"] .content .experience-org-name {
   .portfolio-tab {
     padding: 0.45rem 1.05rem;
     font-size: calc(var(--copy) * 1.2);
+  }
+}
+
+/* Below ~1800px the room beside the helix is tight, so drop most of the section's side
+   padding and let the content run close to the helix and the window edge. */
+@media (orientation: landscape) and (max-width: 1800px) {
+  .content {
+    --section-pad-x: 2.5rem;
+  }
+
+  .content section {
+    padding-left: 1rem;
+    padding-right: 1.5rem;
   }
 }
