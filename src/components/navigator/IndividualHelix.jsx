@@ -27,7 +27,7 @@ const loadLogo = (url) => new Promise((resolve, reject) => {
 
 // One load per icon URL, shared by every plane that uses it. No URL → no mark.
 // [lineWidth px, opacity] of the selected rug's border glow, widest first.
-const outlineGlow = [[18, 0.1], [11, 0.16], [6, 0.26]]
+const outlineGlow = [[11, 0.12], [7, 0.18], [4, 0.28]]
 
 const logoPromises = new Map()
 const getLogo = (url) => {
@@ -743,7 +743,7 @@ export default function IndividualHelix({
       )}
       {!isMobile && corners.map((pt, i) => (
         <group key={i} position={pt} raycast={() => null}>
-          <mesh scale={isSel ? 0.0055 / 0.004 : 1}>
+          <mesh>
             <sphereGeometry args={[0.004, 12, 12]} />
             <meshBasicMaterial
               color={colors.accent}
@@ -752,32 +752,6 @@ export default function IndividualHelix({
               depthWrite={false}
             />
           </mesh>
-          {/* Kept mounted and toggled with `visible`: unmounting disposes the materials,
-              which makes three.js recompile their shaders on every selection change. */}
-          <group visible={isSel}>
-              <mesh>
-                <torusGeometry args={[0.012, 0.00115, 8, 28]} />
-                <meshBasicMaterial color={colors.accent} depthWrite={false} />
-              </mesh>
-              <mesh>
-                <ringGeometry args={[0.0165, 0.0182, 28]} />
-                <meshBasicMaterial
-                  color={colors.accent}
-                  transparent
-                  opacity={0.7}
-                  side={THREE.DoubleSide}
-                  depthWrite={false}
-                />
-              </mesh>
-              <mesh>
-                <boxGeometry args={[0.024, 0.00085, 0.00085]} />
-                <meshBasicMaterial color={colors.accent} transparent opacity={0.85} depthWrite={false} />
-              </mesh>
-              <mesh>
-                <boxGeometry args={[0.00085, 0.024, 0.00085]} />
-                <meshBasicMaterial color={colors.accent} transparent opacity={0.85} depthWrite={false} />
-              </mesh>
-          </group>
         </group>
       ))}
     </group>

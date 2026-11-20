@@ -9,7 +9,7 @@ import { gpuDevices } from './gpu.js'
 
 // Glow (in the accent colour) on the contact lines that touch the selected rug: [lineWidth px, opacity at the
 // rug's corner], widest first. It fades out along the line, strongest at the corner.
-const contactGlow = [[12, 0.22], [7, 0.4], [3, 0.85]]
+const contactGlow = [[10, 0.12], [6, 0.22], [3, 0.45]]
 // How far along the contact the glow reaches (0 = selected rug's corner, 1 = far end),
 // fading linearly to nothing. Each line is a single segment: fat lines draw round caps
 // per segment, and translucent caps overlapping at the joins showed as bright dots.

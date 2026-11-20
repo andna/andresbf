@@ -25,10 +25,11 @@ const contentById = {
   footer: Footer,
 };
 
-// Icon drawn before a section's heading: its own titleIcon, else its helix icon.
+// Icon drawn before a section's heading: its own titleIcon, else its helix icon (the blank
+// end rugs' helix icons stay on the helix only).
 const titleIconStyle = (id) => {
   const section = sections.find((entry) => entry.id === id);
-  const icon = section?.titleIcon ?? section?.icon;
+  const icon = section?.titleIcon ?? (section?.blank ? undefined : section?.icon);
   return icon ? `--title-icon: url("${icon}")` : undefined;
 };
 
