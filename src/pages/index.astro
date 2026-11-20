@@ -78,9 +78,9 @@ for (const article of articles) {
                 <div class="portfolio-block">
                   <h1 class="portfolio-heading">Portfolio</h1>
                   <div class="portfolio-chrome">
-                    <span class="portfolio-icons" aria-hidden="true">
+                    <span class="portfolio-current" aria-hidden="true">
                       {group.items.map(({ id }) => (
-                        <span class="portfolio-icon" style={`--portfolio-icon: url("${sections.find((section) => section.id === id)?.icon ?? ''}")`}></span>
+                        <span class="portfolio-current-name">{sections.find((section) => section.id === id)?.title ?? ''}</span>
                       ))}
                     </span>
                     <div class="portfolio-tabs" role="tablist" aria-label="Portfolio">
@@ -90,9 +90,11 @@ for (const article of articles) {
                           class="portfolio-tab"
                           role="tab"
                           data-portfolio-target={id}
-                          style={`--tab-index: ${index}`}
+                          style={`--tab-index: ${index}; --tab-icon: url("${sections.find((section) => section.id === id)?.icon ?? ''}")`}
+                          aria-label={sections.find((section) => section.id === id)?.title ?? ''}
                         >
-                          {sections.find((section) => section.id === id)?.title ?? ''}
+                          <span class="portfolio-tab-icon" aria-hidden="true"></span>
+                          <span class="portfolio-tab-label">{sections.find((section) => section.id === id)?.title ?? ''}</span>
                         </button>
                       ))}
                     </div>

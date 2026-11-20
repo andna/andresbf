@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Line } from '@react-three/drei'
+import { gpuDevices } from './gpu.js'
 
 const labelMapSize = 1024
 const capIconScale = 0.6
@@ -12,6 +13,10 @@ const skewIcons = false
 const rotateIcons = false
 // Icon size as a share of the label texture width (was 0.36).
 const iconSize = 0.43
+// Glow blur around the selected panel's mark, as a fraction of the texture width.
+const iconGlow = 0.025
+// The glow is blurry anyway, so its texture can be small.
+const glowMapSize = 256
 
 const loadLogo = (url) => new Promise((resolve, reject) => {
   const image = new Image()
@@ -21,6 +26,9 @@ const loadLogo = (url) => new Promise((resolve, reject) => {
 })
 
 // One load per icon URL, shared by every plane that uses it. No URL → no mark.
+// [lineWidth px, opacity] of the selected rug's border glow, widest first.
+const outlineGlow = [[18, 0.1], [11, 0.16], [6, 0.26]]
+
 const logoPromises = new Map()
 const getLogo = (url) => {
   if (!url) return Promise.resolve(null)
@@ -30,7 +38,7 @@ const getLogo = (url) => {
 
 // The mark is drawn in white and tinted by the material color, so changing the
 // selection only swaps a color instead of repainting and re-uploading textures.
-const drawMark = (canvas, logo, isBack, showLabel, skew, markScale = 1) => {
+const drawMark = (canvas, logo, isBack, showLabel, skew, markScale = 1, glow = false) => {
   const face = skew.front
   const ctx = canvas.getContext('2d')
   const w = canvas.width
@@ -55,7 +63,17 @@ const drawMark = (canvas, logo, isBack, showLabel, skew, markScale = 1) => {
     if (rotateIcons) ctx.rotate(face.rot)
     if (skewIcons) ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
   }
-  ctx.drawImage(stamp, -size / 2, -size / 2)
+  if (glow) {
+    // Halo only: draw the mark far off-canvas and shift its blurred shadow back on.
+    // The shadow offset ignores the transform, so it's in canvas pixels.
+    const away = w * 4
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.85)'
+    ctx.shadowBlur = w * iconGlow
+    ctx.shadowOffsetX = isBack ? -away : away
+    ctx.drawImage(stamp, -size / 2 - away, -size / 2)
+  } else {
+    ctx.drawImage(stamp, -size / 2, -size / 2)
+  }
   ctx.restore()
 }
 
@@ -145,10 +163,11 @@ const makeTipTexture = (title, kicker, color, bg) => {
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   if (kicker) {
-    ctx.font = tipKickerFont
-    ctx.fillText(kicker, w / 2, padY + 16)
+    // Title first, kicker under it: reads "XR Portfolio", like the portfolio header.
     ctx.font = tipFont
-    ctx.fillText(title, w / 2, padY + 32 + 12 + 32)
+    ctx.fillText(title, w / 2, padY + 32)
+    ctx.font = tipKickerFont
+    ctx.fillText(kicker, w / 2, padY + 64 + 12 + 16)
   } else {
     ctx.font = tipFont
     ctx.fillText(title, w / 2, h / 2 + 2)
@@ -511,6 +530,8 @@ export default function IndividualHelix({
     if (tb && backTexture) {
       backTexture.matrixAutoUpdate = false
       setBackTextUv(backTexture.matrix, rotateIcons ? tb.rot ?? 0 : 0, skewIcons ? tb.skewX ?? 0 : 0, skewIcons ? tb.skewY ?? 0 : 0)
+      backGlowTexture.matrixAutoUpdate = false
+      backGlowTexture.matrix.copy(backTexture.matrix)
     }
     if (!group || !outline?.material) return
     group.getWorldPosition(worldPos.current)
@@ -535,11 +556,11 @@ export default function IndividualHelix({
     return () => observer.disconnect()
   }, [])
 
-  const { texture, backTexture } = useMemo(() => {
-    const make = () => {
+  const { texture, backTexture, glowTexture, backGlowTexture } = useMemo(() => {
+    const make = (size = labelMapSize) => {
       const canvas = document.createElement('canvas')
-      canvas.width = labelMapSize
-      canvas.height = labelMapSize
+      canvas.width = size
+      canvas.height = size
       const tex = new THREE.CanvasTexture(canvas)
       tex.colorSpace = THREE.SRGBColorSpace
       tex.anisotropy = 16
@@ -549,7 +570,7 @@ export default function IndividualHelix({
       tex.matrixAutoUpdate = false
       return tex
     }
-    return { texture: make(), backTexture: make() }
+    return { texture: make(), backTexture: make(), glowTexture: make(glowMapSize), backGlowTexture: make(glowMapSize) }
   }, [])
 
   useEffect(() => {
@@ -560,13 +581,17 @@ export default function IndividualHelix({
     const markScale = cap ? capIconScale : 1
     const paint = (logo) => {
       if (cancelled) return
-      drawMark(texture.image, logo, false, showLabel, skew, markScale)
-      const backCtx = backTexture.image.getContext('2d')
-      backCtx.setTransform(-1, 0, 0, 1, labelMapSize, 0)
-      drawMark(backTexture.image, logo, true, showLabel, skew, markScale)
-      backCtx.setTransform(1, 0, 0, 1, 0, 0)
-      texture.needsUpdate = true
-      backTexture.needsUpdate = true
+      const drawBoth = (front, back, glow) => {
+        drawMark(front.image, logo, false, showLabel, skew, markScale, glow)
+        const backCtx = back.image.getContext('2d')
+        backCtx.setTransform(-1, 0, 0, 1, back.image.width, 0)
+        drawMark(back.image, logo, true, showLabel, skew, markScale, glow)
+        backCtx.setTransform(1, 0, 0, 1, 0, 0)
+        front.needsUpdate = true
+        back.needsUpdate = true
+      }
+      drawBoth(texture, backTexture, false)
+      if (gpuDevices) drawBoth(glowTexture, backGlowTexture, true)
     }
     getLogo(icon).then(paint)
     return () => {
@@ -577,13 +602,15 @@ export default function IndividualHelix({
     // on purpose: it changes when the pose reaches the hero/rest ends, and depending on
     // it repainted all ~20 label textures on the last frame of those click animations.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [texture, backTexture, showLabel, textFront?.rot, textFront?.skewX, textFront?.skewY, cap, icon])
+  }, [texture, backTexture, glowTexture, backGlowTexture, showLabel, textFront?.rot, textFront?.skewX, textFront?.skewY, cap, icon])
 
   useEffect(() => () => {
     texture.dispose()
     backTexture.dispose()
+    glowTexture.dispose()
+    backGlowTexture.dispose()
     document.body.style.cursor = ''
-  }, [texture, backTexture])
+  }, [texture, backTexture, glowTexture, backGlowTexture])
 
   useEffect(() => () => {
     if (faceGeom !== skewedPlaneGeometry) faceGeom.dispose()
@@ -643,6 +670,18 @@ export default function IndividualHelix({
           depthWrite
         />
       </mesh>
+      {/* Selected rug only: a soft halo around its mark. Kept mounted, toggled with
+          `visible`, so its materials aren't recompiled on every selection change. */}
+      {gpuDevices && showLabel && (
+        <group visible={isSel}>
+          <mesh geometry={faceGeom} position={[0, 0, textLift]} raycast={() => null}>
+            <meshBasicMaterial map={glowTexture} color={colors.bg} transparent toneMapped={false} side={THREE.FrontSide} depthWrite={false} />
+          </mesh>
+          <mesh geometry={faceGeom} position={[0, 0, -textLift]} raycast={() => null}>
+            <meshBasicMaterial map={backGlowTexture} color={colors.bg} transparent toneMapped={false} side={THREE.BackSide} depthWrite={false} />
+          </mesh>
+        </group>
+      )}
       {showLabel && (
         <mesh ref={frontLabelRef} geometry={faceGeom} position={[0, 0, textLift]} raycast={() => null}>
           <meshBasicMaterial
@@ -668,6 +707,25 @@ export default function IndividualHelix({
             depthWrite={false}
           />
         </mesh>
+      )}
+      {/* Selected rug's border glow: wider, fainter copies of the outline behind it (no
+          bloom pass). Kept mounted and toggled with `visible` so the materials survive. */}
+      {gpuDevices && outlinePoints && !isMobile && (
+        <group visible={isSel}>
+          {outlineGlow.map(([width, opacity]) => (
+            <Line
+              key={width}
+              points={outlinePoints}
+              color={colors.accent}
+              lineWidth={width}
+              transparent
+              opacity={opacity}
+              depthWrite={false}
+              toneMapped={false}
+              raycast={() => null}
+            />
+          ))}
+        </group>
       )}
       {outlinePoints && (
         <Line

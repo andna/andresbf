@@ -3,6 +3,26 @@ import HelixGizmo from './HelixGizmo.jsx'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { readThemeColors } from '../../theme.js'
+import { Line } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { gpuDevices } from './gpu.js'
+
+// Glow (in the accent colour) on the contact lines that touch the selected rug: [lineWidth px, opacity at the
+// rug's corner], widest first. It fades out along the line, strongest at the corner.
+const contactGlow = [[12, 0.22], [7, 0.4], [3, 0.85]]
+// How far along the contact the glow reaches (0 = selected rug's corner, 1 = far end),
+// fading linearly to nothing. Each line is a single segment: fat lines draw round caps
+// per segment, and translucent caps overlapping at the joins showed as bright dots.
+const contactGlowReach = 0.55
+// Solid core line under the glow, the full length of the contact: [lineWidth px, opacity
+// at the selected rug's corner]. It fades along the line into a plain contact (secondary
+// colour at the usual contact opacity) at the far end.
+const contactGlowCore = [1.6, 0.9]
+// Share of the usual contact opacity left at the core's far end.
+const contactGlowFarEnd = 0.35
+// Seconds for the glow to grow out from the selected rug's corner after a selection.
+const contactGlowGrow = 0.6
+const zero = new THREE.Vector3()
 
 const withDash = (geom) => {
   const pos = geom.attributes.position
@@ -61,6 +81,7 @@ export default function Helix({
 }) {
   const [themeSecondary, setThemeSecondary] = useState(() => readThemeColors().secondary)
   const secondary = secondaryColor || themeSecondary
+  const [accent, setAccent] = useState(() => readThemeColors().accent)
 
   const localCorners = useMemo(() => {
     const pos = skewedPlaneGeometry.attributes.position
@@ -72,8 +93,8 @@ export default function Helix({
     return pts.sort((a, b) => a.y - b.y || a.x - b.x)
   }, [skewedPlaneGeometry])
 
-  const { contactClose, contactFar } = useMemo(() => {
-    if (!showSecondary) return { contactClose: [], contactFar: [] }
+  const { contactClose, contactFar, contactSegments } = useMemo(() => {
+    if (!showSecondary) return { contactClose: [], contactFar: [], contactSegments: [] }
     const toWorld = (index, p) => {
       const angle = baseRotation * index
       const ox = radius * Math.sin(angle)
@@ -96,6 +117,7 @@ export default function Helix({
           : null
       return omit ? corner.distanceTo(omit) < 1e-5 : false
     }
+    const segments = []
     const makeContacts = (step, corners, dashed) => {
       const geoms = []
       for (let i = 0; i < sections.length - step; i += 1) {
@@ -103,6 +125,7 @@ export default function Helix({
           if (isOmitted(i, corners[k]) || isOmitted(i + step, corners[k])) continue
           const p0 = toWorld(i, corners[k])
           const p1 = toWorld(i + step, corners[k])
+          segments.push({ a: i, b: i + step, p0, p1, step })
           const geom = new THREE.BufferGeometry().setFromPoints([p0, p1])
           geoms.push(dashed ? withDash(geom) : geom)
         }
@@ -113,8 +136,54 @@ export default function Helix({
     return {
       contactClose: makeContacts(2, outerCorners, true),
       contactFar: makeContacts(3, localCorners.slice(-1), true),
+      contactSegments: segments,
     }
   }, [showSecondary, sections, localCorners, radius, baseRotation, skewValue, planeWidth, planeHeight])
+
+  // Contacts touching the selected rug are drawn solid + glowing instead of dashed.
+  const litContacts = useMemo(() => {
+    if (!gpuDevices || isMobile) return new Set()
+    return new Set(contactSegments.flatMap(({ a, b }, k) => (a === selectedIndex || b === selectedIndex ? [k] : [])))
+  }, [contactSegments, selectedIndex, isMobile])
+
+  // Each contact touching the selected rug, as points running from its corner outward,
+  // with RGBA vertex colours that fade along the line.
+  const contactGlowLines = useMemo(() => {
+    if (!gpuDevices || isMobile) return []
+    const rgb = new THREE.Color(accent).toArray()
+    const accentColor = new THREE.Color(accent)
+    const secondaryColor3 = new THREE.Color(secondary)
+    return contactSegments
+      .filter(({ a, b }) => a === selectedIndex || b === selectedIndex)
+      .map(({ a, p0, p1, step }) => {
+        const [from, to] = a === selectedIndex ? [p0, p1] : [p1, p0]
+        const dir = to.clone().sub(from)
+        const plain = step === 2 ? contactCloseOpacity : contactFarOpacity
+        return {
+          origin: from,
+          end: dir,
+          glowEnd: dir.clone().multiplyScalar(contactGlowReach),
+          rgb,
+          // Core: accent at the corner blending to a plain contact at the far end.
+          core: [[...accentColor.toArray(), contactGlowCore[1]], [...secondaryColor3.toArray(), plain * contactGlowFarEnd]],
+        }
+      })
+  }, [contactSegments, selectedIndex, accent, secondary, contactCloseOpacity, contactFarOpacity, isMobile])
+
+  // Grow the glow out from the corner: each glow sits in a group at the selected rug's
+  // corner and scales from 0 to 1 (line widths are in pixels, so only the length grows).
+  const contactGlowGroups = useRef([])
+  const contactGlowStart = useRef(null)
+  useEffect(() => {
+    contactGlowStart.current = null
+  }, [selectedIndex])
+  useFrame(({ clock }) => {
+    if (!contactGlowLines.length) return
+    if (contactGlowStart.current === null) contactGlowStart.current = clock.elapsedTime
+    const t = Math.min(1, (clock.elapsedTime - contactGlowStart.current) / contactGlowGrow)
+    const eased = 1 - (1 - t) ** 3
+    contactGlowGroups.current.forEach((group) => group?.scale.setScalar(Math.max(eased, 1e-4)))
+  })
 
   const contactsRef = useRef([...contactClose, ...contactFar])
   contactsRef.current = [...contactClose, ...contactFar]
@@ -128,7 +197,11 @@ export default function Helix({
   }, [hoveredPlaneIdx, showTips])
 
   useEffect(() => {
-    const sync = () => setThemeSecondary(readThemeColors().secondary)
+    const sync = () => {
+      const colors = readThemeColors()
+      setThemeSecondary(colors.secondary)
+      setAccent(colors.accent)
+    }
     sync()
     const observer = new MutationObserver(sync)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
@@ -165,14 +238,44 @@ export default function Helix({
         />
       )}
       {showSecondary && contactClose.map((geom, index) => (
-        <line key={`contact-close-${index}`} geometry={geom} raycast={() => null}>
+        <line key={`contact-close-${index}`} geometry={geom} visible={!litContacts.has(index)} raycast={() => null}>
           <lineDashedMaterial color={secondary} transparent opacity={contactCloseOpacity} dashSize={0.042} gapSize={0.022} depthWrite={false} />
         </line>
       ))}
       {showSecondary && contactFar.map((geom, index) => (
-        <line key={`contact-far-${index}`} geometry={geom} raycast={() => null}>
+        <line key={`contact-far-${index}`} geometry={geom} visible={!litContacts.has(contactClose.length + index)} raycast={() => null}>
           <lineDashedMaterial color={secondary} transparent opacity={contactFarOpacity} dashSize={0.008} gapSize={0.02} depthWrite={false} />
         </line>
+      ))}
+      {showSecondary && contactGlowLines.map(({ origin, end, glowEnd, rgb, core }, index) => (
+        <group
+          key={`contact-glow-${selectedIndex}-${index}`}
+          ref={(group) => { contactGlowGroups.current[index] = group }}
+          position={origin}
+          scale={1e-4}
+        >
+          <Line
+            points={[zero, end]}
+            vertexColors={core}
+            lineWidth={contactGlowCore[0]}
+            transparent
+            depthWrite={false}
+            toneMapped={false}
+            raycast={() => null}
+          />
+          {contactGlow.map(([width, opacity]) => (
+            <Line
+              key={width}
+              points={[zero, glowEnd]}
+              vertexColors={[[...rgb, opacity], [...rgb, 0]]}
+              lineWidth={width}
+              transparent
+              depthWrite={false}
+              toneMapped={false}
+              raycast={() => null}
+            />
+          ))}
+        </group>
       ))}
       {sections.map((section, index) => {
         const y = helixPlaneY(index, skewValue, planeWidth, planeHeight)
