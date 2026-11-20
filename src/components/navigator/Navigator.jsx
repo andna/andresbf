@@ -961,6 +961,8 @@ export default function Navigator({ sections }) {
       title.style.removeProperty('max-width')
       heading.style.removeProperty('font-size')
       name.style.removeProperty('--name-side')
+      title.style.removeProperty('--res-ink-left')
+      title.style.removeProperty('--name-size')
       return undefined
     }
     const place = () => {
@@ -992,6 +994,11 @@ export default function Navigator({ sections }) {
       const resHeight = resGlyph.actualBoundingBoxAscent + resGlyph.actualBoundingBoxDescent
       const fierroWidth = probe.measureText('fierro').width
       name.style.setProperty('--name-side', `${fierroWidth > 0 ? resHeight / fierroWidth : 0.2}`)
+      // Where the "res" glyphs start, measured from the name's left edge ("res" is
+      // right-aligned under the wider "and"), so the social buttons can line up under it.
+      const resInkLeft = probe.measureText('and').width - resGlyph.width - resGlyph.actualBoundingBoxLeft
+      title.style.setProperty('--res-ink-left', `${Math.max(0, resInkLeft)}px`)
+      title.style.setProperty('--name-size', `${size}px`)
       // Raise the name so the top of the "d" in "and" pokes slightly past the top edge.
       // The text node's rect is the font's content area; the canvas metrics give how far
       // below that the "d" glyph actually starts.
@@ -1017,6 +1024,8 @@ export default function Navigator({ sections }) {
       title.style.removeProperty('max-width')
       heading.style.removeProperty('font-size')
       name.style.removeProperty('--name-side')
+      title.style.removeProperty('--res-ink-left')
+      title.style.removeProperty('--name-size')
     }
   }, [isMobile])
 

@@ -92,31 +92,53 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.75rem;
+  gap: 0.15rem;
   width: auto;
 }
 
-.logo {
-  display: block;
+/* Top-bar buttons (socials + theme toggle): an octagon frame whose outline shows on
+   hover / keyboard focus. The icon sits on an inner element so the frame isn't masked. */
+.chrome-button {
+  --bevel: 0.6rem;
+  --bevel-line: transparent;
+  position: relative;
+  display: grid;
+  place-items: center;
   flex: 0 0 auto;
-  width: 1.75rem;
-  height: 1.75rem;
-  pointer-events: none;
-  background-color: var(--accent-color);
-  -webkit-mask: url("/logo-a.svg") center / contain no-repeat;
-  mask: url("/logo-a.svg") center / contain no-repeat;
+  padding: 0.45rem;
 }
 
+.chrome-button:focus-visible {
+  outline: none;
+  --bevel-line: var(--accent-color);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chrome-button:hover {
+    --bevel-line: var(--accent-color);
+  }
+}
+
+.logo,
+.theme-toggle-icon {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: var(--accent-color);
+  -webkit-mask: var(--logo) center / contain no-repeat;
+  mask: var(--logo) center / contain no-repeat;
+}
+
+.theme-toggle-icon {
+  -webkit-mask: var(--theme-icon) center / contain no-repeat;
+  mask: var(--theme-icon) center / contain no-repeat;
+}
+
+/* Shows the theme a click switches to: moon in light mode, sun in dark mode. */
 .theme-toggle-button {
-  flex: 0 0 auto;
   appearance: none;
   border: 0;
   background: none;
-  padding: 0;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent-color);
   cursor: pointer;
 }
 
@@ -153,6 +175,25 @@ body {
 .content h1 {
   font-size: calc(var(--copy) * 2.85);
   margin: 0 0 1rem;
+}
+
+/* Section headings: a small accent icon to the left of the title (in the flow, not
+   absolute), vertically centered on it. */
+.has-title-icon > h1:first-of-type {
+  display: flex;
+  align-items: center;
+}
+
+.has-title-icon > h1:first-of-type::before {
+  content: "";
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.25em;
+  background-color: var(--accent-color);
+  -webkit-mask: var(--title-icon) center / contain no-repeat;
+  mask: var(--title-icon) center / contain no-repeat;
+  pointer-events: none;
 }
 
 .content h2 {
@@ -193,13 +234,21 @@ body {
   display: none;
 }
 
+.portfolio-icons {
+  display: none;
+}
+
 .portfolio-block section,
 .portfolio-chrome,
 .portfolio-tab,
+.chrome-button,
+.header-circle,
 .project-note,
 .project-dialog,
 .project-carousel-nav,
-.project-carousel-track img,
+.project-slide,
+.project-dialog-media,
+.project-dialog-cta,
 .experience-list > .experience-card-split > .experience-points > .experience-points-toggle {
   --bevel-w: 1px;
   --bevel-tl: var(--bevel);
@@ -221,9 +270,14 @@ body {
 .portfolio-block section::before,
 .portfolio-chrome::before,
 .portfolio-tab::before,
+.chrome-button::before,
+.header-circle::before,
 .project-note::before,
 .project-dialog::before,
 .project-carousel-nav::after,
+.project-slide::before,
+.project-dialog-media::before,
+.project-dialog-cta::before,
 .experience-list > .experience-card-split > .experience-points > .experience-points-toggle::before {
   content: "";
   position: absolute;
@@ -379,7 +433,6 @@ body {
 .project-carousel-track {
   display: flex;
   gap: 0.6rem;
-  height: 10rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
@@ -396,20 +449,68 @@ body {
   display: none;
 }
 
-.project-carousel-track img {
+/* Thumbnails and the opened image sit in an octagon frame with a border (the bevel
+   ::before), since an <img> can't carry that outline itself. */
+.project-slide {
   --bevel: 0.45rem;
-  flex: 0 0 78%;
-  width: 78%;
+  --bevel-line: color-mix(in srgb, var(--accent-color) 55%, transparent);
+  position: relative;
+  display: block;
+  /* One whole 16:10 screenshot per slide (no cropping, no peek of the next). */
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  scroll-snap-align: start;
+  user-select: none;
+}
+
+/* The thumbnail tint, shared with the dialog's fade-in. */
+:root {
+  --thumb-tint: grayscale(1) sepia(2) hue-rotate(64deg) contrast(1.2) brightness(1.5);
+}
+
+/* Thumbnails show a tinted copy of the image (::after, from --src) over the real one.
+   On hover it's wiped away left to right in the same stepped "typing" motion as the
+   dialog's reveal. The slide takes the hover; the track still gets the drag, since
+   pointer events bubble up to it. */
+.project-slide img {
+  pointer-events: none;
+}
+
+.project-slide::after,
+.project-dialog-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--src) center / cover no-repeat;
+  filter: var(--thumb-tint);
+  pointer-events: none;
+}
+
+.project-slide::after {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 0.42s steps(12, end);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .project-slide:hover::after {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+/* Keep the border above the image: the dialog image's typing clip-path makes it paint
+   like a positioned element, which would otherwise cover the ::before outline. */
+.project-slide::before,
+.project-dialog-media::before {
+  z-index: 1;
+}
+
+.project-slide img,
+.project-dialog-media img {
+  display: block;
+  width: 100%;
   height: 100%;
   object-fit: cover;
-  scroll-snap-align: start;
-  pointer-events: none;
-  user-select: none;
-  filter:
-    drop-shadow(1px 0 0 color-mix(in srgb, var(--accent-color) 55%, transparent))
-    drop-shadow(-1px 0 0 color-mix(in srgb, var(--accent-color) 55%, transparent))
-    drop-shadow(0 1px 0 color-mix(in srgb, var(--accent-color) 55%, transparent))
-    drop-shadow(0 -1px 0 color-mix(in srgb, var(--accent-color) 55%, transparent));
 }
 
 .project-carousel-nav {
@@ -469,6 +570,37 @@ body {
   display: flex;
 }
 
+/* The project's site link, centered between the copy and the carousel. */
+.project-dialog-cta {
+  --bevel: 0.45rem;
+  --bevel-line: var(--accent-color);
+  position: relative;
+  flex: none;
+  align-self: center;
+  padding: 0.5rem 1.3rem;
+  color: var(--accent-color);
+  font-size: calc(var(--copy, 1rem) * 1.05);
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.project-dialog-cta[hidden] {
+  display: none;
+}
+
+.project-dialog-cta:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .project-dialog-cta:hover {
+    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  }
+}
+
 .project-dialog::backdrop {
   background: color-mix(in srgb, var(--bg-color) 62%, #000 38%);
 }
@@ -513,20 +645,41 @@ body {
   --i: 2;
 }
 
-.project-dialog:not(.is-typing) :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
+.project-dialog:not(.is-typing) :is(.project-dialog-close, .project-dialog-title, .project-dialog-line) {
   clip-path: inset(0 100% 0 0);
 }
 
-.project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
+.project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line) {
   animation: experience-type 0.72s steps(12, end) both;
   animation-delay: calc(var(--i, 0) * 160ms + 90ms);
 }
 
-.project-dialog.is-typing .project-dialog-frame img {
-  animation-duration: 0.42s;
+/* The image shows straight away, tinted (the copy on top), then one stepped "typing"
+   wipe removes the tint to leave the real colours. */
+.project-dialog-media::after {
+  clip-path: inset(0 0 0 100%);
+}
+
+.project-dialog:not(.is-typing) .project-dialog-media::after {
+  clip-path: inset(0 0 0 0);
+}
+
+.project-dialog.is-typing .project-dialog-media::after {
+  animation: project-tint-wipe 0.42s steps(12, end) 0.6s both;
+}
+
+@keyframes project-tint-wipe {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 100%);
+  }
 }
 
 .project-dialog-frame {
+  container-type: size;
   display: grid;
   grid-template-columns: 2.6rem minmax(0, 1fr) 2.6rem;
   gap: 0.75rem;
@@ -541,6 +694,18 @@ body {
 
 .project-dialog-frame img {
   --i: 1;
+}
+
+/* 16:10 like the screenshots, as large as the frame allows. */
+.project-dialog-media {
+  --bevel: 0.75rem;
+  --bevel-line: var(--accent-color);
+  position: relative;
+  display: block;
+  justify-self: center;
+  width: min(100%, var(--media-room-h) * 1.6);
+  aspect-ratio: 16 / 10;
+  --media-room-h: 100cqh;
 }
 
 .project-dialog .project-carousel-nav {
@@ -559,15 +724,6 @@ body {
   transform: translate(-28%, -50%) rotate(-135deg);
 }
 
-.project-dialog-frame img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  max-height: 100%;
-  object-fit: contain;
-}
 
 .portfolio-tab {
   --bevel: 0.45rem;
@@ -1509,10 +1665,11 @@ html[data-theme="dark"] .content .experience-org-name {
     grid-template-rows: minmax(0, 1fr) auto;
   }
 
-  .project-dialog-frame img {
+  .project-dialog-media {
     grid-column: 1 / -1;
     grid-row: 1;
-    width: 100%;
+    /* The nav buttons take a row below on mobile. */
+    --media-room-h: calc(100cqh - 2.6rem - 0.75rem);
   }
 
   .project-dialog .project-carousel-nav {
@@ -1529,7 +1686,7 @@ html[data-theme="dark"] .content .experience-org-name {
   #me > :is(h1, p),
   #skills > h1,
   #experience > h1,
-  #education > :is(h1, p),
+  #education > :is(h1, p, .certificate-grid),
   #footer > :is(h1, p) {
     width: min(100%, 28rem);
     margin-left: auto;
@@ -1950,12 +2107,21 @@ html[data-theme="dark"] .content .experience-org-name {
   .skill-cloud li:not(.skill-cloud-title),
   #experience.is-animated .experience-pyramid-face,
   .experience-points-output.is-typing :is(.experience-points-title, li),
-  .project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
+  .project-dialog.is-typing :is(.project-dialog-close, .project-dialog-title, .project-dialog-line) {
     animation: none;
   }
 
-  .project-dialog :is(.project-dialog-close, .project-dialog-title, .project-dialog-line, .project-dialog-frame img) {
+  .project-dialog :is(.project-dialog-close, .project-dialog-title, .project-dialog-line) {
     clip-path: none;
+  }
+
+  .project-dialog .project-dialog-media::after {
+    animation: none;
+    clip-path: inset(0 0 0 100%);
+  }
+
+  .project-slide::after {
+    transition: none;
   }
 
   .header-parallax {
@@ -2060,7 +2226,7 @@ html[data-theme="dark"] .content .experience-org-name {
   #me > :is(h1, p),
   #skills > :is(h1, .skill-cloud),
   #experience > h1,
-  #education > :is(h1, p),
+  #education > :is(h1, p, .certificate-grid),
   #footer > :is(h1, p) {
     /* Not min(100%, …): .content's width animates during the hero-to-Me pose, and a
        percentage made this text re-wrap every frame (a visible mini layout shift).
@@ -2181,8 +2347,73 @@ html[data-theme="dark"] .content .experience-org-name {
     justify-content: flex-start;
   }
 
+  /* On desktop the hero circle is the theme toggle: an octagon frame (outline on hover /
+     focus, like the top-bar buttons) holding the sun/moon icon (--theme-icon is set by
+     ThemeToggle.jsx). Rotated +50deg to undo the hero pose, like .header-parallax-art. */
   .header-circle {
+    --bevel: 1.75rem;
+    --bevel-line: transparent;
+    position: relative;
     flex: 0 0 auto;
+    /* Bigger than the social buttons (icon ~4.4rem vs ~3rem). The negative margin keeps
+       the old 4.75rem footprint so the mountains / parallax don't shift. */
+    width: 6.5rem;
+    height: 6.5rem;
+    margin: calc((4.75rem - 6.5rem) / 2);
+    border-radius: 0;
+    background: none;
+    cursor: pointer;
+    transform: rotate(50deg);
+  }
+
+  .header-circle::after {
+    content: "";
+    position: absolute;
+    inset: 16%;
+    background-color: var(--accent-color);
+    -webkit-mask: var(--theme-icon) center / contain no-repeat;
+    mask: var(--theme-icon) center / contain no-repeat;
+  }
+
+  .header-circle:focus-visible {
+    outline: none;
+    --bevel-line: var(--accent-color);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .header-circle:hover {
+      --bevel-line: var(--accent-color);
+    }
+  }
+
+  .chrome-bar .theme-toggle-button {
+    display: none;
+  }
+
+  /* Desktop social buttons: big, in a row starting right under the "r" of "res"
+     (--res-ink-left / --name-size come from Navigator.jsx). Zero layout width so the
+     row never widens the title box and shifts the name. */
+  .header-title-container > .chrome {
+    align-self: flex-start;
+    width: 0;
+    /* The icon (not its hover frame) lines up with the "r": back off by the frame padding. */
+    margin-left: calc(var(--res-ink-left, 0px) - var(--name-size, 6rem) * 0.08);
+    overflow: visible;
+  }
+
+  .header-title-container .chrome-bar {
+    width: max-content;
+    gap: calc(var(--name-size, 6rem) * 0.06);
+  }
+
+  .header-title-container .chrome-button {
+    --bevel: calc(var(--name-size, 6rem) * 0.14);
+    padding: calc(var(--name-size, 6rem) * 0.08);
+  }
+
+  .header-title-container .logo {
+    width: calc(var(--name-size, 6rem) * 0.5);
+    height: calc(var(--name-size, 6rem) * 0.5);
   }
 
   .header-circle-container {
@@ -2331,6 +2562,40 @@ html[data-theme="dark"] .content .experience-org-name {
     margin-left: auto;
   }
 
+  /* The current tab's icon at the left of "Portfolio", centered on it (same look as the
+     section headings), then the tabs pushed to the right, all left-aligned.
+     The icons stack in one cell; the one matching the active tab shows, with no fade (Web's
+     icon before any tab is active). One rule per tab: keep in step with the
+     number of portfolio sections. */
+  .portfolio-icons {
+    display: grid;
+    order: -2;
+    flex: none;
+    /* Pull the title against it, like the section headings' icons. */
+    margin-right: calc(var(--copy) * 0.45 - 1rem);
+  }
+
+  .portfolio-icon {
+    grid-area: 1 / 1;
+    width: calc(var(--copy) * 1.7);
+    height: calc(var(--copy) * 1.7);
+    background-color: var(--accent-color);
+    -webkit-mask: var(--portfolio-icon) center / contain no-repeat;
+    mask: var(--portfolio-icon) center / contain no-repeat;
+    opacity: 0;
+  }
+
+  .portfolio-icon:first-child,
+  .portfolio-chrome:has(.portfolio-tab:nth-child(2).is-active) .portfolio-icon:nth-child(2),
+  .portfolio-chrome:has(.portfolio-tab:nth-child(3).is-active) .portfolio-icon:nth-child(3),
+  .portfolio-chrome:has(.portfolio-tab:nth-child(4).is-active) .portfolio-icon:nth-child(4) {
+    opacity: 1;
+  }
+
+  .portfolio-chrome:has(.portfolio-tab.is-active:not(:first-child)) .portfolio-icon:first-child {
+    opacity: 0;
+  }
+
   .portfolio-block .portfolio-title {
     position: static;
     order: -1;
@@ -2342,7 +2607,9 @@ html[data-theme="dark"] .content .experience-org-name {
     font-size: calc(var(--copy) * 2);
     font-weight: 500;
     line-height: 1.1;
-    transform: none;
+    /* Turret Road's letters sit ~0.05em above the middle of their line box; nudge
+       them down so they center in the bar and on the icon. */
+    transform: translateY(0.05em);
   }
 
   .portfolio-block section {
@@ -2362,8 +2629,33 @@ html[data-theme="dark"] .content .experience-org-name {
     margin-top: 0.45rem;
   }
 
-  .project-carousel-track {
-    height: 15rem;
+  /* Three shots fit without a carousel: one large + two stacked, all uncropped 16:10.
+     Nav and drag go away. */
+  .project-carousel:has(.project-slide:nth-child(3):last-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project-carousel:has(.project-slide:nth-child(3):last-child) > .project-carousel-nav {
+    display: none;
+  }
+
+  .project-carousel-track:has(> .project-slide:nth-child(3):last-child) {
+    display: grid;
+    /* Large = 2 x small + 1.6 x gap, so its 16:10 height equals both small rows plus
+       the row gap and nothing is cropped. (0.6rem = the track's gap.) */
+    grid-template-columns: calc((100% - 2.6 * 0.6rem) / 3 * 2 + 1.6 * 0.6rem) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    overflow: visible;
+    scroll-snap-type: none;
+    cursor: pointer;
+  }
+
+  .project-carousel-track:has(> .project-slide:nth-child(3):last-child) > .project-slide {
+    width: auto;
+  }
+
+  .project-carousel-track:has(> .project-slide:nth-child(3):last-child) > .project-slide:first-child {
+    grid-row: 1 / span 2;
   }
 
   .portfolio-tab {
@@ -2383,4 +2675,36 @@ html[data-theme="dark"] .content .experience-org-name {
     padding-left: 1rem;
     padding-right: 1.5rem;
   }
+}
+
+.certificate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem 2rem;
+  margin: 2rem auto 0;
+  padding: 0;
+  list-style: none;
+}
+
+.certificate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.certificate-logo {
+  width: 4.5rem;
+  height: 4.5rem;
+  background-color: var(--secondary-color);
+  -webkit-mask: var(--certificate-logo) center / contain no-repeat;
+  mask: var(--certificate-logo) center / contain no-repeat;
+}
+
+.content .certificate-name {
+  color: var(--text-color);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
 }

@@ -4,13 +4,18 @@ export const portfolioProjects = {
   'portfolio-1': [
     {
       title: 'Lorebites',
+      // Optional: shown as the dialog's call-to-action link.
+      url: 'https://lorebites.com',
       line: 'A pipeline that writes skill documentation from a codebase.',
-      images: slides('ai-docs'),
+      // 16:10 captures (1440x900 viewport at 2x = 2880x1800 WebP): home, a book, about.
+      images: [1, 2, 3].map((index) => `/portfolio/lorebites-${index}.webp`),
     },
     {
       title: 'MovieCube',
+      url: 'https://themoviecube.vercel.app',
       line: 'Sorts incoming bugs into a DevOps fix queue.',
-      images: slides('ai-triage'),
+      // 16:10 captures: home, a "Harry" search, an "Alien" search with the cube turned to its posters face.
+      images: [1, 2, 3].map((index) => `/portfolio/moviecube-${index}.webp`),
     },
     {
       title: 'Pokeit',

@@ -4,7 +4,7 @@ const { projects = [] } = Astro.props
 
 <div class="portfolio-projects">
   {projects.map((project) => (
-    <article class="project-card">
+    <article class="project-card" data-url={project.url}>
       <div class="project-copy">
         <div class="project-copy-text">
           <h2 class="project-title">{project.title}</h2>
@@ -16,7 +16,9 @@ const { projects = [] } = Astro.props
         <button type="button" class="project-carousel-nav" data-dir="-1" aria-label="Previous image"></button>
         <div class="project-carousel-track">
           {project.images.map((src, index) => (
-            <img src={src} alt={`${project.title}, image ${index + 1}`} draggable="false" />
+            <span class="project-slide" style={`--src: url("${src}")`}>
+              <img src={src} alt={`${project.title}, image ${index + 1}`} draggable="false" />
+            </span>
           ))}
         </div>
         <button type="button" class="project-carousel-nav" data-dir="1" aria-label="Next image"></button>
@@ -29,7 +31,7 @@ const { projects = [] } = Astro.props
   document.querySelectorAll('.project-carousel').forEach((carousel) => {
     const track = carousel.querySelector('.project-carousel-track')
     const distance = () => {
-      const slide = track.querySelector('img')
+      const slide = track.querySelector('.project-slide')
       if (!(slide instanceof HTMLElement)) return track.clientWidth
       const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0
       return slide.getBoundingClientRect().width + gap
@@ -64,14 +66,15 @@ const { projects = [] } = Astro.props
     const card = carousel.closest('.project-card')
     card.addEventListener('click', (event) => {
       if (dragged) return
-      const images = [...track.querySelectorAll('img')]
+      const images = [...track.querySelectorAll('.project-slide img')]
       const hit = images.findIndex((image) => {
-        const box = image.getBoundingClientRect()
+        const box = image.parentElement.getBoundingClientRect()
         return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom
       })
       openProjectDialog(images.map((image) => ({ src: image.src, alt: image.alt })), hit < 0 ? 0 : hit, {
         title: card.querySelector('.project-title').textContent,
         line: card.querySelector('.project-line').textContent,
+        url: card.dataset.url,
       })
     })
   })
@@ -80,6 +83,7 @@ const { projects = [] } = Astro.props
   const dialogImage = dialog.querySelector('img')
   const dialogTitle = dialog.querySelector('.project-dialog-title')
   const dialogLine = dialog.querySelector('.project-dialog-line')
+  const dialogCta = dialog.querySelector('.project-dialog-cta')
   let dialogSlides = []
   let dialogIndex = 0
 
@@ -87,12 +91,19 @@ const { projects = [] } = Astro.props
     dialogIndex = (next + dialogSlides.length) % dialogSlides.length
     dialogImage.src = dialogSlides[dialogIndex].src
     dialogImage.alt = dialogSlides[dialogIndex].alt
+    dialogImage.parentElement.style.setProperty('--src', `url("${dialogSlides[dialogIndex].src}")`)
   }
 
   const openProjectDialog = (slides, index, copy) => {
     dialogSlides = slides
     dialogTitle.textContent = copy.title
     dialogLine.textContent = copy.line
+    // Call-to-action: the project's site, labelled with its bare address. Hidden if none.
+    dialogCta.hidden = !copy.url
+    if (copy.url) {
+      dialogCta.href = copy.url
+      dialogCta.textContent = `${copy.url.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗`
+    }
     showDialogSlide(index)
     dialog.classList.remove('is-typing')
     if (!dialog.open) dialog.showModal()

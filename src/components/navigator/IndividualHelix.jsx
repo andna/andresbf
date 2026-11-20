@@ -7,20 +7,25 @@ import { Billboard, Line } from '@react-three/drei'
 const labelMapSize = 1024
 const capIconScale = 0.6
 const capIconNudge = 0.05
+// Trial: false draws the icons without the face's skew / rotation, on both faces.
+const skewIcons = false
+const rotateIcons = false
+// Icon size as a share of the label texture width (was 0.36).
+const iconSize = 0.43
 
-const logoUrl = '/logo-a.svg'
-
-const loadLogo = () => new Promise((resolve, reject) => {
+const loadLogo = (url) => new Promise((resolve, reject) => {
   const image = new Image()
   image.onload = () => resolve(image)
   image.onerror = reject
-  image.src = logoUrl
+  image.src = url
 })
 
-let logoPromise
-const getLogo = () => {
-  if (!logoPromise) logoPromise = loadLogo()
-  return logoPromise
+// One load per icon URL, shared by every plane that uses it. No URL → no mark.
+const logoPromises = new Map()
+const getLogo = (url) => {
+  if (!url) return Promise.resolve(null)
+  if (!logoPromises.has(url)) logoPromises.set(url, loadLogo(url))
+  return logoPromises.get(url)
 }
 
 // The mark is drawn in white and tinted by the material color, so changing the
@@ -34,7 +39,7 @@ const drawMark = (canvas, logo, isBack, showLabel, skew, markScale = 1) => {
 
   if (!showLabel || !logo) return
 
-  const size = Math.floor(w * 0.36 * markScale)
+  const size = Math.floor(w * iconSize * markScale)
   const stamp = document.createElement('canvas')
   stamp.width = size
   stamp.height = size
@@ -47,8 +52,8 @@ const drawMark = (canvas, logo, isBack, showLabel, skew, markScale = 1) => {
   ctx.save()
   ctx.translate(w / 2, h / 2)
   if (!isBack) {
-    ctx.rotate(face.rot)
-    ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
+    if (rotateIcons) ctx.rotate(face.rot)
+    if (skewIcons) ctx.transform(1, face.skewY, face.skewX, 1, 0, 0)
   }
   ctx.drawImage(stamp, -size / 2, -size / 2)
   ctx.restore()
@@ -425,6 +430,7 @@ export default function IndividualHelix({
   showLabel,
   title,
   kicker,
+  icon,
   blank = false,
   cap = null,
   textFront,
@@ -504,7 +510,7 @@ export default function IndividualHelix({
     const tb = poseRef?.current?.textBack ?? textBack
     if (tb && backTexture) {
       backTexture.matrixAutoUpdate = false
-      setBackTextUv(backTexture.matrix, tb.rot ?? 0, tb.skewX ?? 0, tb.skewY ?? 0)
+      setBackTextUv(backTexture.matrix, rotateIcons ? tb.rot ?? 0 : 0, skewIcons ? tb.skewX ?? 0 : 0, skewIcons ? tb.skewY ?? 0 : 0)
     }
     if (!group || !outline?.material) return
     group.getWorldPosition(worldPos.current)
@@ -562,7 +568,7 @@ export default function IndividualHelix({
       texture.needsUpdate = true
       backTexture.needsUpdate = true
     }
-    getLogo().then(paint)
+    getLogo(icon).then(paint)
     return () => {
       cancelled = true
     }
@@ -571,7 +577,7 @@ export default function IndividualHelix({
     // on purpose: it changes when the pose reaches the hero/rest ends, and depending on
     // it repainted all ~20 label textures on the last frame of those click animations.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [texture, backTexture, showLabel, textFront?.rot, textFront?.skewX, textFront?.skewY, cap])
+  }, [texture, backTexture, showLabel, textFront?.rot, textFront?.skewX, textFront?.skewY, cap, icon])
 
   useEffect(() => () => {
     texture.dispose()
